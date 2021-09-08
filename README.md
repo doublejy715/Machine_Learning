@@ -15,3 +15,6 @@
 
 ### Error & Solve
 [List](https://github.com/doublejy715/Machine_Learning/issues/2)
+
+## Snippet.json
+check code!!

@@ -12,3 +12,6 @@
 5. Hyperplan
 6. Correlation
 7. Data set
+
+### Error & Solve
+[List]()

@@ -17,4 +17,4 @@
 [List](https://github.com/doublejy715/Machine_Learning/issues/2)
 
 ## Snippet.json
-check code!!
+[Link](https://github.com/doublejy715/Machine_Learning/blob/main/snippet.json)

@@ -12,4 +12,177 @@
 	// 	],
 	// 	"description": "Log output to console"
 	// }
+
+	"Import": {
+		"prefix": "torch, import",
+		"body": [
+		  "import torch",
+		  "import torchvision.transforms as transforms",
+		  "import torch.nn as nn",
+		  "import torch.nn.functional as F",
+		  "import torchvision.models as models",
+		  "",
+		  "if torch.cuda.is_available():",
+		  "    device = torch.device(\"cuda\")",
+		  "else:",
+		  "    print(\"check cuda available!!\")",
+		],
+		"description": "Import"
+	  },
+	
+	"Define_model": {
+		"prefix": "torch, define, Model",
+		"body": [
+		  "class Model(nn.Module):",
+		  "    def __init__(self):",
+		  "        super().__init__()",
+		  "        # layers Declaration",
+		  "        # ex) self.fc1 = nn.Linear(input, output)",
+		  "",
+		  "    def forward(self, x):",
+		  "        # stack layer",
+		  "        # ex) x = F.relu(self.fc1(x))",
+		  "        return x"
+		],
+		"description": "Define_model"
+	  },
+
+	"DataLoader": {
+		"prefix": "torch, data, DataLoader",
+		"body": [
+		  "# DataLoader 정의",
+		  "class DataLoaders():",
+		  "    def __init__(self, img_dir, label_dir, transform=None):",
+		  "        self.file_list = sorted(glob.glob(img_dir))",
+		  "        self.labels = np.loadtxt(label_dir,delimiter=' ')",
+		  "        self.transform = transform",
+		  "",
+		  "    def __len__(self):",
+		  "        return len(self.labels)",
+		  "",
+		  "    def __getitem__(self, idx):",
+		  "        label = np.array(self.labels[idx])",
+		  "        img = Image.open(self.file_list[idx])",
+		  "        img = self.transform(img)",
+		  "        return img, label",
+		  "",
+		  "# Image에 옵션 주기(데이터 변환)",
+		  "transform = transforms.Compose([",
+		  "    transforms.RandomHorizontalFlip(),",
+		  "    transforms.Resize((224,224)),",
+		  "    transforms.ColorJitter(), # 빼도 상관은 없음 ",
+		  "    transforms.ToTensor() # 반드시 ToTensor 다음에 Normalize",
+		  "    # transforms.Normalize(mean=[0.485, 0.456, 0.406],",
+		  "    #                         std=[0.229, 0.224, 0.225])",
+		  "])",
+		  "",
+		  "# create DataLoader",
+		  "dataset = DataLoaders(data_PATH,label_PATH,transform)",
+		  "train_loader = torch.utils.data.DataLoader(dataset=dataset,batch_size=batch_size,shuffle=True, drop_last=True) # drop_last : data % batch size 버림",
+		  "",
+		  "# Usd DataLoader",
+		  "running_loss = 0.0",
+		  "for epoch in range(1):  # loop over the dataset multiple times",
+		  "    for i, data in enumerate(train_loader, 0):",
+		  "        # 이후 code 추가"
+		],
+		"description": "DataLoader"
+	  },
+	"Train": {
+		"prefix": "torch, Train",
+		"body": [
+			"# train code",
+			"running_loss = 0.0",
+			"for epoch in range(epochs):  # loop over the dataset multiple times",
+			"    for i, data in enumerate(train_loader, 0):",
+			"        # get the inputs; data is a list of [inputs, labels]",
+			"        inputs, labels = data",
+			"",
+			"        inputs = inputs.float().to(device)",
+			"        labels = labels.float().to(device) # label의 값을 -1이 없게 해주는 것이 좋음",
+			"",
+			"        outputs = model(inputs)",
+			"",
+			"        loss = criterion(outputs, labels)",
+			"",
+			"        loss.backward()",
+			"        optimizer.step()",
+			"",
+			"        optimizer.zero_grad()",
+			"",
+			"        # print statistics",
+			"        running_loss += loss.item()",
+			"        if i % 2000 == 0:    # 처음에 if내부 코드가 정상인지 체크",
+			"            print('[%d, %5d] loss: %.3f' %",
+			"                  (epoch, i, running_loss / 2000))",
+			"            running_loss = 0.0",
+			"",
+			"            out = torchvision.utils.make_grid(torch.cat((inputs, inputs), 0), nrow=inputs.shape[0])",
+			"            out = transforms.ToPILImage()(out.cpu().squeeze().clamp(0, 1))",
+			"            os.makedirs(\"result\", exist_ok=True)",
+			"print('Finished Training')"
+		],
+		"description": "Train"
+	},
+
+	"Transfer": {
+		"prefix": "torch, transfer, model",
+		"body": [
+		  "import torchvision.models as models",
+		  "",
+		  "model = models.\"model_name\"(pretrained=True)",
+		  "model.to(device)",
+		  "model.eval()"
+		],
+		"description": "Transfer"
+	  },
+	
+	"StyleGAN2_ADA": {
+		"prefix": "torch, model, image generate",
+		"body": [
+			"import legacy",
+			"import dnnlib",
+			"",
+			"with dnnlib.util.open_url('idol_nohand_400.pkl') as f:",
+			"    G = legacy.load_network_pkl(f)['G_ema'].to(device) # type: ignore",
+			"",
+			"face_pool = torch.nn.AdaptiveAvgPool2d((224, 224)).eval()",
+			"",
+			"# w를 만들고 싶다면 mapping 추가해야 된다.",
+			"z = torch.from_numpy(np.random.RandomState(seed).randn(1, 512)).to(device) # seed -> numpy(1,512) -> G",
+			"img = G(z, torch.zeros_like(z).to(device), truncation_psi=0.7, noise_mode='const') # img : image value -1 ~ 1",
+			"img = face_pool((img+1)/2) # (img+1)/2 : image value 0 ~ 1"
+		],
+		"description": "StyleGAN2_ADA"
+	},
+	
+	"Image save": {
+		"prefix": "save, tensor2numpy",
+		"body": [
+		  "import PIL",
+		  "import PIL.Image",
+		  "",
+		  "# tensor2image(with PIL)",
+		  "img_save = (img.permute(0, 2, 3, 1) * 255).clamp(0, 255).to(torch.uint8)",
+		  "PIL.Image.fromarray(img_save[0].cpu().numpy(), 'RGB').save(f'generate/{str(seed).zfill(5)}.png')"
+		],
+		"description": "Image save"
+	  },
+	"Load model": {
+		"prefix": "torch, load model",
+		"body": [
+		  "# Load .pt file",
+		  "# need model structure",
+		  "model.load_state_dict(torch.load('.pi file PATH'))",
+		  "model.to(device)",
+		  "model.eval()",
+		  "",
+		  "# Load .pkl file",
+		  "# don't need model structure",
+		  "with dnnlib.util.open_url('.pkl file PATH') as f:",
+		  "    G = legacy.load_network_pkl(f)['NAME'].to(device) # type: ignore"
+		],
+		"description": "Load model"
+	  },
+
 }

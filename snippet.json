@@ -184,5 +184,31 @@
 		],
 		"description": "Load model"
 	  },
-
+	"torch&Image": {
+		  "prefix": "torch, image, numpy, PIL",
+		  "body": [
+		    "def PIL2tensor(image):",
+		    "  from PIL import Image",
+		    "  import torchvision.transforms as transforms",
+		    "",
+		    "  img = Image.open('{image_PATH}') # [w,h,c]",
+		    "  tf = transforms.ToTensor()",
+		    "  img_t = tf(img) # size [c,h,w]",
+		    "",
+		    "def tensor2PIL(tensor_image):  size[3,h,w]",
+		    "  # torch 에서는 numpy에서 제공하는 거의 대부분의 함수를 제공한다.",
+		    "  # numpy는 plt를 통하여 이미지를 연다.",
+		    "  from PIL import Image",
+		    "  import matplotlib.pyplot as plt",
+		    "  import torchvision.transforms as transforms",
+		    "  ",
+		    "  # [3,h,w] -> [h,w,3]",
+		    "  tensor_image = tensor_image.permute(1,2,0)",
+		    "  plt.imshow(tensor_image)",
+		    "  plt.show()"
+		  ],
+		  "description": "torch&Image"
+	},
+	
+	
 }

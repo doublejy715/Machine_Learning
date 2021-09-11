@@ -2,6 +2,7 @@
 ## Machine Learning Study
 ### Components
 #### Learning
+[Link](https://github.com/doublejy715/Machine_Learning/issues/8)
 - Supervised learning
   - classifcation
   - regression

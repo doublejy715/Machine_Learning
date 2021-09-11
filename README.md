@@ -24,7 +24,7 @@
 ### Criterion
 [Link](https://github.com/doublejy715/Machine_Learning/issues/6)
 
-### Opimizer
+### Optimizer
 [Link](https://github.com/doublejy715/Machine_Learning/issues/7)
 
 ## Error & Solve

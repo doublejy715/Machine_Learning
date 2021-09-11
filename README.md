@@ -12,6 +12,7 @@
 
 #### Optimizer
 [Link](https://github.com/doublejy715/Machine_Learning/issues/7)
+- learning rate
 
 ## Dictionary
 

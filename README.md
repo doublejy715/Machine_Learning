@@ -1,5 +1,17 @@
 # Machine_Learning
 ## Machine_Learning Study
+### Components
+#### Data set
+[Link](https://github.com/doublejy715/Machine_Learning/issues/4)
+
+#### Model
+[Link](https://github.com/doublejy715/Machine_Learning/issues/5)
+
+#### Criterion
+[Link](https://github.com/doublejy715/Machine_Learning/issues/6)
+
+#### Optimizer
+[Link](https://github.com/doublejy715/Machine_Learning/issues/7)
 
 ## Dictionary
 
@@ -13,19 +25,6 @@
 6. .detach
 7. Model file type
 8. Latent space
-
-## Components
-### Data set
-[Link](https://github.com/doublejy715/Machine_Learning/issues/4)
-
-### Model
-[Link](https://github.com/doublejy715/Machine_Learning/issues/5)
-
-### Criterion
-[Link](https://github.com/doublejy715/Machine_Learning/issues/6)
-
-### Optimizer
-[Link](https://github.com/doublejy715/Machine_Learning/issues/7)
 
 ## Error & Solve
 [List](https://github.com/doublejy715/Machine_Learning/issues/2)

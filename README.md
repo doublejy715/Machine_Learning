@@ -11,6 +11,9 @@
   - clustering
 - Reinforcement learning
 
+#### Algorithm
+![1](https://user-images.githubusercontent.com/54474501/132954129-f181f9ba-11dc-415b-ab92-53730a083929.png)
+
 #### Data set
 [Link](https://github.com/doublejy715/Machine_Learning/issues/4)
 

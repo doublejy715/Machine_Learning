@@ -11,9 +11,18 @@
 4. Linearly interpolation
 5. Hyperplan
 6. Correlation
-7. Data set
+7. 
 
-### Error & Solve
+## Components
+### Data set
+
+### Model
+
+### Criterion
+
+### Opimizer
+
+## Error & Solve
 [List](https://github.com/doublejy715/Machine_Learning/issues/2)
 
 ## Snippet.json

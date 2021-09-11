@@ -16,12 +16,16 @@
 
 ## Components
 ### Data set
+[Link](https://github.com/doublejy715/Machine_Learning/issues/4)
 
 ### Model
+[Link](https://github.com/doublejy715/Machine_Learning/issues/5)
 
 ### Criterion
+[Link](https://github.com/doublejy715/Machine_Learning/issues/6)
 
 ### Opimizer
+[Link](https://github.com/doublejy715/Machine_Learning/issues/7)
 
 ## Error & Solve
 [List](https://github.com/doublejy715/Machine_Learning/issues/2)

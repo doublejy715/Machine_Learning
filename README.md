@@ -14,8 +14,11 @@
 #### Algorithm
 ![1](https://user-images.githubusercontent.com/54474501/132954129-f181f9ba-11dc-415b-ab92-53730a083929.png)
 [Supervised Learning - Classification](https://github.com/doublejy715/Machine_Learning/issues/9)
+
 [Supervised Learning - Regression](https://github.com/doublejy715/Machine_Learning/issues/10)
+
 [Unsupervised Learning](https://github.com/doublejy715/Machine_Learning/issues/11)
+
 
 
 #### Data set

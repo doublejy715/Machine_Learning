@@ -1,6 +1,15 @@
-# Machine_Learning
-## Machine_Learning Study
+# Machine Learning
+## Machine Learning Study
 ### Components
+#### Learning
+- Supervised learning
+  - classifcation
+  - regression
+- Unsupervised learning
+  - dimensionality reduction
+  - clustering
+- Reinforcement learning
+
 #### Data set
 [Link](https://github.com/doublejy715/Machine_Learning/issues/4)
 

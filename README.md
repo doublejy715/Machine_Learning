@@ -23,7 +23,7 @@
 
 #### Data set
 [Link](https://github.com/doublejy715/Machine_Learning/issues/4)
-
+- Latent space
 #### Model
 [Link](https://github.com/doublejy715/Machine_Learning/issues/5)
 
@@ -45,7 +45,7 @@
 5. Linearly interpolation
 6. .detach
 7. Model file type
-8. Latent space
+8. 
 
 ## Error & Solve
 [List](https://github.com/doublejy715/Machine_Learning/issues/2)

@@ -209,6 +209,20 @@
 		  ],
 		  "description": "torch&Image"
 	},
-	
+	"image_grid": {
+	  "prefix": "gird,image",
+	  "body": [
+	    "image_list = []",
+	    "for latent in latent_code:",
+	    "    z = torch.from_numpy(latent).unsqueeze(0).to(device)",
+	    "    # image generate",
+	    "    img = model(z, torch.zeros_like(z).to(device), truncation_psi=0.7, noise_mode='const')",
+	    "    image_list.append(img)",
+	    "output = torchvision.utils.make_grid(torch.cat(image_list, dim=0), nrow=steps)",
+	    "output = transforms.ToPILImage()(output.cpu().squeeze().clamp(0, 1))",
+	    "output.save(f\"results/test.png\")"
+	  ],
+	  "description": "image_grid"
+	},
 	
 }

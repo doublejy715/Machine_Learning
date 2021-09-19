@@ -46,7 +46,16 @@
 5. Linearly interpolation
 6. .detach
 7. Model file type
-8. 
+8. Latent Space
+9. StyleGAN - 'G-ema'
+10. model 자세히 살펴보기
+11. torch 병렬 학습 시키기
+12. Image data 다루기
+13. Normalize
+14. non-linear model
+15. image variation
+16. internal representation
+17. Lagrange multipliers
 
 ## Error & Solve
 [List](https://github.com/doublejy715/Machine_Learning/issues/2)

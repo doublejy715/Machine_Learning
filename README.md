@@ -57,6 +57,9 @@
 16. internal representation
 17. Lagrange multipliers
 
+## StyleGAN
+- 다양한 기법
+
 ## Error & Solve
 [List](https://github.com/doublejy715/Machine_Learning/issues/2)
 

@@ -57,6 +57,25 @@
 16. internal representation
 17. Lagrange multipliers
 
+## Virtual environment
+### 가상 환경 설치부터 모듈 설치까지 한번에 하는 방법
+#### 명령어
+> conda env create -f environment.yml
+
+#### environment.yml
+
+> name: {environment name}
+> channels:                             # 이건 아직 잘 모르겠음
+> dependencies                          # conda 패키기 설치 시작
+>   - {conda package name}={version}
+>   - pip:                              # pip 패키지 설치 시작
+>     - {pip package name}={version}
+
+
+#### example
+![1](https://user-images.githubusercontent.com/54474501/134772602-9f2fc348-9a26-48ce-9abc-3914e544cd56.png)
+
+
 ## StyleGAN
 - 다양한 기법
 

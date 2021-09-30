@@ -26,6 +26,7 @@
 - Latent space
 #### Model
 #### GAN
+##### CGAN
 [Link](https://github.com/doublejy715/Machine_Learning/issues/5)
 
 #### Criterion

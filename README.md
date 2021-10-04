@@ -1,5 +1,8 @@
 # Machine Learning
 ## Machine Learning Study
+### CN231n note
+[Link]()
+
 ### Components
 #### Learning
 [Link](https://github.com/doublejy715/Machine_Learning/issues/8)

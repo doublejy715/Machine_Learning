@@ -1,4 +1,4 @@
-### Learning
+# Learn type
 [Link](https://github.com/doublejy715/Machine_Learning/issues/8)
 - Supervised learning
   - classifcation
@@ -8,7 +8,7 @@
   - clustering
 - Reinforcement learning
 
-### Algorithm
+# Algorithm
 ![1](https://user-images.githubusercontent.com/54474501/132954129-f181f9ba-11dc-415b-ab92-53730a083929.png)
 [Supervised Learning - Classification](https://github.com/doublejy715/Machine_Learning/issues/9)
 
@@ -18,18 +18,18 @@
 
 
 
-### Data set
+# Data set
 [Link](https://github.com/doublejy715/Machine_Learning/issues/4)
 - Latent space
-### Model
-### GAN
-#### CGAN
+# Model
+## GAN
+### CGAN
 [Link](https://github.com/doublejy715/Machine_Learning/issues/5)
 
-### Criterion
+# Criterion
 [Link](https://github.com/doublejy715/Machine_Learning/issues/6)
 
-### Optimizer
+# Optimizer
 [Link](https://github.com/doublejy715/Machine_Learning/issues/7)
 - learning rate
 - Convex function

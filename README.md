@@ -29,6 +29,7 @@
 17. Lagrange multipliers
 
 # Virtual environment
+- 가상 환경을 배포하기 위해서 다양하고 편한 방법을 찾아본다.
 [issue link](https://github.com/doublejy715/Machine_Learning/issues/12)
 
 # StyleGAN

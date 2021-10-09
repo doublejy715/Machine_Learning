@@ -26,6 +26,10 @@
 ### CGAN
 [Link](https://github.com/doublejy715/Machine_Learning/issues/5)
 
+### Conditional GANs
+### BiGAN
+
+
 # Criterion
 [Link](https://github.com/doublejy715/Machine_Learning/issues/6)
 

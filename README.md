@@ -1,10 +1,9 @@
-# Machine Learning
-## Machine Learning Study
-### CN231n note
+# Machine Learning Study
+## CN231n note
 [Link]()
 
-### Components
-#### Learning
+## Components
+### Learning
 [Link](https://github.com/doublejy715/Machine_Learning/issues/8)
 - Supervised learning
   - classifcation
@@ -14,7 +13,7 @@
   - clustering
 - Reinforcement learning
 
-#### Algorithm
+### Algorithm
 ![1](https://user-images.githubusercontent.com/54474501/132954129-f181f9ba-11dc-415b-ab92-53730a083929.png)
 [Supervised Learning - Classification](https://github.com/doublejy715/Machine_Learning/issues/9)
 
@@ -24,25 +23,25 @@
 
 
 
-#### Data set
+### Data set
 [Link](https://github.com/doublejy715/Machine_Learning/issues/4)
 - Latent space
-#### Model
-#### GAN
-##### CGAN
+### Model
+### GAN
+#### CGAN
 [Link](https://github.com/doublejy715/Machine_Learning/issues/5)
 
-#### Criterion
+### Criterion
 [Link](https://github.com/doublejy715/Machine_Learning/issues/6)
 
-#### Optimizer
+### Optimizer
 [Link](https://github.com/doublejy715/Machine_Learning/issues/7)
 - learning rate
 - Convex function
-## Dictionary
+# Dictionary
 
 [Dictionary](https://github.com/doublejy715/Machine_Learning/issues/1)
-### Index
+## Index
 1. Hyperplan
 2. Entangle
 3. Attribute
@@ -61,12 +60,12 @@
 16. internal representation
 17. Lagrange multipliers
 
-## Virtual environment
-### 가상 환경 설치부터 모듈 설치까지 한번에 하는 방법
-#### 명령어
+# Virtual environment
+## 가상 환경 설치부터 모듈 설치까지 한번에 하는 방법
+### 명령어
 > conda env create -f environment.yml
 
-#### environment.yml
+### environment.yml
 
 > name: {environment name}
 > channels:                             # 이건 아직 잘 모르겠음
@@ -76,15 +75,15 @@
 >     - {pip package name}={version}
 
 
-#### example
+### example
 ![1](https://user-images.githubusercontent.com/54474501/134772602-9f2fc348-9a26-48ce-9abc-3914e544cd56.png)
 
 
-## StyleGAN
+# StyleGAN
 - 다양한 기법
 
-## Error & Solve
+# Error & Solve
 [List](https://github.com/doublejy715/Machine_Learning/issues/2)
 
-## Snippet.json
+# Snippet.json
 [Link](https://github.com/doublejy715/Machine_Learning/blob/main/snippet.json)

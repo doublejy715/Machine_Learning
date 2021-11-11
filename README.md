@@ -27,6 +27,7 @@
 16. internal representation
 17. Lagrange multipliers
 18. Batch / Mini-batch / mini-batch SGD
+19. global average pooling
 
 # Virtual environment
 - 가상 환경을 배포하기 위해서 다양하고 편한 방법을 찾아본다.

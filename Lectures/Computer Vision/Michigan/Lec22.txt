@@ -1,0 +1,5066 @@
+﻿00:01
+all right welcome to lecture 22. we made
+00:03
+it to the end of the semester
+00:04
+um or at least i did so you guys i guess
+00:07
+still have finals and a couple more
+00:08
+assignments to turn in
+00:09
+um but today is uh lecture 22. um so
+00:11
+we're gonna today talk about
+00:12
+uh kind of an overview a recap of all
+00:15
+the major points that we covered this
+00:16
+semester
+00:17
+that'll be about half of the lecture and
+00:19
+then the second half of the lecture i
+00:20
+wanted to talk about some of my thoughts
+00:22
+about
+00:22
+what are some of the big problems some
+00:24
+of the big open challenges that are
+00:25
+facing computer vision
+00:27
+and deep learning as we move forward
+00:29
+beyond just the content of this
+00:30
+semester's class
+00:31
+this semester we've really talked about
+00:34
+deep learning for computer vision and
+00:35
+we've spent a lot of time talking about
+00:37
+deep learning
+00:38
+and computer vision right so to kind of
+00:40
+recap on all of that
+00:41
+um computer vision kind of zooming out
+00:43
+from all of this details that we've been
+00:45
+dealing with
+00:46
+is that computer vision is really about
+00:48
+building these artificial systems that
+00:49
+can
+00:49
+process perceive and reason about
+00:51
+various types of visual data
+00:53
+and of course the big goal in the big
+00:56
+challenge in
+00:56
+all in getting this to work is this
+00:58
+semantic gap that you know computers
+01:01
+we can visually we can easily look at
+01:02
+these images and understand that it's a
+01:04
+cat
+01:04
+but images or computers are just seeing
+01:06
+these giant grids of numbers and somehow
+01:07
+we need to deal with that
+01:09
+um and we need and this visual data is
+01:11
+super complex
+01:12
+right as as um as we maybe change our
+01:14
+viewpoint or we change the illumination
+01:16
+um or our cats are deforming then or
+01:19
+they're hiding under the couch
+01:21
+then the pixel grids of these images can
+01:22
+totally change but our semantic
+01:24
+understanding needs to remain the same
+01:26
+and this is kind of the big challenge
+01:28
+that we were dealing with in all of our
+01:29
+computer vision applications
+01:31
+so then the solution that we really hit
+01:33
+upon this semester
+01:34
+was this idea of the data-driven
+01:36
+approach and using machine learning to
+01:38
+solve all these problems that for all of
+01:40
+the tasks that we considered all the
+01:41
+types of complex visual data we wanted
+01:43
+to understand
+01:44
+we wanted to collect a data set of
+01:46
+images and labels and then use
+01:47
+some machine learning algorithm to
+01:49
+compress or distill the knowledge or the
+01:51
+information in that label data set
+01:53
+into some kind of classifier object that
+01:56
+we typically resolve
+01:57
+that we use neural networks for most of
+01:59
+those and then we could use that
+02:00
+classifier then evaluate and make
+02:02
+predictions on novel images
+02:04
+and this machine learning paradigm to
+02:05
+computer vision has just become kind of
+02:07
+the major dominant approach
+02:08
+just it's just the way that people do
+02:10
+compute mo the way that people solve
+02:12
+most types of computer vision problems
+02:13
+nowadays
+02:15
+and of course the model that we are all
+02:17
+very familiar with by now
+02:19
+is this idea of using deep convolutional
+02:21
+neural networks to solve a lot of
+02:22
+different types of problems in computer
+02:24
+vision
+02:25
+but of course models are not alone
+02:27
+models alone are not enough to make us
+02:29
+solve this computer vision problem we
+02:31
+need both models as well as large data
+02:33
+sets on which to train are those models
+02:35
+so of course the imagenet dataset which
+02:37
+came out maybe back
+02:38
+in uh 2012 oh sorry all the way back in
+02:41
+2009
+02:42
+was um this super influential
+02:44
+large-scale data set
+02:46
+that gave this that gave us this
+02:47
+large-scale data set on which to train
+02:49
+our
+02:50
+our machine learning models and then
+02:52
+sort of in 2012
+02:54
+uh thing all the magic happened and we
+02:56
+combined these large data sets
+02:58
+with these large powerful convolutional
+03:00
+neural network models
+03:01
+which were combined with the increasing
+03:03
+speed of gpu and other types of
+03:05
+computing devices
+03:06
+and that just led to lots and lots of
+03:07
+progress in computer vision
+03:09
+so then as measured by progress on the
+03:11
+imagenet data set you we know that you
+03:13
+know we've now sort of
+03:14
+this this data set used to be considered
+03:16
+super hard back in maybe 2010
+03:18
+the air rates were really high and now
+03:20
+in 20 2017
+03:21
+uh actually was the the end of the
+03:23
+challenge because error rates on this
+03:24
+data set were just
+03:25
+so good and this led to a massive
+03:28
+explosion in just um
+03:29
+all kinds of computer vision research
+03:31
+across
+03:32
+across the world really so um one of the
+03:35
+main
+03:35
+venues of publication where computer
+03:37
+vision researchers share their results
+03:40
+is um cvpr it's the conference on
+03:42
+international conference on computer
+03:44
+vision and pattern recognition
+03:46
+so this is a photograph i took at cvpr
+03:49
+over the summer
+03:50
+at cdpr2019 where they were giving some
+03:53
+statistics in the opening ceremony of
+03:55
+the of the conference
+03:57
+about just how cdpr as a conference has
+03:59
+grown
+04:00
+over the past 20 years or so and you can
+04:02
+see that there's been this just
+04:04
+exponential growth in both the number of
+04:05
+submitted papers in blue
+04:07
+and the number of accepted papers in
+04:09
+green at this top computer vision
+04:11
+conference
+04:12
+but um it turns out that this trend has
+04:15
+actually continued even this semester
+04:17
+like history has been being made in
+04:19
+computer vision even while you guys have
+04:21
+been taking this class
+04:22
+so actually uh the seat i took this
+04:24
+picture at cvpr2019
+04:27
+but the cbpr 2020 submission deadline
+04:30
+actually was
+04:30
+about a month ago and november 15th and
+04:33
+i saw on twitter some stats about the
+04:35
+number of submitted papers to cbpr2020
+04:38
+and this is just convinced this growth
+04:40
+in computer vision as a research field
+04:42
+has just been continuing its exponential
+04:45
+trend even this semester while you guys
+04:47
+were learning about computer vision
+04:49
+so now um cbpr2020 had about more than
+04:52
+650 submitted papers
+04:54
+um and we'll see exactly how many of
+04:56
+those get accepted
+04:57
+but i think it's safe to say that this
+04:59
+trend of exponential growth in computer
+05:01
+and computer vision as a research field
+05:04
+is just continuing continuing as we
+05:05
+speak
+05:07
+but despite all the success we know that
+05:10
+all of this success this deep learning
+05:12
+stuff was really not invented overnight
+05:14
+um all of our success has really been
+05:15
+drawing on a really long history
+05:17
+of a lot of really smart researchers
+05:19
+who've come up with a lot of problems
+05:20
+throughout the past several decades
+05:23
+and we can see echoes of um of their
+05:25
+work even in our modern deep learning
+05:27
+systems now
+05:28
+so if we for example if we look all the
+05:29
+way back in 1959 we saw this perceptron
+05:32
+model by frank rosenblatt
+05:34
+that basically implemented a linear
+05:35
+classifier except that they didn't have
+05:37
+sort of general purpose programmable
+05:39
+programming languages they didn't have
+05:40
+python they didn't have pi torch they
+05:42
+didn't have google colab
+05:43
+they had to make physical hardware to do
+05:44
+these things um but
+05:46
+but in the mathematical formulation of
+05:48
+what they were building we would
+05:49
+recognize now as a linear classifier
+05:52
+then in computer vision we saw that
+05:53
+huble and weasel back in 1959
+05:55
+were trying to probe the visual
+05:57
+representations that were that cat
+05:59
+neurons used to recognize the visual
+06:01
+world
+06:01
+and that gave us this notion that maybe
+06:03
+edges and oriented edges
+06:05
+and motion were really important cues in
+06:07
+the mammalian visual system
+06:09
+and we've seen over and over again that
+06:10
+these cues of motion and edges and
+06:13
+and colors um just show up over and over
+06:15
+again whenever we try to visualize
+06:17
+the representations that our deep neural
+06:18
+networks are learning
+06:20
+then moving a little bit forward into
+06:22
+1980 we had this neocognatron model from
+06:25
+from fukushima and this really looks
+06:28
+and this really looks a lot like a
+06:29
+modern convolutional neural network way
+06:31
+all the way back in 1980
+06:33
+where fukushima was directly inspired by
+06:36
+huble and weasel's
+06:37
+idea of this hierarchy of simple and
+06:39
+complex cells in the mammalian visual
+06:40
+system
+06:41
+and tried to write out this
+06:42
+computational model to simulate or or
+06:45
+process
+06:46
+electronically a visual data and that
+06:48
+gave us an architecture that looks very
+06:50
+much like our modern convolutional
+06:52
+networks
+06:52
+all the way back in 1980 and really by
+06:55
+1998 when young lacoon published his
+06:58
+his now famous work on convolutional
+07:00
+networks this is
+07:01
+basically convolutional networks nearly
+07:03
+in their complete modern form
+07:05
+back in 1998 and really as then
+07:08
+moving ahead another 14 years we got to
+07:10
+alexnet which was this big breakthrough
+07:13
+performance on the imagenet dataset
+07:15
+and fundamentally it was not that
+07:16
+different from the work that lacoon had
+07:18
+done in 1998
+07:19
+the difference was that we had faster
+07:20
+computers we had more data
+07:22
+and we had some tiny tricks like we had
+07:24
+relu's versus sigmoids was a big one for
+07:26
+alexnet
+07:27
+where we had momentum rather than just
+07:29
+vanilla sgd
+07:30
+so really alexnet was a very minor leap
+07:34
+intellectually in some ways
+07:36
+from all of this work that had come
+07:37
+before but it just happened at
+07:39
+an amazing moment in history and
+07:40
+everything came together and led to this
+07:42
+deep learning revolution that we've seen
+07:44
+in the past 10 years and of course in
+07:46
+recognition of all of this influence
+07:48
+we know that the the turing award last
+07:50
+year in 2018
+07:51
+which is the highest award in computer
+07:53
+science considered somehow the nobel
+07:55
+prize in computer science
+07:57
+was awarded to joshua benjio jeff hinton
+08:00
+and john le
+08:01
+for their work in popularizing deep
+08:03
+learning and pioneering a lot of the
+08:05
+deep learning methods
+08:06
+that all of us have been using so that
+08:08
+that that of course
+08:09
+um then of course the final point in the
+08:11
+history of deep learning
+08:13
+is of course fall 2019 this class so
+08:16
+then uh what did we cover in this class
+08:18
+more concretely
+08:18
+right so we started off pretty simple we
+08:21
+talked about um
+08:22
+we saw these we saw some simple ways
+08:24
+that we could use data-driven approaches
+08:26
+to solve machine learning problems so we
+08:28
+saw we got familiar with these k-nearest
+08:30
+neighbor classifiers and that led us to
+08:32
+beautiful discussions on
+08:33
+train test splits and on hyper-parameter
+08:35
+and on hyper parameters
+08:36
+and other kind of critical components of
+08:38
+the machine learning pipeline
+08:40
+we talked about linear classifiers which
+08:42
+were our first parametric classifier
+08:44
+where we wanted to build write down some
+08:46
+some functional
+08:47
+form that would input the data x and
+08:49
+then output some scores y
+08:51
+telling us what we want to predict for
+08:52
+that data and we trained these things by
+08:55
+learning some weight matrix w
+08:57
+and fitting the classifier to our data
+08:58
+set and that paradigm of writing down a
+09:01
+parametric form of your model and then
+09:02
+using data to fit the parameters of that
+09:05
+model to your data set
+09:06
+is really the on is really the same
+09:08
+mechanical process that we use
+09:10
+for just about all of the all of the
+09:11
+machine learning methods that we saw
+09:13
+this semester
+09:15
+we talked about optimizing those things
+09:16
+right we need to once we've got a w we
+09:18
+need to find the w
+09:19
+in some way so we we talked about this
+09:21
+notion of gradient descent
+09:23
+or stochastic gradient descent as trying
+09:25
+to compute gradients and follow this
+09:26
+lost landscape downhill
+09:28
+where the loss quantifies how well your
+09:30
+model is doing on your data
+09:31
+and by by running gradient descent
+09:33
+you're kind of finding trying to find
+09:34
+model weights that work well for the
+09:36
+data set at hand
+09:38
+we saw that gradient descent actually
+09:39
+had some problems right it didn't
+09:41
+it sort of runs into problems with local
+09:43
+minima with saddle points
+09:45
+with poorly conditioned optimization
+09:46
+problems and with stochasticity in the
+09:48
+learning process
+09:50
+and to overcome these problems we saw
+09:52
+that we could add some of these tweaks
+09:53
+like momentum
+09:54
+like fancier optimizers like nestor
+09:57
+momentum at a grad
+09:58
+rms prop or atom and that some of these
+10:01
+simple tweaks to optimizers really
+10:02
+helped us overcome some of these
+10:04
+problems with the
+10:04
+vanilla stochastic gradient descent
+10:06
+formulation and like i said one
+10:08
+actually moving from sg to sgd momentum
+10:11
+was in fact one of the small tricks that
+10:13
+um was actually different between young
+10:14
+lacoons comnets in 1998
+10:16
+and alex not in in 2012. um so these
+10:19
+were actually
+10:19
+these uh these tweaks were actually
+10:21
+pretty important in the modern history
+10:22
+of getting deep learning to work
+10:24
+on large data sets so then once we had
+10:27
+in hand this idea of optimization
+10:29
+we moved on to neural network models and
+10:31
+we saw our first neural networks which
+10:33
+were
+10:33
+these these fully connected neural
+10:34
+networks which basically was the same
+10:36
+idea as linear classifiers right we
+10:38
+write down some functional form that
+10:39
+inputs the
+10:40
+data x outputs the scores y and we learn
+10:43
+those
+10:43
+weights on our data set using gradient
+10:45
+descent
+10:47
+and we saw that one interpretation of
+10:49
+what these fully connected models were
+10:51
+doing
+10:51
+was that they were learning some kind of
+10:53
+bank of reusable templates in their
+10:55
+first layer
+10:56
+and then reshuffling those templates in
+10:57
+the second layer to make to recognize
+10:59
+different categories that they might
+11:00
+want to represent or learn
+11:02
+and this gave us a hint of that neural
+11:05
+networks or fully connected neural
+11:06
+networks were doing something very
+11:07
+powerful compared to linear classifiers
+11:09
+since they could do this id this
+11:11
+recombine these templates to represent
+11:13
+different categories and we made this
+11:15
+intuition more formal
+11:17
+with this notion of universal
+11:18
+approximation
+11:20
+where we recall that actually it turns
+11:21
+out that a fully connected neural
+11:23
+network with a single hidden layer
+11:25
+using regular nonlinearities can
+11:27
+approximate any continuous function
+11:30
+subject to many mathematical constraints
+11:32
+and this gave us some some really
+11:34
+powerful theoretical intuition
+11:35
+that neural networks are this very
+11:37
+powerful class of function approximation
+11:39
+algorithms
+11:40
+that we could use them for many many
+11:41
+different problems in computer vision
+11:43
+and beyond
+11:44
+but of course fully connected networks
+11:46
+um are great they're theoretically
+11:48
+powerful
+11:49
+but we wanted them to return to the
+11:50
+problem of computer vision
+11:52
+and think about how we can build neural
+11:54
+network models that are specialized to
+11:56
+the spatial structure or
+11:58
+the problems that we that arise in
+11:59
+computer vision
+12:01
+and that led us to our discussion of
+12:02
+convolutional neural networks
+12:04
+where we augmented these fully connected
+12:06
+layers these activation functions
+12:08
+with additional types of differentiable
+12:10
+operators this convolution operator
+12:12
+that maintains spatial structure of our
+12:14
+input images and shares weights across
+12:17
+across different spatial positions in
+12:18
+the image pooling layers which somehow
+12:20
+reduce the the spatial size of our
+12:22
+representation
+12:24
+and introduce additional invariances
+12:26
+into the model
+12:27
+and these normalization layers like
+12:28
+batch normalization uh
+12:31
+instance normalization group
+12:32
+normalization that allow our deep
+12:34
+our deep neural network models to be uh
+12:36
+trained more and more efficiently and
+12:38
+optimize more efficiently
+12:40
+but of course once we've got this set of
+12:42
+components for neural network models
+12:44
+it's really sort of tricky to understand
+12:46
+what's the right way to put them
+12:48
+together
+12:48
+to solve different types of problems in
+12:50
+computer vision
+12:51
+so we talked about classical
+12:53
+architectures in computer vision
+12:54
+which are different paradigms for how
+12:57
+are good ways to stack together
+12:59
+these basic building blocks to to arrive
+13:01
+at really high performance uh neural
+13:03
+network models
+13:04
+for solving computer vision tasks so we
+13:07
+talked about this alex net architecture
+13:09
+from 2012
+13:10
+bigger and bigger models like vgg like
+13:12
+google map and like resnets which
+13:14
+finally allowed us to train
+13:15
+models of hundreds of layers in depth
+13:18
+and then we saw that a big trend in um
+13:20
+designing neural network models in the
+13:21
+past uh
+13:22
+year or two has really been a focus on
+13:24
+efficiency that now because we're we
+13:26
+know how to build really big
+13:28
+high-capacity neural network models like
+13:30
+residual networks
+13:31
+and train them efficiently on large data
+13:33
+sets then a big goal becomes
+13:35
+actually not just what is the best
+13:37
+performance we can get on our data set
+13:39
+but actually what's the most efficient
+13:40
+model that we can build to get high
+13:42
+performance on our data sets
+13:44
+so then we saw that in in the last
+13:45
+couple of years people have been much
+13:47
+more sensitive to
+13:48
+building not just models that work well
+13:50
+but models that are efficient
+13:52
+and actually could be deployed on mobile
+13:54
+devices or or to run inference
+13:56
+across server farms for big tech
+13:59
+companies
+14:00
+so then we saw that um architectures
+14:02
+like res next or mobile nets
+14:04
+were really focusing on improving the
+14:05
+efficiency of convolutional
+14:07
+neural network architectures and a lot
+14:09
+of these um played tricks by uh
+14:11
+playing around with the convolution
+14:13
+operator so in the resnext
+14:15
+architecture for example it made use of
+14:17
+these grouped convolutions
+14:18
+which allowed us to have these sort of
+14:20
+multiple parallel branches of
+14:22
+convolution inside the model
+14:23
+and that improves the overall
+14:25
+computational efficiency of the models
+14:28
+right but now once we've got these
+14:29
+really high performance
+14:31
+really deep really complicated neural
+14:33
+network models we need some way to think
+14:35
+about them more formally
+14:36
+as mathematical objects and we saw that
+14:39
+one way to do that
+14:40
+was this notion of a computational graph
+14:42
+right that
+14:43
+rather than write that we can write down
+14:45
+our neural network models
+14:46
+and rather than writing to bound as a
+14:48
+giant equation with a lot of
+14:50
+with a lot of learnable weight values
+14:51
+inside that equation we could represent
+14:53
+our neural network models as these graph
+14:55
+data structures
+14:56
+where each node was some primitive
+14:58
+operator in the model
+15:00
+and the edges are passing data between
+15:02
+these different differential operators
+15:05
+and then these computational graph this
+15:07
+this idea of a computational graph
+15:09
+then lets us really easily represent
+15:11
+even these very complicated neural
+15:12
+network models
+15:13
+we saw this backpropagation algorithm
+15:15
+that then let us
+15:16
+efficiently compute gradients in these
+15:19
+computational graphs of arbitrary
+15:21
+complexity
+15:22
+and the the beauty of this
+15:23
+backpropagation algorithm of course
+15:25
+was that it takes this global problem of
+15:28
+computing gradients in this arbitrarily
+15:30
+complex graph
+15:31
+and converts it into a local problem
+15:33
+where each individual node in the graph
+15:35
+only needs to know how to compute its
+15:36
+local derivatives given the upstream
+15:38
+compute its local gradients um so then
+15:40
+it receives these upstream grip
+15:42
+upstream derivatives and passes
+15:44
+downstream derivatives down to the left
+15:45
+and it doesn't need to care about
+15:47
+exactly the global topology of the graph
+15:48
+into which it's embedded
+15:51
+then based based on this back
+15:53
+propagation algorithm
+15:55
+then we moved on and talked about
+15:56
+different sorts of practical
+15:58
+hardware and software platforms on which
+16:00
+people are running
+16:01
+these deep neural network stacks these
+16:03
+deep neural network models
+16:05
+so we saw that we have we've seen kind
+16:06
+of a shift in hardware
+16:08
+from cpus maybe back in 1998 when john
+16:11
+lacoon was training his models
+16:13
+to gpus graphics processing units which
+16:16
+were one of the
+16:16
+one of the key components in the success
+16:18
+of the alexnet architecture in 2012
+16:21
+and then more recently we've seen people
+16:23
+start to design
+16:24
+specialized hardware for neural network
+16:26
+uh computing
+16:27
+like the tensor processing units or tpus
+16:29
+from google
+16:31
+we've also seen a dramatic we've also
+16:33
+seen some really there've been some
+16:34
+really powerful software systems built
+16:36
+to help us build these really big neural
+16:38
+network systems
+16:40
+so of course i think you all are now
+16:42
+experts in pi torch because you've been
+16:43
+using it for all your homework
+16:44
+assignments
+16:45
+um there's this other deep learning
+16:46
+framework called tensorflow you may have
+16:48
+heard of
+16:48
+from people at google which i think
+16:50
+you'll see out there in the world as
+16:52
+well
+16:52
+and we saw that one of the big one of
+16:54
+the top level differences between these
+16:56
+two different frameworks
+16:57
+was this these software ideas of static
+16:59
+computational graphs
+17:00
+versus versus dynamic computational
+17:02
+graphs and these are kind of different
+17:04
+software paradigms for organizing the
+17:06
+computational graph obstruction
+17:07
+abstraction inside your software systems
+17:10
+so i i always thought that this this
+17:12
+topic was really fascinating right
+17:14
+because
+17:14
+we cut we sort of set out in this class
+17:16
+to solve computer vision which is this
+17:18
+particular application domain
+17:20
+but then in trying to solve computer
+17:21
+vision we ran into this new technique
+17:23
+called
+17:24
+convolutional networks but then in order
+17:26
+to make convolutional networks really
+17:27
+good
+17:28
+then we had to branch out into other
+17:29
+areas of computer science
+17:31
+and then we had to build new sort of new
+17:32
+hardware platforms on which to run those
+17:34
+algorithms
+17:35
+as well as think about new ways to
+17:36
+organize complicated software systems
+17:39
+in order to let us build those powerful
+17:41
+algorithms so i always really thought
+17:42
+that this topic was was quite
+17:44
+interesting since it
+17:45
+really branches out and forces us to
+17:47
+think about
+17:48
+about how computer vision and machine
+17:50
+learning interacts with a whole large
+17:52
+different sub-areas within computer
+17:54
+science
+17:56
+but then we have to sort of get back to
+17:57
+this machine learning problem and we
+17:59
+talked about a lot of nitty gritty
+18:00
+details about how you can actually get
+18:01
+your continents to work
+18:03
+so we you you saw a bunch of different
+18:04
+activation functions we talked about
+18:06
+things like pre-processing which are
+18:08
+important for getting your networks to
+18:09
+learn efficiently
+18:11
+weight initialization it turns out that
+18:12
+the way you initialize the weights in
+18:14
+your models is really important
+18:16
+and now you guys know the right way to
+18:17
+do it um there's things like data
+18:20
+augmentation which
+18:21
+sort of let you bake in additional
+18:23
+invariances into your models
+18:24
+by artificially expanding your data set
+18:27
+during training time
+18:28
+and this can be really important for for
+18:30
+building high performance models
+18:31
+we saw a bunch of different
+18:32
+regularization techniques right so
+18:34
+regularization was this idea of
+18:37
+um with is that we don't want our models
+18:39
+just to work on the training set
+18:41
+we want to build neural network models
+18:42
+that can extend and apply
+18:44
+to general model to general images to
+18:46
+new images that they had not seen during
+18:48
+training
+18:49
+and then regularization techniques are
+18:51
+some way to constrain the capacity of
+18:53
+our model
+18:54
+and maybe make it work a little bit
+18:56
+worse on the training set such that it
+18:58
+can work better on the test set on these
+18:59
+images that we really care about at the
+19:01
+end
+19:02
+and here we saw that a really common
+19:03
+paradigm for regularizing deep neural
+19:05
+networks
+19:06
+was to add some kind of stochasticity or
+19:07
+randomness to the processing of the
+19:09
+model
+19:10
+then we saw things that that and then at
+19:12
+test time you kind of average out or
+19:14
+uh average out that that randomness so
+19:17
+then this
+19:17
+we saw things like a fractional pooling
+19:19
+like dropout drop connect
+19:21
+batch normalization fits into the same
+19:22
+paradigm and just a whole bunch of
+19:24
+different techniques for regularizing
+19:26
+our neural network models
+19:28
+it turns out that learning rates are
+19:29
+important so we saw different schedules
+19:31
+for to changing
+19:32
+your learning rates over the course of
+19:33
+optimization we talked about different
+19:36
+mechanisms for
+19:37
+choosing hyper parameters um we and
+19:39
+hopefully
+19:40
+now you guys have trained a bunch of
+19:41
+neural network models and you've gained
+19:42
+some intuition and you know that you can
+19:44
+gain some intuition about
+19:46
+whether your models are working well or
+19:47
+not working well just by looking at the
+19:49
+learning curves of the loss and
+19:51
+the training and the validation
+19:52
+accuracies and that just but and often
+19:54
+by just looking at these curves
+19:56
+can give you some insight into maybe
+19:58
+what what things you might imagine
+19:59
+changing and to make your model work
+20:01
+better
+20:02
+hyperparameter search you guys felt the
+20:04
+pain on your homeworks it's it's tough
+20:05
+to choose good hyper parameters
+20:07
+um but hopefully that's that was
+20:09
+enlightening for you to go through that
+20:10
+process for yourself
+20:12
+so then after going through all these
+20:13
+tips and tricks we were kind of um
+20:15
+we were pretty good at training neural
+20:17
+network models and we knew at this point
+20:19
+pretty much
+20:20
+how to train state-of-the-art models for
+20:22
+image classification
+20:23
+um and there armed with that knowledge
+20:25
+we started to branch out and consider
+20:27
+other applications of these deep
+20:29
+learning models to other types of
+20:30
+problems
+20:32
+one problem is just how can we
+20:34
+understand what it is that our neural
+20:36
+network systems have learned
+20:37
+so we talked about techniques for
+20:39
+visualizing and understanding what a
+20:41
+trained neural network has learned on
+20:42
+our
+20:43
+different computer vision data sets and
+20:45
+then we saw that some of those same
+20:46
+techniques could be used for fun
+20:47
+applications too like making artwork
+20:49
+um we saw these deep dream out these
+20:51
+deep dream uh these deep dream and
+20:53
+neural style transfer algorithms
+20:55
+that let us use sort of feature
+20:57
+visualization techniques
+20:58
+to actually generate beautiful pieces of
+21:00
+artwork
+21:02
+then from there we started to get even
+21:03
+more wild and consider applications even
+21:06
+on
+21:06
+non-visual data or on other sorts of
+21:08
+data
+21:09
+so we talked about recurrent neural
+21:11
+networks and we saw that recurrent
+21:13
+neural networks were this
+21:14
+general mechanism that let us learn to
+21:16
+process
+21:17
+sequential data with deep learning
+21:19
+architectures and that
+21:20
+opened up a whole new wide realm of
+21:22
+possible possible applications
+21:24
+in for computer vision and beyond we saw
+21:27
+some concrete architectures for
+21:29
+different recurrent neural network units
+21:31
+like the vanilla rnn that you implement
+21:32
+in your homework and i think that the
+21:34
+lstm which uh
+21:35
+it is much more robust as one of these
+21:38
+applications that i always thought was
+21:40
+really fun
+21:40
+in computer vision was this application
+21:42
+of image captioning right where we saw
+21:44
+that you could
+21:45
+teach neural network systems to write
+21:47
+natural language descriptions of images
+21:49
+by combining a big convolutional neural
+21:51
+network that processes the image
+21:53
+features
+21:53
+with a recurrent neural network that
+21:55
+spits out the language and this is
+21:56
+something that you implemented on your
+21:58
+homework
+21:58
+um but i this this was a sort of a nice
+22:01
+application of
+22:02
+combining sort of computer vision
+22:03
+processing with convolutional networks
+22:06
+with natural language processing with
+22:07
+recurrent neural networks
+22:10
+and we saw that this basic mechanism
+22:12
+this basic recipe of
+22:13
+image captioning could be improved with
+22:15
+this idea of attention
+22:17
+right that at each step of processing of
+22:20
+of our of our system we could actually
+22:22
+have it
+22:23
+look at different parts of the image
+22:25
+using this kind of soft differentiable
+22:26
+attention mechanism
+22:28
+and that gave some additional
+22:29
+interpretability to our
+22:31
+image captioning systems but attention
+22:34
+it turned out was
+22:35
+not just a trick to be used in image
+22:37
+captioning attention was actually this
+22:39
+general mechanism
+22:40
+that we could use for processing sets of
+22:42
+data
+22:43
+so then generalizing the notion of
+22:45
+attention led us to this this general
+22:47
+self-attention layer
+22:49
+which inputs a set of vectors computes a
+22:51
+tension across all
+22:52
+vectors in the set and then outputs a
+22:54
+new set of vectors
+22:56
+and uh we we saw this idea of
+22:58
+self-attention
+22:59
+over and over and over for different
+23:01
+applications we saw self-attention we
+23:03
+saw this these attention mechanisms
+23:05
+maybe
+23:06
+for augmenting or current neural
+23:07
+networks for captioning we saw them
+23:09
+uh for uh in video in video
+23:11
+classification networks there was some
+23:12
+notion of attention
+23:14
+um we saw attention also in uh in a
+23:17
+generative models where it turns out
+23:18
+that adding self-attention to
+23:20
+big generative models also can improve
+23:22
+their performance
+23:23
+so this self-attention layer was
+23:24
+something really important and really
+23:25
+general
+23:26
+and i think a really interesting new
+23:29
+basic component of
+23:30
+deep learning architectures that has
+23:32
+really come to the forefront in the last
+23:33
+couple of years
+23:35
+and then to really drive home this idea
+23:37
+of attention as a basic building block
+23:39
+of machine learning architectures
+23:40
+we saw this transformer architecture
+23:42
+which um
+23:43
+it turns out attention is all you need
+23:45
+and you can actually build really high
+23:46
+performance
+23:48
+systems for natural language processing
+23:50
+using only self-attention as our main
+23:52
+processing as our as our main
+23:54
+computational primitive
+23:56
+so then we moved on we moved back to
+23:58
+computer vision and we talked about a
+24:00
+bunch of different additional
+24:01
+um more involved tasks in computer
+24:03
+vision
+24:04
+so we saw we talked about object
+24:06
+detection where we wanted to train
+24:08
+i mean i guess you guys have object
+24:10
+protection homework due today
+24:11
+so you should know all about these
+24:12
+single stage and two-stage methods right
+24:14
+but we wanted to build systems that can
+24:16
+draw boxes around objects and images
+24:18
+and we saw that there were different
+24:20
+ways for hooking up the convolutional
+24:22
+neural networks
+24:22
+to solve those kinds of problems for us
+24:25
+uh semantic segmentation was another way
+24:27
+of adding spatial information
+24:28
+to our our computer vision tasks where
+24:31
+we wanted to or now in spanish
+24:33
+segmentation we wanted to label every
+24:34
+pixel of our input image
+24:36
+as one of our category labels and we saw
+24:38
+that we could do this using some kind of
+24:40
+fully convolutional neural network
+24:42
+that has both learnable down sampling
+24:43
+layers like stranded convolution
+24:45
+and learnable up sampling layers like
+24:47
+transpose convolution or
+24:48
+different types of interpolation we saw
+24:51
+that we could combine together these
+24:52
+ideas of instant segmentation
+24:54
+and a semantic segment of object
+24:56
+detection and semantic segmentation
+24:58
+that gave us this new task of instant
+25:00
+segment segmentation
+25:01
+where our models wanted to both detect
+25:03
+all the objects in the images
+25:05
+as well as tell us which pixels belong
+25:07
+to each of the detected objects
+25:09
+and now the even now this this really
+25:11
+complicates seemingly complicated task
+25:13
+it turned out we could actually do in a
+25:15
+fairly straightforward way
+25:17
+by building on our object detection
+25:19
+systems and attaching this additional
+25:21
+mass prediction head
+25:22
+on top of our on top of some kind of
+25:24
+two-stage object detection system
+25:26
+and then we saw a bunch of other
+25:27
+applications where you could do a lot of
+25:29
+other types of per
+25:30
+frame processing of sorry region based
+25:33
+uh
+25:33
+outputs in computer vision systems by
+25:36
+kind of attaching additional heads
+25:37
+onto the output of an object detection
+25:39
+system as well as another application of
+25:41
+that type of paradigm
+25:43
+we saw this this mesh rcnn system that
+25:46
+could predict
+25:46
+full 3d triangle meshes giving not just
+25:49
+the 2d shapes of objects and images
+25:51
+but the 3d shapes of objects and images
+25:53
+and the way that we do that is sort of
+25:55
+attaching an additional mesh
+25:56
+processing head onto the output of our
+25:59
+object detection systems that we that we
+26:00
+came to know
+26:02
+and then it turned out that 3d computer
+26:03
+vision was a very rich and interesting
+26:05
+domain unto itself
+26:07
+and in order to process 3d data or
+26:10
+generate 3d shapes
+26:11
+we talked about a whole bunch of
+26:12
+different types of 3d representations
+26:14
+that people use
+26:15
+for dealing with different for dealing
+26:17
+with 3d data and that led us to
+26:18
+discussions of different types of neural
+26:20
+network architectures
+26:21
+that could be used for processing each
+26:22
+of these different types of data
+26:25
+then we tried adding not just a spatial
+26:27
+dimension but a temporal dimension to
+26:29
+our
+26:29
+neural network models and we talked
+26:31
+about mechanisms for
+26:32
+generating for classifying or processing
+26:35
+videos
+26:36
+with deep learning models and there we
+26:38
+saw um some ideas like uh
+26:40
+like 3d convolutional networks that are
+26:42
+doing convolution not just open
+26:44
+not just over the two spatial dimensions
+26:46
+but also over the temporal dimension
+26:48
+we straw we saw two stream networks that
+26:51
+um combined one
+26:52
+stream for processing motion data in the
+26:53
+term in form of optical flow
+26:55
+and another stream for processing visual
+26:57
+data in it that was a normal rgb comnet
+26:59
+we saw ideas like self-attention come up
+27:02
+again in video
+27:03
+or recurrent neural networks as a
+27:04
+mechanism for fusing information across
+27:06
+time
+27:07
+in long video sequences then having been
+27:10
+experts in video
+27:11
+we spent a lot while talking about
+27:13
+generative models which were then
+27:15
+models that now not ingest visual data
+27:18
+but try to generate or produce or output
+27:21
+novel visual data in some kind of
+27:24
+learned deep learning paradigm
+27:25
+and there we talked about three major
+27:27
+different paradigms of generative models
+27:29
+of course we saw auto regressive models
+27:32
+which just try to
+27:33
+directly maximize the likelihood of the
+27:34
+training data under some kind of
+27:36
+parametric function represented with the
+27:38
+neural network
+27:39
+we saw variational autoencoders which
+27:41
+gave up this
+27:42
+this idea of explicitly maximizing the
+27:44
+likelihood of the data
+27:45
+and instead introduced a latent variable
+27:47
+and they wanted to both
+27:48
+learn the latent variables for all of
+27:50
+our data as well as
+27:52
+as well as jointly maximize the the
+27:54
+likelihood of the data
+27:55
+but we saw that in order to do that we
+27:57
+actually had to give up on
+27:58
+exact maximum maximization of the data
+28:00
+likelihood and instead we saw that we
+28:02
+could maximize this variational lower
+28:04
+bound
+28:04
+to let us jointly learn to model not
+28:06
+just distributions over our data
+28:07
+but also distributions over their latent
+28:09
+variables and that let us do things like
+28:11
+edit images
+28:12
+and do and learn late representations
+28:14
+using only
+28:15
+image data and we also saw a lot of
+28:17
+generative adversarial networks that
+28:19
+are sort of state-of-the-art in
+28:20
+generating beautiful images and we saw a
+28:22
+bunch of examples of using generator
+28:24
+adversarial networks in different
+28:25
+contexts
+28:26
+to generate different types of visual
+28:27
+data
+28:29
+and then finally in the last lecture uh
+28:31
+we talked about this this whole
+28:32
+different paradigm of machine learning
+28:34
+which is a reinforcement learning where
+28:37
+now rather than just sort of learning to
+28:38
+fit a data set
+28:40
+instead we want to train some agents to
+28:41
+interact with the world
+28:43
+and we saw that this introduced a lot of
+28:44
+extra sort of mathematical formalism
+28:47
+so we only saw the bearish taste of this
+28:49
+reinforcement learning problem in in one
+28:50
+lecture
+28:51
+but we saw a sort of two basic
+28:53
+algorithms for reinforcement learning
+28:54
+one was q learning and one was the
+28:56
+policy gradients which were sort of two
+28:58
+different
+28:59
+ways of attacking this idea of training
+29:01
+models that can
+29:02
+interact with the real world so that's
+29:05
+basically
+29:06
+uh the whole semester of content in like
+29:08
+25 minutes right we could have saved
+29:09
+ourselves a lot of time just done at the
+29:11
+beginning right
+29:12
+or maybe not um but then now that we've
+29:15
+understood
+29:15
+all of this stuff there's a big question
+29:17
+of like what's next
+29:19
+right this is an active research field
+29:21
+we saw there was just like six thousand
+29:22
+people
+29:23
+almost seven thousand papers submitted
+29:24
+to cbpr um there's thousands and
+29:26
+thousands more people around the world
+29:28
+writing new research papers in this
+29:30
+area as we speak so then what are some
+29:33
+of the big topics that i think
+29:34
+are going to be interesting in computer
+29:36
+vision and machine learning and deep
+29:38
+learning going forward
+29:39
+of course it's impossible to predict the
+29:41
+future but these are just some of
+29:42
+my my ideas or my predictions or my
+29:45
+hypotheses
+29:46
+and you may disagree with me you may
+29:47
+think that other things are going to be
+29:48
+important but that's that's that's
+29:49
+interesting and exciting
+29:51
+so one prediction that's you know kind
+29:53
+of trivial is that
+29:54
+we're going to discover new and
+29:56
+interesting types of deep learning
+29:57
+models
+29:58
+right throughout the history of um deep
+30:00
+learning for computer vision
+30:02
+we've seen people continually inventing
+30:04
+new and interesting architectures
+30:06
+that allowed us to build bigger and more
+30:08
+interesting models
+30:09
+and tackle more interesting tasks and i
+30:12
+think this will continue in the future
+30:14
+and the the types of the the types of
+30:16
+models that we consider deep learning
+30:18
+will continue to expand and expand and
+30:20
+expand over time
+30:22
+so as kind of one example of what i
+30:24
+think is a really
+30:25
+novel type of new architecture that
+30:28
+really
+30:28
+changes our perception of what a deep
+30:30
+learning model can be
+30:32
+is this idea of the the neural ode that
+30:35
+um
+30:35
+actually won a best paper award at
+30:37
+nurep's last year in 2018.
+30:39
+so here we were sort of really familiar
+30:41
+with residual networks right
+30:42
+we know that in any kind of residual
+30:44
+network it's learning a sequence of
+30:46
+hidden states as we process the data
+30:48
+and each hidden state those are like the
+30:49
+activations of your convolutional model
+30:52
+and these activations what we're going
+30:53
+to do is to compute the next layer of
+30:55
+activations
+30:56
+we're going to take our previous layer
+30:57
+of activations and then apply some
+30:59
+function
+31:00
+to that layer that depends both on the
+31:02
+activations themselves and on some
+31:03
+learnable parameters
+31:05
+and then add it back to produce the next
+31:07
+hidden layer so then that gives us some
+31:09
+formulation like ht plus one equals ht
+31:11
+plus some function of ht
+31:13
+and theta t where these are our weights
+31:16
+and now this uh some some really crazy
+31:19
+people thought that
+31:20
+this uh equation actually looks a little
+31:22
+bit like solving
+31:23
+a numeric uh differential equation right
+31:26
+like how do you actually
+31:27
+numerically integrate a differential
+31:29
+equation well usually what you do
+31:31
+is you sort of have a have a
+31:32
+differential equation you start at some
+31:34
+initial point
+31:35
+you make some small step um that you
+31:38
+like make some
+31:39
+small gradient step on the differential
+31:40
+equation and you kind of use that idea
+31:42
+of
+31:42
+many many small steps over time to
+31:44
+actually inter numerically integrate
+31:46
+differential equations
+31:48
+and then that from that perspective the
+31:50
+number of
+31:51
+approximation steps that we take to
+31:53
+numerically integrate a differential
+31:54
+equation
+31:55
+is kind of like the number of layers in
+31:57
+a residual network model
+31:59
+so then if we want to take it to
+32:01
+infinity then we could actually
+32:03
+have a neural ode where the states of
+32:06
+the neural network
+32:07
+are in fact a set of continuous
+32:09
+solutions to some kind of differential
+32:11
+equation
+32:12
+so then we write that maybe the the
+32:14
+differ the derivative of the hidden
+32:16
+state with respect to a continuous
+32:17
+variable time
+32:18
+is then equal to some parametric
+32:19
+function represented as a neural network
+32:21
+and then we can actually uh write down
+32:24
+like i'll
+32:25
+solve this differential equation again
+32:27
+give a trajectory of hidden states over
+32:28
+time
+32:29
+that is kind of like a neural network of
+32:31
+infinite depth
+32:32
+and then it turns out even though that
+32:34
+seems crazy there's actually ways you
+32:36
+can
+32:36
+train these kinds of models and then
+32:38
+represent neural network models as
+32:40
+differential equations
+32:41
+um that gives us a very different i mean
+32:44
+this is
+32:44
+just a whole different category of
+32:46
+looking at what a neural network model
+32:48
+can be
+32:49
+and this i thought was really exciting
+32:51
+and i i don't know what the practical
+32:53
+applications of this could be
+32:54
+but i think it's just a hint of the fact
+32:56
+that i think we will discover
+32:58
+new and more interesting types of neural
+33:00
+network models that will push our
+33:02
+perceptions of what it means to be a
+33:04
+deep learning model
+33:05
+and some of them might be dead ends some
+33:07
+of them might end up being the next big
+33:09
+thing in
+33:10
+computer vision or deep learning and
+33:11
+it's just impossible to say which is
+33:12
+going to be which at this point
+33:15
+so another kind of safe boring
+33:17
+prediction is that deep learning will
+33:19
+continue to find new applications
+33:21
+right we at this point we know that
+33:23
+supervised learning on large label data
+33:25
+sets
+33:26
+works really well for a lot of problems
+33:28
+it turns out that for a lot of problems
+33:30
+if you can collect a large data set of
+33:31
+images and labels that you want to
+33:33
+predict from them from those images
+33:35
+then for many such problems if you get
+33:37
+enough data and spend enough time tuning
+33:39
+the model
+33:39
+you can probably train a neural network
+33:41
+that works pretty well for a lot of
+33:42
+those applications
+33:44
+and i think that people will use those
+33:46
+basic ideas
+33:47
+in supervised learning and just apply
+33:48
+them to more and more and more things
+33:50
+out in the world
+33:51
+even beyond the beyond the small set of
+33:53
+data sets that we work on within
+33:55
+computer vision
+33:56
+so i think we'll see a lot more deep
+33:58
+learning for many different types of
+34:00
+scientific and medical applications
+34:02
+moving uh more and more throughout time
+34:04
+so i i think that like medical imaging
+34:07
+or different types of medical
+34:08
+applications i think it'll be more and
+34:10
+more common for people to try to train
+34:12
+computer vision systems that try to
+34:14
+diagnose or or aid in the diagnosis of
+34:16
+different types of diseases
+34:18
+by using deep learning models on
+34:19
+different types of medical data
+34:21
+and i think in a lot of different
+34:22
+scientific disciplines people are
+34:24
+like scientists in lots of different
+34:26
+disciplines are always generating more
+34:27
+and more types of data that they need to
+34:29
+be able to analyze
+34:30
+and i think that deep learning will help
+34:32
+build help scientists in different
+34:34
+domains
+34:34
+just analyze the data that they're
+34:36
+already collecting and i think it will
+34:38
+lead to improvements across many
+34:39
+different areas in science
+34:42
+now i think also that deep learning will
+34:44
+as these are all kind of obvious
+34:45
+applications i think that
+34:47
+anything that uses images i think we
+34:49
+will see deep learning applications for
+34:51
+in the future
+34:52
+but i think that sort of interesting and
+34:55
+surprising applications of deep learning
+34:57
+will pop up as well
+34:58
+so as kind of an example of that there's
+35:00
+this really interesting
+35:02
+paper um at sigmod 2018
+35:05
+about using deep learning to improve
+35:07
+traditional computer science data
+35:09
+structures like a hash table
+35:11
+right so how can deep learning right a
+35:13
+hash table should be an implementation
+35:14
+detail inside the deep learning system
+35:16
+um now they're kind of flipping it
+35:18
+around and using deep learning to
+35:19
+improve these basic data structures
+35:21
+like hash tables and here the idea is
+35:23
+like what is a hash table
+35:25
+well if you kind of remember back to
+35:26
+your data your your um your uh
+35:28
+your data structures course then a hash
+35:30
+table is going to input some
+35:31
+key and then that key is going to go
+35:33
+through some kind of a hash function
+35:35
+the hash function is going to assign the
+35:36
+key to one of these buckets
+35:38
+and then when there's a hash collision
+35:40
+then you'll maybe have some kind of
+35:41
+linked list
+35:42
+of all of the bits of data that had been
+35:44
+hashed to each different bucket
+35:46
+and now to get a really good performing
+35:48
+hash table
+35:49
+you need a really good hash function
+35:51
+that is going to minimize the collisions
+35:52
+of your of your data set and assign
+35:55
+different data different data elements
+35:57
+to different buckets and usually these
+35:59
+hash functions are kind of
+36:00
+hand designed functions but it turns out
+36:03
+you can put a neural network in there
+36:04
+instead
+36:05
+and kind of now learn a neural network
+36:07
+that learns to assign
+36:09
+your data elements to hash buckets
+36:11
+inside a hash table
+36:13
+and the idea here is that then you could
+36:15
+actually use the hash table
+36:17
+you could learn a good hash function for
+36:19
+your hash table
+36:20
+that is customized the type of data that
+36:22
+you want to hash
+36:23
+because it's always to get good good
+36:24
+performing hash tables you need to
+36:26
+reduce collisions
+36:27
+but exact but you know even if we're
+36:29
+always working with images maybe that
+36:30
+whale data set is going to collide in
+36:31
+different ways from that galaxy data set
+36:33
+and now you can maybe use a neural
+36:35
+network to learn a hash function
+36:37
+that will minimize the hash collisions
+36:39
+for the particular data set or
+36:41
+types of data on which you want to learn
+36:43
+things
+36:44
+so i thought this was a beautiful idea
+36:46
+and this is just sort of a surprising
+36:47
+example of
+36:48
+place i think deep learning will find
+36:50
+homes in more and more areas
+36:52
+across science broadly and also within
+36:54
+computer science
+36:55
+and we'll just continue to see more and
+36:57
+more surprising applications
+36:58
+where we can slot neural networks into
+37:00
+things and then lead to better versions
+37:02
+of those things
+37:03
+um kind of another example that i really
+37:06
+like in the last year or so
+37:08
+is this idea of using deep learning for
+37:10
+symbolic mathematics
+37:12
+right this is um sort of surprising to
+37:13
+me that this can work in some way
+37:15
+right the idea is um suppose you want to
+37:17
+do things like
+37:18
+automated theorem proving or symbolic
+37:20
+integration right like the kinds of
+37:22
+things that mathematica is usually used
+37:24
+for
+37:25
+um right then you can actually train
+37:27
+neural networks to do these types of
+37:29
+tasks as well
+37:30
+and the idea is is you know we need to
+37:32
+convert the data into some format that
+37:34
+can be processed with a neural network
+37:36
+so it turns out that you know we can
+37:37
+write down sort of mathematical formulas
+37:40
+as we can actually convert them in some
+37:42
+nice way from
+37:43
+a sequence of formulas from a sequence
+37:46
+of symbols
+37:46
+actually into some kind of graph
+37:48
+structure that represents the structure
+37:50
+the underlying structure kind of like a
+37:51
+parse tree
+37:52
+of that sequence of symbols and then we
+37:55
+can actually run sort of graph
+37:56
+neural networks on these sequences of
+37:58
+symbols and that lets us
+38:00
+process these mathematical expressions
+38:02
+using deep neural networks
+38:04
+as well and there have been applications
+38:06
+and this is not just theoretical people
+38:08
+have actually done this
+38:09
+and people have then for example used
+38:11
+deep learning to do theorem proving
+38:13
+right so what is theorem proving um it's
+38:15
+like you start at some
+38:16
+some original set of mathematical
+38:18
+statements that you take as assumptions
+38:19
+you want to arrive at some some
+38:21
+mathematical statement at the end
+38:23
+and there's certain types and there's a
+38:25
+very wide tree of possible different
+38:27
+mathematical transforms
+38:28
+you can imagine applying at every
+38:29
+different step all right this is kind of
+38:31
+like this massive tree search problem
+38:33
+where from every equation that you know
+38:34
+is true there's a large number of
+38:36
+potential mathematical transforms that
+38:38
+you could imagine applying to those
+38:40
+equations
+38:41
+well that actually looks like a
+38:42
+reinforcement learning problem where the
+38:44
+state of the reinforcement learning
+38:45
+system
+38:46
+is all of the all of this mathematical
+38:48
+statements that you currently know to be
+38:49
+true
+38:49
+the actions that we can take in this
+38:51
+reinforcement learning system
+38:53
+are the potential uh the potential
+38:55
+mathematical transforms that we can make
+38:57
+on the statements we know to be true and
+38:59
+then we can use a deep reinforcement
+39:01
+learning system
+39:02
+that is trained to discover proofs to
+39:04
+discover mathematical proofs
+39:06
+um that actually there's been papers
+39:08
+about this that can then
+39:09
+use deep reinforcement learning to
+39:12
+improve upon
+39:13
+some some aspects of mathematical
+39:14
+theorem proving or you can use this for
+39:16
+like symbolic integration
+39:18
+where you like write down uh write down
+39:19
+a random equation and then actually want
+39:20
+to generate another equation
+39:22
+that represents the integral of that
+39:24
+input equation and people have been
+39:25
+training neural networks to do that kind
+39:26
+of thing as well
+39:28
+so i think deep learning will continue
+39:30
+to find new and surprising applications
+39:32
+to lots of different areas within within
+39:34
+science within computer science
+39:36
+within mathematics and i think that deep
+39:38
+learning will just become a standard
+39:39
+scientific or engineering tool
+39:41
+that gets slotted into all kinds of
+39:42
+different disciplines
+39:44
+so then prediction sort of safe boring
+39:46
+prediction number three
+39:47
+is that deep learning will continue to
+39:49
+use more and more data
+39:51
+and more and more compute right so we've
+39:53
+seen this plot i think
+39:54
+a little a couple times before in the
+39:56
+past in the semester
+39:58
+so here on the x-axis it's showing us uh
+40:01
+time
+40:01
+from 2004 to 2017 and the y-axis
+40:05
+and each dot is a is a gpu that was a
+40:07
+different computing device
+40:09
+and the y-axis shows us the cost of
+40:12
+computation
+40:13
+in terms of how many gigaflops of
+40:14
+computation can you buy for a dollar
+40:17
+and you can see that the cost of
+40:18
+computation has just been
+40:21
+decreasing at kind of actually an
+40:22
+exponential rate um as gpus have gotten
+40:25
+better and better and better in the last
+40:26
+10 years
+40:27
+and i think that this this increase this
+40:29
+exponential increase in the
+40:31
+affordability of gpu computing
+40:33
+has really allowed us to scale up our
+40:34
+models and build ever bigger models on
+40:36
+ever bigger data sets
+40:38
+and that's led to a lot of improvements
+40:39
+in in deep learning
+40:41
+but i think this trend will continue
+40:43
+forward going forward in
+40:45
+the kind of obviously um and i'm not the
+40:47
+only one who thinks so
+40:48
+there's this really cool plot from open
+40:50
+ai they have a nice blog post about this
+40:53
+i think last year where they wanted to
+40:55
+track they tracked this trend of
+40:58
+the the role of computing in ai systems
+41:00
+going all the way back to the perceptron
+41:02
+back in the 1950s
+41:04
+and now the x-axis is showing a
+41:06
+different milestone
+41:07
+sort of high-profile uh projects in
+41:10
+artificial intelligence
+41:11
+starting with the perceptron although
+41:12
+back in the 1950s going up
+41:14
+something like alphago zero um that we
+41:16
+talked about in just the last lecture
+41:18
+and now the y-axis is the is the amount
+41:21
+of computation that we use to train
+41:22
+these models
+41:23
+and what's crazy is that this y-axis is
+41:25
+actually on a log scale
+41:27
+already and you can see that this uh the
+41:29
+amount of compute that has been used to
+41:31
+train
+41:32
+these state-of-the-art deep machine
+41:34
+learning systems
+41:35
+has been growing super exponentially
+41:37
+since the 50s
+41:39
+and this is likely to contin this trend
+41:41
+is likely to continue going forward
+41:44
+but you know how can this trend possibly
+41:47
+continue going forward
+41:48
+um we've already like we are like you
+41:50
+already see large uh
+41:52
+large industrial players like google and
+41:54
+facebook training machine learning
+41:56
+models
+41:56
+distributed across maybe thousands of
+41:58
+gpus in order to train the biggest
+42:00
+machine learning models
+42:01
+so i think we will also in order to
+42:04
+continue scaling deep learning models
+42:06
+i think we'll also we'll also see
+42:08
+innovations in hardware
+42:09
+that will lead to new types of hardware
+42:11
+that are specialized to building
+42:13
+large-scale deep learning models
+42:15
+so um it's kind of a bit of free
+42:16
+advertising for this startup um there's
+42:19
+one really there's one one one example
+42:20
+of this is this uh this company cerebrus
+42:23
+which makes wafer scale chips for deep
+42:26
+learning
+42:27
+so they basically build like a gigantic
+42:29
+computer chip that's like absolutely
+42:31
+massive
+42:31
+that is specialized for doing deep
+42:33
+learning so on the right so i mean this
+42:35
+is obviously marketing material from the
+42:37
+startup so take it with a grain of salt
+42:39
+but the idea is that kind of the largest
+42:41
+chip that we have from the biggest
+42:43
+baddest nvidia gpu
+42:44
+is this relatively small chip over here
+42:46
+on the right and cerebrus's wafer scale
+42:49
+computing engine
+42:50
+is this like massive piece of silicon
+42:51
+which is like orders of magnitude bigger
+42:54
+than the largest gpu that nvidia is
+42:56
+currently making
+42:58
+and the idea here is you've just got
+42:59
+like tons and tons of compute elements
+43:01
+tiled out over this like massive piece
+43:02
+of silicon
+43:03
+with a lot of memory with a lot of
+43:05
+compute and this type of
+43:07
+novel hardware platform might be able to
+43:10
+i mean it's
+43:10
+it's impossible to say but maybe some
+43:13
+kind of innovations in hardware
+43:14
+maybe by cerebrus maybe by others um
+43:17
+would uh
+43:18
+can will help us i think push deep
+43:19
+learning to the next level
+43:21
+and train ever ever bigger models um on
+43:23
+these ever bigger data sets
+43:26
+so those are my three kind of um safe
+43:28
+predictions about
+43:30
+things i'm relatively certain are going
+43:32
+to happen in the future
+43:33
+around deep learning models but i think
+43:36
+there's also a lot of problems with the
+43:38
+way that we're doing ai right now
+43:40
+the way that we're doing machine
+43:41
+learning and computer vision right now
+43:43
+and some of these problems are things
+43:44
+that i don't know how to solve
+43:46
+but i think that as a community we need
+43:48
+to find ways to solve them
+43:50
+so one of the biggest problems i think
+43:52
+facing machine learning
+43:54
+models right now is that they're biased
+43:56
+right that
+43:57
+um machine learning models are deployed
+43:59
+in the world
+44:00
+and they treat people they treat
+44:01
+different types of people in different
+44:03
+ways
+44:04
+and that's not fair that's not a good
+44:05
+thing that's just a thing that we need
+44:07
+to avoid
+44:08
+um and it's kind of a concrete example
+44:10
+of that
+44:12
+you remember we could do something like
+44:13
+vector arithmetic with gender
+44:14
+adversarial networks
+44:16
+remember with gender adversarial
+44:17
+networks we could do something like
+44:19
+taking the smiling woman vector subtract
+44:21
+the neutral man vector
+44:22
+add the neutral man vector and then get
+44:24
+an image of a smiling man
+44:26
+well this idea of sort of analogies or
+44:28
+vector arithmetic
+44:29
+with deep learning models actually
+44:31
+didn't really didn't actually originate
+44:33
+with generative adversarial networks
+44:34
+this idea actually originated with uh
+44:37
+with another type of
+44:38
+model called a word vector so here the
+44:41
+idea is that
+44:42
+this is a this is a technique from
+44:43
+natural language processing where you
+44:45
+input a large corpus of text data
+44:48
+and then somehow you process that corpus
+44:50
+of text data
+44:51
+to uh give some vector representation
+44:54
+some vector
+44:55
+that represents every word in your
+44:56
+corpus of your data and then it turns
+44:58
+out that you can use those
+45:00
+learned uh word vectors from your text
+45:02
+corpus of text data to do these similar
+45:04
+kinds of analogy problems
+45:07
+so for example you could solve the
+45:08
+analogy man is to king
+45:10
+as woman is to what and the way that you
+45:13
+can solve that
+45:14
+problem or that query using a word
+45:15
+vector approach is to take your your
+45:17
+learned vector for man
+45:19
+subtract to learn the vector for king
+45:21
+add the learn vector for woman
+45:22
+and then do a nearest neighbor search
+45:24
+among all the other word vectors in your
+45:25
+data set
+45:26
+um and it turns out that if you um
+45:29
+perform a lot
+45:30
+perform a large scale analysis of a
+45:32
+different types of analogies with
+45:33
+trained word vector with trained word
+45:35
+vector models
+45:36
+that have been trained on large corpus
+45:37
+of text data they actually reveal some
+45:40
+pretty ugly gender biases
+45:41
+that these machine learning models have
+45:43
+picked up on by just training on all the
+45:45
+data set
+45:45
+on all the data out there in the web so
+45:48
+for example you can uh probe these
+45:49
+machine learning models these are word
+45:51
+vector models
+45:52
+and you can ask like what types of
+45:54
+occupations
+45:56
+are more situated in that learned word
+45:57
+vector space corresponding to men or
+45:59
+women
+46:00
+and it gives these really really kind of
+46:02
+troubling stereotypical occupations for
+46:05
+men and women
+46:06
+it says that extreme she occupations are
+46:08
+things like
+46:09
+home homemaker nurse receptionist
+46:11
+librarian
+46:12
+and extreme masculine professions are
+46:14
+things like maestro
+46:15
+skipper prodigy philosopher captain
+46:17
+architect
+46:18
+so you can or if you look at um solving
+46:21
+some of these analogies
+46:22
+um with uh this idea of vector
+46:24
+arithmetic you can see that uh they
+46:26
+learn very gender stereotyped
+46:27
+representations of the types of things
+46:29
+that men and women do
+46:31
+so they learn things like a registered
+46:33
+nurse on the female side is equivalent
+46:35
+to physician on the male side
+46:36
+or interior designer on the female side
+46:39
+is equivalent to architect on the male
+46:40
+side
+46:41
+so somehow these machine learning models
+46:43
+have actually
+46:45
+become biased and and slurped up these
+46:48
+very ugly biases
+46:49
+on the training data just based on the
+46:51
+data on which they're trained
+46:52
+and this is a problem right this means
+46:54
+that if we're training
+46:56
+neural network models on data out there
+46:57
+in the world they could slurp up
+46:59
+biases in that data and then make
+47:01
+predictions that stereotype different
+47:03
+groups of people
+47:04
+and this is not just a theoretical
+47:05
+problem this has actually been observed
+47:07
+in uh
+47:08
+in in systems that have been deployed by
+47:11
+big tech companies
+47:12
+so as another example um we can look at
+47:15
+economic bias
+47:16
+in visual classifiers so here there was
+47:19
+this uh this nice
+47:20
+the this nice paper from just this year
+47:22
+in 2019 where they want were they they
+47:25
+tried to make the argument that
+47:26
+deployed classifiers that have been
+47:28
+deployed out in practice by major tech
+47:30
+companies
+47:31
+are actually biased towards high-income
+47:33
+western the
+47:34
+high-income western households so for
+47:38
+an example they collected these data
+47:40
+sets of household items
+47:41
+from different cultures across the world
+47:43
+and at different income levels across
+47:44
+the world
+47:45
+so for this example this is an image of
+47:47
+soap that was collected from a household
+47:50
+in the united kingdom within with a
+47:51
+monthly income of
+47:53
+about two thousand dollars a month and
+47:55
+if you run this type of uh
+47:57
+image through a lot of commercial image
+47:59
+classification uh pieces of software
+48:01
+you can see that it's not perfect it
+48:02
+makes some errors but it produces like
+48:05
+kind of reasonable
+48:06
+predictions for this type of image but
+48:09
+then what if you
+48:10
+take an image of soap from a different
+48:12
+type of household from a different type
+48:13
+of person at a different part of a part
+48:15
+of the world
+48:16
+so here's an image of soap that was
+48:18
+taken from a household in nepal that
+48:20
+earns just about 300
+48:21
+a month and if you take this image of
+48:23
+soap and run it through the exact same
+48:26
+deployed classifiers out there on the
+48:28
+web that have been deployed by major
+48:30
+tech companies
+48:31
+you see that it just fails
+48:32
+catastrophically it thinks that this
+48:34
+this soap is food or cheese or bread
+48:37
+um it like it just doesn't recognize
+48:39
+that this is soap
+48:40
+so somehow it seems that the types of
+48:42
+data on which these systems have been
+48:44
+trained
+48:45
+has somehow biased their predictions
+48:47
+towards the types of images
+48:49
+that are seen in wealthy western
+48:52
+households
+48:52
+and that's a problem i think that we
+48:54
+should be building machine learning
+48:56
+systems that are good for everyone
+48:58
+and as another really ugly example of
+49:00
+this
+49:01
+there's actually been racial bias in
+49:03
+visual classifiers as well
+49:05
+so this was a really uh high profile
+49:07
+image that circulated twitter back in
+49:09
+2015
+49:10
+where google's image classification
+49:12
+system
+49:14
+categorized these african-americans as
+49:16
+gorillas
+49:17
+which was just shockingly racist and was
+49:20
+a very bad thing and this is
+49:22
+not something that we want our machine
+49:24
+learning systems to do
+49:25
+so i think that this is a really big
+49:27
+problem in
+49:28
+machine learning this is not a
+49:30
+theoretical problem this is something
+49:31
+that is facing all machine learning
+49:33
+systems all computer vision systems
+49:34
+today
+49:35
+then i think it's important that we
+49:36
+build machine learning systems that take
+49:38
+all different viewpoints and all
+49:40
+different types of people into account
+49:42
+and actually actually treat them fairly
+49:44
+in in unbiased ways
+49:46
+so there's been some academic work
+49:48
+that's really pushing towards
+49:49
+understanding these biases
+49:50
+um in machine learning models and
+49:52
+measuring it and improving it
+49:54
+but i think that this is still a really
+49:56
+big open problem in computer vision
+49:58
+and machine learning and machine
+49:59
+learning more broadly so i put a couple
+50:01
+of citations here if you want to get
+50:02
+started in this research area
+50:04
+but i think that this is a really big
+50:05
+important problem that's facing
+50:07
+a lot of machine learning models
+50:10
+so then another sort of more uh maybe
+50:12
+more academic
+50:14
+problem with deep learning is that i
+50:16
+think we might need new theory to
+50:17
+actually understand what's going on
+50:19
+inside of our machine learning models
+50:21
+and the the way that i see that is that
+50:24
+there's certain number of empirical
+50:26
+mysteries that there's experiments that
+50:27
+we can run
+50:28
+that give us very strange results that
+50:30
+are seemingly
+50:31
+counterintuitive and this makes me think
+50:34
+back to
+50:35
+like in the early 1900s right before
+50:37
+quantum mechanics was discovered
+50:39
+people knew about classical mechanics
+50:41
+but there were certain experiments that
+50:42
+you could run around like black body
+50:44
+radiation
+50:45
+or other types of phenomenon that just
+50:47
+could not be explained with the
+50:48
+classical physics at that time
+50:50
+and it could be the case that there
+50:51
+might be some experimental results in
+50:53
+deep learning
+50:54
+that hint that we might need a better
+50:56
+theoretical understanding of the systems
+50:58
+that we built
+51:00
+so one problem that kind of mystifies me
+51:02
+is this i
+51:03
+this empirical observation of really
+51:06
+good sub networks within deep learning
+51:07
+models
+51:08
+so here's something that you can do you
+51:10
+can start with a randomly
+51:12
+initialized neural network model and
+51:14
+train it up and then step two train it
+51:16
+on your favorite data set
+51:17
+and then what then what you can do is uh
+51:19
+this process of
+51:20
+pruning the trained neural network so
+51:23
+you can remove
+51:24
+a large number of the learned weights in
+51:26
+inside that trained neural network model
+51:29
+and it turns out that you can actually
+51:30
+remove like a large fraction of the
+51:32
+weights of the trained model
+51:33
+and still retreat and still retain the
+51:35
+same performance of the trained model
+51:37
+so somehow these trained neural networks
+51:40
+even though they might have a lot of
+51:41
+weights
+51:42
+it seems that they don't actually need
+51:43
+all of those weights to actually get
+51:45
+their good performance
+51:46
+so i feel that feels like something
+51:48
+funny is going on
+51:50
+and you know the mystery deepens it
+51:53
+turns out what we can do
+51:54
+is we can take that trained pruned model
+51:58
+and then go back to the initialization
+52:00
+and then uh
+52:01
+take the the initialized values of the
+52:04
+non-pruned weights
+52:05
+and then go back to the initialization
+52:07
+right so that's kind of like we took
+52:08
+step one we had a random network we
+52:10
+trained it we pruned it
+52:11
+and then we applied the pruning of the
+52:13
+trained network back to the original
+52:15
+initialization
+52:16
+of the original unoptimized weights from
+52:19
+step one
+52:21
+and now we can train the pruned network
+52:23
+and it turns out that it works
+52:25
+almost as good as training the full
+52:27
+dense network from step two
+52:29
+and this has been called the lottery
+52:31
+ticket hypothesis
+52:32
+of the deep neural networks that it's
+52:34
+like each weight inside the neural
+52:36
+network
+52:36
+is playing the initialization lottery
+52:39
+and then some weights inside the network
+52:40
+have won the lottery and got good
+52:42
+initializations and that caused maybe
+52:44
+good
+52:45
+sub networks to emerge within these
+52:46
+initialized neural network models
+52:49
+and then the question is what the hell
+52:51
+is going on
+52:52
+like this this feels like we're maybe
+52:53
+missing something fundamental
+52:55
+in the way that neural networks learn on
+52:57
+data or the way in which neural networks
+52:59
+are initialized or optimized
+53:01
+and the mystery deepens even further
+53:04
+there was this paper from
+53:05
+actually just about to a week or two ago
+53:07
+on archive
+53:08
+where you can take a randomly
+53:10
+initialized neural network model
+53:12
+and you can train and you prune the ra
+53:14
+the random model
+53:15
+we don't change the weights the only
+53:17
+learning in this model
+53:19
+is removing connections from this
+53:20
+randomly initialized neural network
+53:22
+model
+53:23
+and it turns out that you can tr that
+53:26
+through
+53:26
+some kind of gradient descent procedure
+53:28
+you can
+53:29
+prune an untrained model to result in a
+53:32
+sub-network of the randomly initialized
+53:35
+untrained neural network model
+53:37
+that actually achieves non-trivial
+53:38
+classification performance on data sets
+53:40
+like cfar and imagenet
+53:42
+this is very mysterious and very
+53:44
+shocking to me this means that
+53:46
+inside a random model there exists sub
+53:48
+networks that actually
+53:49
+do a good job on image classification
+53:51
+and this actually happens at the scales
+53:53
+of networks like a resnet50
+53:55
+that we are using in practice so it
+53:57
+feels to me like we're maybe missing
+53:59
+something kind of fundamental here
+54:01
+in the way that neural networks learn or
+54:03
+represent functions on their data
+54:05
+i don't know what the answer is but i
+54:07
+think that this is one of those
+54:08
+empirical mysteries that maybe we should
+54:10
+pay attention to
+54:11
+that hint that maybe we need to develop
+54:12
+some new theory
+54:14
+another empirical mystery in deep
+54:16
+learning is this question of
+54:18
+generalization so there's been a lot of
+54:20
+work on classical statistical learning
+54:22
+theory
+54:23
+going back over several decades and from
+54:25
+classical statistical learning theory
+54:27
+we can expect this plot on the left that
+54:30
+um
+54:31
+if we on the x-axis we plot the
+54:33
+complexity of our model
+54:34
+that's maybe like the size of our neural
+54:36
+network or something like that and the
+54:37
+y-axis we plot the error rate on the
+54:40
+training data and the test data
+54:42
+then we see sort of two regimes in uh in
+54:45
+our model
+54:46
+on the left as we start with a very
+54:48
+small model we get high error on both
+54:50
+the training and the test set
+54:51
+as we increase the size of the model
+54:53
+then both the error
+54:55
+on the training set and the test set
+54:57
+should decrease as the bigger model is
+54:59
+able to better fit the training data
+55:01
+but at some point when we make the model
+55:03
+even bigger even bigger
+55:04
+then classical statistical learning
+55:06
+theory tells us
+55:08
+that the the model should start to get
+55:10
+worse on the test set
+55:11
+as it continues to get better on the
+55:13
+training set and this is overfitting
+55:15
+this is where a machine learning model
+55:17
+would have over fit to the noise in the
+55:18
+training set
+55:19
+and then no longer generalizes to the
+55:21
+test set and this is a
+55:22
+phenomenon that we have been familiar
+55:24
+with in the community for decades
+55:26
+from statistical learning theory but
+55:28
+then here's
+55:29
+some funny facts about neural networks
+55:32
+one
+55:33
+is that deep neural networks can
+55:35
+actually fit
+55:36
+random data on image classification data
+55:38
+sets
+55:39
+so what this means is if you take
+55:41
+something like your your favorite
+55:43
+resnet50 classifier
+55:44
+and you trade it on cfar but you train
+55:47
+it on a version of cfar
+55:48
+where all of the labels have been
+55:49
+assigned randomly to all of the images
+55:52
+or where all the pixels of the images
+55:54
+have been randomly shuffled
+55:56
+or where um where the the pixels are
+55:58
+just random gaussian noise
+56:00
+then it turns out that the same resnet50
+56:03
+that gives us really strong performance
+56:06
+when trained on the real data
+56:07
+can actually achieve perfect accuracy on
+56:10
+the training set
+56:11
+on when trained on a training set of
+56:13
+these random data sets
+56:15
+so some classical results in statistical
+56:18
+learning theory
+56:19
+um say that one way to measure the
+56:21
+complexity of a machine learning model
+56:23
+is something called the rottermocker
+56:24
+complexity which is something like its
+56:26
+ability the the ability of the model to
+56:28
+fit random data
+56:30
+so the classical statistical theory
+56:32
+tells us that
+56:33
+if a model is able to fit random data
+56:35
+perfectly then
+56:36
+that model is likely too big to
+56:38
+generalize and give useful predictions
+56:40
+on the test set
+56:41
+but a resnet50 model can be trained to
+56:44
+achieve
+56:45
+perfect accuracy on random data but when
+56:48
+we train it on real data
+56:50
+it generalizes great and gives us really
+56:52
+good and meaningful and useful
+56:53
+predictions on the test set
+56:55
+and that's a mystery i think that means
+56:57
+that there's something we don't
+56:58
+understand about the way that neural
+57:00
+network models in particular
+57:02
+generalize to unseen data now another
+57:05
+mystery around generalization
+57:07
+is this so-called uh double descent
+57:09
+phenomenon
+57:10
+so here's an empirical plot on the right
+57:13
+corresponding to the theoretical plot on
+57:15
+the left
+57:16
+so on the right we're showing uh on the
+57:18
+x-axis
+57:19
+is the the size of a fully connected
+57:22
+neural network that has been trained on
+57:24
+the cfr data set
+57:25
+and the y-axis gives us this training
+57:27
+and test performance
+57:28
+of of this of these models of increasing
+57:31
+size
+57:32
+and you can see that up to a point when
+57:34
+up to up to the model size of 40
+57:36
+then the empirical results that we see
+57:39
+actually match these theoretical
+57:40
+predictions
+57:41
+from classical statistical learning
+57:42
+theory but
+57:44
+as we make the model even bigger even
+57:46
+bigger even bigger
+57:47
+then something qualitatively different
+57:49
+happens and it seems that we push beyond
+57:51
+this regime of overfitting
+57:53
+into some other regime where now if the
+57:56
+model is just in the middle
+57:58
+then it overfits but if you make the
+57:59
+model even bigger
+58:01
+then it no longer overfits and this is
+58:03
+something extremely mysterious about
+58:05
+neural network models that i think is
+58:06
+not well understood
+58:08
+and this phenomenon was actually um uh
+58:11
+scaled up
+58:12
+by a blog post from open ai just a week
+58:14
+or two ago
+58:16
+where this this initial phenomenon was
+58:17
+reserved was uh observed by a paper by
+58:20
+belkin at all at
+58:21
+pnas this this year and open ai observed
+58:24
+similar results on a wide variety of
+58:26
+deep learning models so here's a plot
+58:29
+from this new open ai paper
+58:31
+where they're training now no longer
+58:32
+fully connected networks but now
+58:35
+like resnet18 the same type of residual
+58:37
+networks that we're using in practice
+58:39
+and we see the same empirical mystery of
+58:41
+double descent in these
+58:42
+practical uh large-scale convolutional
+58:44
+neural network models
+58:45
+so that means that somehow we're there's
+58:48
+just something we don't understand about
+58:49
+the way that
+58:50
+large neural network models generalize
+58:52
+to unseen data
+58:53
+and i think that there's a possibility
+58:55
+that we might need some new statistical
+58:56
+learning theory
+58:57
+to explain some of these empirical
+58:59
+observations
+59:01
+okay now another big problem in in deep
+59:03
+learning is that we need a lot of
+59:04
+training data
+59:05
+and training data is expensive to
+59:06
+collect so as a practical concern
+59:09
+we would all like to be able to build
+59:10
+deep learning models that will that rely
+59:12
+less on a large label data sets
+59:16
+so one way to that people have started
+59:18
+to make progress on this problem
+59:20
+is by building new data sets that
+59:22
+special that are specialized towards
+59:24
+this problem of low shot learning
+59:26
+that is learning where you have very few
+59:28
+numbers of samples
+59:29
+per category that you want to learn so i
+59:31
+think one of the initial high profile
+59:33
+data sets in this regime
+59:35
+was the omni data set from brendon lake
+59:37
+at all that's kind of like
+59:38
+a a low a low shot learning version of
+59:41
+mnist
+59:42
+so mnist of course was this super
+59:43
+classical image classification data set
+59:46
+that's uh classifying uh binary digits
+59:48
+from zero to nine
+59:49
+and it gives you six thousand training
+59:50
+and test example six thousand examples
+59:52
+in the data set of each of these
+59:53
+categories
+59:54
+and now the omniglot data set said it
+59:56
+now scales it up
+59:58
+and uh now gives us 1 623 categories
+60:01
+giving handwritten letters from
+60:03
+handwritten symbols
+60:05
+from 50 different alphabets of natural
+60:07
+languages around the world
+60:08
+and it provides just 20 examples of each
+60:11
+of those types of letters
+60:12
+and somehow from this very few numbers
+60:14
+of examples um you need
+60:15
+the goal is to build machine learning
+60:17
+models that can learn to recognize these
+60:19
+characters
+60:20
+even though they only get a very few
+60:21
+number of samples of each type of
+60:22
+character during training
+60:24
+another example of a data set in this
+60:25
+flavor is the kms data set
+60:28
+that provides a large data set of
+60:29
+japanese kanji characters
+60:31
+that now gives something like almost 4
+60:34
+000 different categories
+60:35
+but provides a variable number of
+60:37
+samples per category
+60:39
+and now this is then one way to make
+60:41
+progress on this task of learning with
+60:43
+few data of
+60:43
+your data is actually providing
+60:45
+well-structured data sets
+60:47
+and challenges around uh learning with
+60:49
+small data
+60:50
+so um these are kind of some of these uh
+60:52
+these early class these uh sort of
+60:54
+now from a couple years ago these these
+60:56
+data sets on
+60:57
+learning with low data and they're a
+60:59
+little bit like they're they're they're
+61:01
+definitely interesting they're
+61:01
+definitely important
+61:03
+but the problem they're trying to solve
+61:04
+is this uh handwritten character
+61:05
+recognition
+61:06
+it's not really as realistic as many of
+61:08
+the types of problems that we've been
+61:09
+solving in computer vision
+61:10
+this semester so then there's another
+61:13
+really
+61:14
+there's a new data set that just came
+61:15
+out this year that i'm really excited
+61:16
+about
+61:17
+called elvis and elvis tries to push
+61:19
+this idea of low shot recognition
+61:22
+um with learning from very few examples
+61:23
+per category into this uh
+61:25
+computer vision regime of very
+61:27
+complicated images
+61:28
+so here um rather than doing image
+61:30
+classification
+61:32
+elvis is a data set for instance
+61:33
+segmentation
+61:35
+and it annotates more than a thousand
+61:37
+different category labels
+61:38
+for instance segmentation and uh this
+61:41
+data set is actually still being
+61:42
+collected right now
+61:43
+so v 1.0 of the data set is not even out
+61:46
+but zv 0.5
+61:48
+gives you about 57 000 images and about
+61:51
+almost 700 million labeled object
+61:53
+instances from these thousand different
+61:54
+categories
+61:55
+on this uh on the uh for this instant
+61:57
+segmentation problem
+61:59
+so i think that um the cocoa data set
+62:02
+that was uh back from 2014
+62:04
+really drove a lot of progress on
+62:05
+instant segmentation and i'm hoping that
+62:08
+the elvis data set
+62:09
+will similarly help to drive progress in
+62:11
+low shot recognition
+62:13
+or learning with small amounts of data
+62:15
+for these complex real-world computer
+62:16
+vision types of tasks
+62:18
+so expect to see so i expect to see a
+62:19
+lot more work on this type of data set
+62:21
+moving forward
+62:23
+so now another type of idea towards
+62:25
+reducing our reliance
+62:27
+on label data is this idea of
+62:29
+self-supervised learning
+62:31
+and self-supervised learning kind of
+62:33
+pushes towards this
+62:34
+holy grail challenge of unsupervised
+62:36
+learning that we talked about
+62:37
+several lectures ago so here the idea is
+62:40
+that we're going to have a two-stage
+62:42
+process
+62:42
+when building our neural network system
+62:44
+in stage one
+62:45
+we're going to train the neural network
+62:47
+on some kind of pretext task
+62:49
+that we don't actually care about but
+62:51
+that can be
+62:52
+defined and trained without any kind of
+62:54
+human labeling of the data
+62:56
+and now on step two we'll take the the
+62:58
+network that we learned
+62:59
+for this pretext task and fine-tune it
+63:02
+on whatever small amount of label data
+63:04
+we can afford to collect
+63:05
+so we've seen this paradigm a little bit
+63:07
+already in the context of learning
+63:09
+generative models as a pretext
+63:10
+task but it turns out there's been a lot
+63:12
+of work on people defining other types
+63:14
+of pretext tasks
+63:16
+for self-supervised learning one example
+63:19
+is solving jigsaw puzzles
+63:20
+so here's a concrete example what we can
+63:22
+do is take an image
+63:23
+cut it up into a nine by nine grid of
+63:26
+patches
+63:27
+and then shuffle the patches and now
+63:29
+these shuffled patches will be fed to a
+63:30
+neural network system
+63:32
+and the neural network system needs to
+63:33
+solve the jigsaw puzzle so it needs to
+63:35
+classify what was the correct
+63:36
+permutation of those patches
+63:38
+that would unscramble the the puzzle
+63:40
+pieces and now
+63:41
+in order to solve this task it's likely
+63:43
+that the network would have to learn
+63:45
+something non-trivial
+63:46
+about the visual world right because for
+63:48
+it to know that the tiger head should go
+63:50
+in the upper right hand corner and the
+63:51
+tail
+63:51
+and the leg should go at the bottom then
+63:53
+it should be able to recognize that
+63:55
+what these body parts of the tiger are
+63:57
+and it should understand
+63:58
+their kind of relative orientation so
+63:59
+the hope is that by so if a network
+64:01
+could solve this type of
+64:02
+task of solving jigsaw puzzles then it
+64:05
+could be fine-tuned for a lot of other
+64:06
+computer vision applications
+64:08
+and critically you can you can prepare
+64:10
+this data
+64:11
+set of jigsaw puzzles without any human
+64:13
+annotation whatsoever
+64:15
+it just requires you to download a bunch
+64:17
+of images from the data from the web
+64:18
+and then kind of cut them up
+64:19
+automatically to make these jigsaw
+64:21
+puzzles
+64:22
+another idea in this vein is
+64:24
+colorization right we sort of download a
+64:26
+lot of color images from the web
+64:27
+convert them to black and white and then
+64:29
+ask the network to predict the color
+64:31
+and again this is a supervised learning
+64:33
+problem because we're asking the network
+64:35
+to predict one thing which is the color
+64:37
+from another thing which is the black
+64:38
+and white but we can generate these
+64:40
+labels
+64:41
+without having people annotate the data
+64:44
+and again hopefully if the network can
+64:45
+solve this colorization problem
+64:47
+then it should have learned something
+64:48
+about the world like it should be able
+64:50
+to in order to colorize this photo
+64:52
+it must kind of know that this is a
+64:54
+butterfly and understand what types of
+64:55
+colors butterflies tend to be
+64:57
+and so a network that can solve this
+64:59
+problem is hopefully uh visually
+65:00
+intelligent to some degree
+65:03
+another idea is in painting so we can
+65:05
+take take an image
+65:06
+remove some portion of the image and
+65:08
+then ask the network to predict back the
+65:10
+removed portion of the image
+65:12
+and this actually is maybe an example of
+65:14
+a generative model right this is sort of
+65:15
+a conditional generative modeling
+65:16
+problem
+65:17
+where you want to predict a part of the
+65:19
+image conditioned on
+65:21
+another part of the image and again you
+65:22
+can just sort of train this type of
+65:24
+model
+65:24
+using the different approaches for
+65:26
+generative modeling that we talked about
+65:28
+and then at the end of the day kind of
+65:29
+throw away the generative model
+65:31
+and just fine-tune the underlying
+65:33
+convolutional network for whatever
+65:34
+downstream task you care about
+65:37
+so there's been i think a lot of really
+65:38
+recent interest in uh different
+65:40
+mechanisms for self-supervised learning
+65:43
+so i i put a couple of these uh current
+65:45
+state-of-the-art methods for
+65:46
+self-sufficient learning up here
+65:47
+in case you want to dig more into these
+65:49
+references and one of these these
+65:51
+pretext and variant representations
+65:53
+actually was published just went up on
+65:55
+archive just on december 4th like five
+65:57
+days ago
+65:58
+so i actually haven't read that paper in
+65:59
+detail yet but uh i i think that that
+66:02
+that gives you a sense that this is like
+66:04
+really active area of research
+66:05
+is discovering better ways to train
+66:07
+networks in a self-supervised uh manner
+66:11
+okay then i want to leave you with um
+66:12
+maybe one big
+66:14
+i think the underlying problem in deep
+66:16
+learning models
+66:17
+that i don't know how to solve and i
+66:19
+don't know if anyone knows how to solve
+66:21
+is that deep learning models just don't
+66:24
+learn to understand the world
+66:26
+in the same way that humans do that they
+66:28
+kind of learn to mimic the data on which
+66:30
+they're trained
+66:31
+but they just don't seem to get the
+66:33
+world in the way that we do
+66:35
+and one way that we can see this is um
+66:37
+kind of through large-scale language
+66:39
+models
+66:40
+and they just lack common sense so here
+66:42
+we talked about this
+66:43
+language modeling problem right where
+66:45
+you can download a lot of
+66:46
+text from the internet and then train a
+66:48
+neural network model to predict the next
+66:50
+word
+66:51
+conditioned on the previous words so
+66:53
+then you can kind of use a neural
+66:54
+network model to
+66:55
+then you can um condition one of these
+66:57
+language models on some
+66:58
+input piece of text and then ask the
+67:00
+language model to just complete the rest
+67:02
+of the sentence for you
+67:03
+and then see what it thinks is a likely
+67:05
+completion of this text that you've
+67:07
+given it
+67:08
+so i was playing around with this over
+67:09
+the weekend and now there's this really
+67:11
+cool website called talk to
+67:12
+transformers.com
+67:14
+where you can just uh have this nice web
+67:15
+interface where you can type in your own
+67:17
+queries and then
+67:18
+sample sentence completions from this
+67:21
+very large language model that was built
+67:23
+by openai
+67:24
+so here's an example if you i typed in i
+67:26
+was born in 1950
+67:28
+actually i wasn't in the and in this
+67:30
+year and in the year 2025 my age will be
+67:33
+so that's the query that i provide to
+67:35
+the system and then the neural network
+67:37
+writes the rest
+67:38
+it says 35 that was only a few years ago
+67:41
+most things in life just continue to
+67:42
+improve
+67:43
+so it's like here's another example i
+67:46
+see a black dog and a brown horse
+67:48
+the bigger animal's color is well what
+67:51
+do you guys think
+67:54
+brown right because we know that horses
+67:56
+are bigger than dogs for the most part
+67:58
+but this guy says the bigger animal's
+67:59
+color is black and the smaller is brown
+68:02
+and actually if you kind of uh it's a
+68:04
+stochastic process if you kind of sample
+68:06
+many different completions it just like
+68:08
+kind of gives you answers randomly i
+68:09
+sampled another one where it said that
+68:11
+the the biggest one was pink
+68:12
+so it seems like or here's another
+68:14
+example
+68:16
+one of my parents is a doctor and the
+68:17
+other is a professor
+68:19
+my father is a professor my mother is
+68:23
+obviously a doctor right because we know
+68:25
+that people have two parents and we know
+68:27
+that professions are kind of a mutually
+68:28
+exclusive thing
+68:30
+and this says my mother is a social
+68:31
+worker they're super smart people
+68:34
+so it seems that these neural network
+68:36
+models just don't
+68:37
+understand the world around us that even
+68:40
+when you train them on all of the text
+68:42
+around us in the in the world
+68:43
+even when you download gigabytes or
+68:45
+terabytes of textual data from the web
+68:46
+and even when you train on thousands of
+68:48
+gpus for weeks at a time
+68:50
+you can get state-of-the-art numbers but
+68:52
+the neural network models are just
+68:53
+somehow missing something
+68:54
+in the way that they understand the
+68:56
+world and i think that there's just
+68:58
+something fundamental here
+68:59
+that this idea of training ever bigger
+69:02
+models on ever bigger the ever bigger
+69:03
+data sets
+69:05
+it works for practical problems but i am
+69:08
+a little bit skeptical sometimes about
+69:09
+whether this will actually get us all
+69:10
+the way to ai
+69:12
+um there's one school of thought that
+69:13
+says maybe we just need to make things
+69:15
+even bigger
+69:16
+another 10 times bigger another 100
+69:17
+times bigger another thousand times
+69:19
+bigger and
+69:20
+maybe if we keep going then they'll kind
+69:22
+of pick up common sense for themselves
+69:23
+maybe that's true i don't know or maybe
+69:26
+we need to sort of
+69:27
+maybe there's some paradigm shift that
+69:29
+we need to make in the way that we're
+69:30
+building our machine learning models
+69:32
+maybe there's some drastically different
+69:33
+approach to learning that we need to be
+69:34
+building instead
+69:35
+and i don't know so then kind of another
+69:38
+example more in computer vision
+69:39
+um there's this really on the nose paper
+69:41
+called the elephant in the room
+69:43
+because i think this is a problem that
+69:44
+everyone knows about who works with deep
+69:46
+learning models
+69:47
+but we don't usually talk about it or
+69:48
+give it enough credit and that's this
+69:50
+idea that just machine learning models
+69:52
+are brittle
+69:52
+they don't understand the world and they
+69:55
+don't work when you train them on things
+69:56
+that were when you test them on things
+69:58
+on which they were not trained
+69:59
+so as an example here's an image of some
+70:02
+people in a room
+70:03
+and we ran a map a pretty good objective
+70:05
+texture on this image
+70:07
+and it works great it tells that there's
+70:08
+a person there's a laptop there's a cup
+70:10
+there's a chair there's a handbag
+70:11
+there's books
+70:12
+it recognizes all the reasonable object
+70:14
+categories but now what we do
+70:16
+is we just like photoshop in like do a
+70:18
+really bad photoshop job and just put in
+70:19
+this elephant
+70:20
+in the room and obviously we humans have
+70:24
+no
+70:24
+trouble i mean maybe the contrast on the
+70:25
+screen is kind of bad so maybe you do
+70:27
+have some trouble
+70:27
+but if the lights were maybe dimmed
+70:29
+properly in the room then you should
+70:31
+have no trouble recognizing that there's
+70:32
+like hey there's a big elephant in the
+70:33
+back of this room
+70:35
+and i think if the elephant appeared in
+70:36
+the back of the classroom like we would
+70:38
+all notice it without any problem
+70:39
+um but and sometimes these object
+70:42
+detectors will recognize novel objects
+70:44
+just fine sometimes it'll just miss it
+70:47
+completely
+70:48
+so if you just move the elephant to a
+70:49
+slightly different position in the scene
+70:51
+sometimes it's just like not detected at
+70:53
+all by the detector
+70:55
+and that's just because this network has
+70:57
+never seen
+70:58
+images with elephants in living rooms
+71:01
+and it's just not able to generalize in
+71:02
+that way
+71:04
+or it gets even worse sometimes if you
+71:05
+put the elephant in a different place
+71:07
+then it gets recognized as a chair and
+71:09
+also in recognizing the element at the
+71:11
+elephant as a chair
+71:12
+it also messes up some of the other
+71:14
+predictions about that the model is
+71:15
+making about the other objects in the
+71:17
+room
+71:17
+so now um you can see that it's flipped
+71:19
+the chair to a couch
+71:21
+and it's no longer detecting the cup
+71:24
+so this is a big problem this means that
+71:27
+convolutional neural networks and really
+71:29
+all of the vision systems that we know
+71:30
+how to build with deep learning
+71:32
+are really seeing the world in a
+71:34
+qualitative qualitatively different way
+71:35
+than humans are seeing the world
+71:37
+and they just can fail catastrophically
+71:39
+when we apply them on
+71:40
+data that is even slightly different in
+71:43
+some way on the data on which they're
+71:45
+trained
+71:46
+and i don't know how to fix this but i
+71:48
+think this is a major problem that needs
+71:49
+to be solved if we're going to
+71:51
+a build machine learning systems that
+71:53
+are making intelligent decisions out in
+71:55
+the world for us
+71:56
+and this is just something fundamental
+71:58
+that i think is maybe baked into some of
+72:00
+our current approaches
+72:02
+so i don't know the solutions here but i
+72:04
+think that these are some of the biggest
+72:05
+most pressing issues
+72:06
+some of the big picture issues in
+72:08
+computer vision and
+72:09
+machine learning more broadly right now
+72:11
+so that's kind of my summary that we
+72:13
+have to see these sort of boring safe
+72:14
+predictions
+72:15
+we'll see new models we'll see new
+72:17
+applications we'll see bigger compute
+72:19
+but we also have some of these more
+72:20
+fundamental problems that are facing the
+72:21
+field
+72:22
+that i don't have answers to and we
+72:25
+people recognize that their problems but
+72:27
+i think there's a lot of room for people
+72:28
+to come up with creative new solutions
+72:30
+that could radically have massive impact
+72:32
+on this growing field of deep learning
+72:35
+so i think the summary is that i think
+72:37
+now is a really great time to be getting
+72:39
+into this field
+72:39
+and a really great time for you to be
+72:41
+learning about this field um so
+72:43
+hopefully with some of the the stuff
+72:44
+that you've learned in this class
+72:45
+maybe some of you will go out and solve
+72:47
+some of these big challenges that are
+72:48
+facing the field so with that i'd like
+72:50
+to
+72:51
+have a big round of applause for our
+72:52
+gsis who uh really made the
+72:55
+class actually work i don't know if
+72:55
+they're actually here though but i
+72:57
+really wanted to give a shout out to
+72:58
+them and then
+72:58
+thank them for uh making the class
+73:00
+actually work um
+73:02
+and i wanted to thank you guys for uh
+73:04
+putting up with the first class that
+73:05
+i've taught here at the university of
+73:07
+michigan
+73:07
+so thank you
+73:27
+you
+
+영어 (자동 생성됨)
+
+

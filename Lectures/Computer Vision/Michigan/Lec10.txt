@@ -1,0 +1,4048 @@
+00:00
+okay welcome back to lecture 10 we made
+00:02
+it to double digits that's very exciting
+00:04
+so today we're gonna be talking about
+00:06
+lots of tips and tricks for how you
+00:09
+actually go about training neural
+00:10
+networks in practice so last time we
+00:12
+left off we talked about the hardware
+00:14
+and software of deep learning and we
+00:16
+talked about different types of hardware
+00:17
+that you run these things on like CPUs
+00:19
+and GPUs and TP use and we also talked
+00:21
+about different software systems that
+00:23
+you can use for implementing these these
+00:25
+networks in particular we talked about
+00:27
+stat the difference between static
+00:29
+graphs and dynamic computational graphs
+00:30
+and we talked about some of the
+00:32
+trade-offs of both pi torch and tensor
+00:33
+flow so now at this point we've pretty
+00:36
+much seen all of the stuff that you need
+00:38
+to know to train neural networks but it
+00:40
+turns out there's still a lot of little
+00:41
+bits and pieces that you need to
+00:43
+actually be super effective and your
+00:45
+ability to train networks so I like to
+00:47
+try to break this up into I mean this is
+00:50
+kind of like a bunch of potpourri that
+00:51
+you need to know in order to be good at
+00:52
+training neural networks and I'd like to
+00:54
+break this up into maybe three different
+00:56
+categories of things that you need to
+00:57
+know about one is the one-time setup at
+01:00
+the beginning when you're before you
+01:02
+start the training process that's where
+01:04
+you need to choose the architecture the
+01:05
+activation functions you need to do a
+01:07
+lot of stuff before you will go and hit
+01:08
+that train button and then once you
+01:11
+begin training there are certain things
+01:12
+that you might need to do during the
+01:14
+process of optimization like schedule
+01:16
+your learning rates or scale up too many
+01:18
+machines or things like that
+01:19
+and then after you're done training you
+01:22
+might need to do some extra stuff on top
+01:24
+of your Train networks like model
+01:26
+ensemble or chance for learning and over
+01:28
+the course of today's lecture and
+01:30
+Wednesday's lecture we're going to walk
+01:32
+through a lot of these little sort of
+01:34
+little nitty-gritty details about how
+01:36
+you actually go about training neural
+01:37
+networks in practice so today let's
+01:40
+start off by talking about activation
+01:42
+functions you'll recall that in our
+01:45
+little model of an artificial neuron we
+01:47
+always have to have an activation
+01:48
+function that we always have are some
+01:51
+kind of linear function coming in that
+01:53
+color that collects the inputs from the
+01:55
+neurons in the previous layer and then
+01:57
+those get summed and those gets
+01:59
+multiplied by your weight matrix and
+02:01
+summed and then pass through some kind
+02:02
+of nonlinear activation function before
+02:04
+they've being passed on to the next
+02:06
+layer and as we recall the having some
+02:09
+nonlinear activation function in our
+02:11
+Network's was absolutely critical for
+02:13
+their processing ability because if we
+02:15
+remove the activation function then all
+02:17
+of our linear operations just collapse
+02:18
+onto a single linear layer so the
+02:21
+presence of an of one of these
+02:22
+activation functions recall was
+02:24
+absolutely critical in the construction
+02:25
+of our neural networks and we saw that
+02:28
+there's this big zoo of activation
+02:29
+functions but we kind of left off we
+02:32
+didn't really talk much about these
+02:33
+different types of activation functions
+02:35
+and their trade-offs when we last saw
+02:37
+this slide so today I want to talk in
+02:39
+more detail about some of the pros and
+02:41
+cons of these different activation
+02:42
+functions and other considerations that
+02:44
+go into choosing or constructing
+02:46
+activation functions for neural networks
+02:49
+so probably one of the most classic
+02:52
+activation functions that have been used
+02:54
+in neural network research going back
+02:55
+several decades is the sigmoid
+02:57
+activation function sigmoid because it
+03:00
+has the sort of S curved shape this is
+03:03
+this was a popular activation function
+03:05
+because one it has this interpretation
+03:08
+as a probability so you can one way that
+03:11
+you might think about neural networks is
+03:13
+that at each of the neurons it's either
+03:15
+on or off and maybe we want to have some
+03:18
+real some value between zero and one
+03:20
+there represents the probability of that
+03:22
+feature being present so the sigmoid
+03:24
+activation function has this nice
+03:25
+interpretation as the probability for
+03:28
+the presence or absence of a boolean
+03:30
+variable it also had this it also has
+03:34
+this interpretation as the firing rates
+03:36
+of a neuron if you recall these
+03:38
+biological neurons they received signals
+03:41
+from other incoming neurons and then
+03:43
+fire off signals at some rate but the
+03:45
+rate at which they fired off was non
+03:47
+linearly dependent on the total rates of
+03:49
+all the inputs coming in and the sigmoid
+03:52
+function is a simple way to model that
+03:53
+kind of nonlinear dependence on firing
+03:55
+rates but so these are a couple reasons
+03:58
+why classically the sigmoid
+04:00
+non-linearity had been very popular but
+04:03
+there are several reasons why it's
+04:04
+actually not such a great non-linearity
+04:06
+in practice one problem is that it has
+04:10
+these flat regimes at the beginning at
+04:12
+the end these saturated regimes with
+04:14
+zero gradient and these kill the
+04:16
+gradient effectively and make it very
+04:18
+difficult to train networks in a very
+04:20
+robust way so to think about this what
+04:24
+happens
+04:24
+sigmoid function when X is maybe very
+04:27
+very small like minus 10 or minus 100
+04:30
+well in that case with us it will be in
+04:33
+this far left regime of the sigmoid
+04:34
+non-linearity so the local gradient will
+04:36
+be very very close to zero and then that
+04:39
+means that all of our weight updates
+04:40
+will also be very very close to zero
+04:42
+because of the local gradient to zero
+04:44
+then it's just going to remember we're
+04:47
+gonna take our upstream gradients
+04:48
+multiply that by the local gradients
+04:50
+that's going to produce these downstream
+04:51
+gradients and at that local gradient
+04:53
+this effect is a value very very close
+04:55
+to zero that means that no matter what
+04:57
+the upstream gradients were the
+04:59
+downstream gradients will also be values
+05:00
+that are very very close to zero this
+05:03
+will have the effect of making learning
+05:05
+very slow because now all of the weight
+05:07
+updates onto our weight matrices all of
+05:09
+all the gradients with of the loss with
+05:11
+respect to our weight matrices will be
+05:12
+very low and it will also give very
+05:14
+problematic training dynamics once we
+05:16
+move to deep networks suppose that we've
+05:18
+got a network that's maybe a hundred
+05:20
+layers deep and then are we immediately
+05:22
+kill the gradient at some layer and then
+05:24
+we'll basically have no signal to train
+05:26
+gradients at any of the lower layers and
+05:29
+this problem happens both when X is very
+05:31
+very small like minus ten as well as
+05:33
+very very large like plus ten but we're
+05:36
+the only regime so kind of when you have
+05:38
+a sigmoid if X gets too big or too small
+05:40
+then it's if learning kind of dies for
+05:43
+that layer and the only way in which
+05:45
+learning can proceed is if somehow the
+05:46
+activation is somewhere within this
+05:48
+sweet spot near x equals 0 where anyway
+05:51
+the rate of the sigmoid function behaved
+05:53
+behaves somewhat linearly so that's the
+05:57
+first major problem with the sigmoid
+05:59
+activation function is that these flat
+06:01
+regimes are going to kill the gradient
+06:02
+and make learning very challenging a
+06:05
+second problem with the sigmoid
+06:07
+non-linearity is that its outputs are
+06:10
+not zero censored you can because
+06:13
+clearly the outputs for the sigmoid are
+06:15
+all positive right because it's all
+06:17
+above the why the x axis and to think
+06:21
+about why this property of not having
+06:24
+zero centered outputs is problematic
+06:26
+let's consider what happens when the
+06:28
+inputs one of our neurons is always
+06:30
+positive remember here's our little
+06:32
+diagram of one neuron inside our neural
+06:34
+network and we're zooming in on just one
+06:36
+of these things so
+06:38
+now suppose that the input so suppose
+06:41
+we're building a multi-layer neural
+06:42
+network where at every layer we use a
+06:44
+sigmoid non-linearity that means that
+06:47
+the inputs to this layer the excise will
+06:50
+also be the result of applying a sigmoid
+06:52
+function to the previous layer which
+06:54
+means in particular that all of the
+06:56
+inputs X I to this layer will all be
+06:59
+positive now what can we say about the
+07:02
+grate now given the fact that all of the
+07:03
+X eyes that are inputs to this layer are
+07:06
+going to be positive then what can we
+07:08
+say about the gradient of the loss with
+07:10
+respect to the W is that they'll so
+07:13
+remember that in order to compute the
+07:15
+gradient of the W I of the loss with
+07:17
+respect to the W I will take the local
+07:19
+gradient and multiply by the upstream
+07:20
+gradient now the local gradient is
+07:22
+always going to be positive because the
+07:24
+local gradient of W I is just going to
+07:27
+be X I and X I is positive which means
+07:30
+that the local gradients will all be
+07:32
+positive but then we multiply this by
+07:34
+the upstream gradient which could be
+07:35
+positive or negative but the upstream
+07:37
+gradient is just a scalar and if the
+07:40
+upstream gradient is positive that means
+07:42
+that all of the gradients of loss with
+07:44
+respect to W I will all be positive and
+07:46
+similarly if the upstream gradient is
+07:48
+negative that means that all of the
+07:50
+gradients or the loss with respect to WI
+07:52
+will be negative so what that means is
+07:55
+that all of the gradients with respect
+07:58
+to WI are going to have the same sign
+07:59
+and this seems like this is kind of a
+08:02
+this seems like kind of a bad property
+08:03
+for learning so for example suppose that
+08:06
+that this means that it could be very
+08:08
+difficult to make gradient descent steps
+08:10
+that reach certain values of the weights
+08:12
+that we might want to because of this
+08:14
+constraint that the gradients are all
+08:16
+going to be positive or all going to be
+08:17
+negative as kind of a pictorial example
+08:19
+of why this might be a problem
+08:21
+suppose that we can we can have this
+08:23
+kind of cartoon picture on the right so
+08:25
+here where this this picture is maybe a
+08:28
+plot of W 1 and W 2 and we imagine that
+08:31
+our initial value for the weights W is
+08:34
+the origin and maybe the value of the
+08:36
+weights that we want to get to in order
+08:38
+to minimize the loss is somewhere down
+08:40
+to the bottom to the bottom right now in
+08:43
+order to move in order to traverse from
+08:45
+the origin to the bottom right we need
+08:47
+to take some steps where we're going to
+08:49
+take part we want to take positive steps
+08:50
+along double
+08:51
+one and negative steps along w-2 but
+08:54
+with this constraint that the gradients
+08:57
+with respect the gradient of the loss
+08:58
+with respect to the weights are always
+09:00
+going to have the same sign there's no
+09:02
+way that we can take steps that aligned
+09:04
+in that quadrant so the only possible
+09:07
+way for a gradient descent procedure to
+09:09
+make progress toward that direction is
+09:11
+to have this very awkward zigzagging
+09:13
+pattern where it kind of moves up where
+09:15
+all the gradients are positive and then
+09:17
+moves back down to the left where all
+09:19
+the gradients are negative and then
+09:20
+moves up again and that's kind of a very
+09:22
+awkward zig zaggy pattern so that makes
+09:26
+that that's kind of gives and by the way
+09:27
+this maybe doesn't look so bad in two
+09:30
+dimensions but as we scale to weights
+09:32
+with thousands or millions of dimensions
+09:34
+this property is going to be very very
+09:36
+very bad because now if we have a weight
+09:40
+matrix with D dimensions then if you
+09:42
+partition up all of the possible signs
+09:44
+of all of the elements of that weight
+09:46
+matrix there's going to be two ^ d sort
+09:49
+of quadrant higher dimensional quadrants
+09:52
+or orphans in that a high dimensional
+09:53
+weight space and under this constraint
+09:56
+that they all have to be positive or
+09:57
+negative that means that any of our
+09:59
+updates directions can only move in one
+10:00
+in two of those possible two to the D or
+10:04
+fence high dimensional or fence so maybe
+10:07
+so even though this problem looks bad in
+10:10
+two dimensions it gets literally
+10:11
+exponentially worse as we move to weight
+10:14
+matrices of higher and higher and higher
+10:15
+dimension so that seems like a bad
+10:18
+property of this sigmoid non-linearity
+10:21
+that the fact that it's not zero
+10:22
+centered and the fact in particular that
+10:24
+its outputs are always positive leads to
+10:27
+these very unstable and potentially
+10:29
+awkward dynamics during training I
+10:31
+should point out though that that this
+10:33
+whole analysis about the gradients with
+10:35
+the gradients on the weights being all
+10:37
+positive or all negative only applies to
+10:39
+a single example however in practice
+10:43
+we'll often perform mini-batch gradient
+10:44
+descent and once we take an average over
+10:48
+multiple elements in a mini batch then
+10:50
+this we kind of relax this constraint so
+10:53
+even though for a single example in the
+10:55
+mini batch we would end up with
+10:56
+gradients that are all positive or all
+10:58
+negative on each layer when we consider
+11:00
+the gradients worth with respect to a
+11:02
+full mini batch of data examples then
+11:04
+this
+11:05
+less of a problem because you could
+11:06
+imagine that maybe even though the
+11:09
+gradients with respect to each elements
+11:10
+are all positive or all negative when
+11:12
+you average them out and sum them out
+11:13
+over the mini-batch then you could end
+11:15
+up with gradients for the mini-batch
+11:16
+that are sometimes positive and
+11:17
+sometimes negative so I think this is a
+11:19
+problem this is maybe less of a problem
+11:22
+in practice than some of the other
+11:23
+concerns around the sigmoid
+11:25
+non-linearity but it is something to
+11:27
+keep in mind nevertheless so this get
+11:30
+that that was our second problem with
+11:32
+the sigmoid non-linearity is the fact
+11:34
+that its outputs are not zero centered
+11:35
+and now a third problem with the sigmoid
+11:38
+non-linearity is this extra function so
+11:41
+I don't know if you know how these
+11:42
+mathematical functions get implemented
+11:44
+on CPUs but something like the
+11:46
+exponential function is fairly expensive
+11:48
+because it's it's a complicated
+11:51
+transcendental function so it can
+11:53
+actually take many clock cycles to
+11:54
+compute an exponential function and when
+11:57
+I timed this what I did I did some small
+11:59
+experiment on this on my macbook CPU the
+12:01
+other day and if I want to do know if I
+12:04
+want to compare a sigmoid non-linearity
+12:06
+versus a Rayleigh non-linearity for a
+12:08
+single tenth sort of a million elements
+12:10
+then on my Mac on this macbook CPU the
+12:13
+REA loop ends up being about three times
+12:14
+faster than the sigmoid because the REA
+12:17
+Lu just involves a sink a simple
+12:19
+threshold whereas the sigmoid needs to
+12:21
+compute this kind very expensive
+12:23
+exponential function now I should also
+12:25
+point out that of these three this this
+12:28
+third problem of exponential being
+12:30
+expensive to compute is mostly a problem
+12:32
+for for mobile devices and for CPU
+12:35
+devices for GPUs this ends up being less
+12:38
+of a concern because for GPU devices the
+12:41
+cost of simply moving the data around in
+12:44
+memory between the global memory and the
+12:46
+compute elements of the GPU ends up
+12:48
+taking more time for these
+12:49
+nonlinearities than actually computing
+12:51
+the non-linearity so in practice if you
+12:53
+try to time these different
+12:55
+nonlinearities on a GPU then you'll find
+12:57
+that they often all come out to be about
+13:00
+the same speed so you really need to
+13:02
+move to some kind of CPU device in order
+13:04
+to see speed differences between these
+13:05
+different nonlinearities so that gives
+13:09
+us these three problems with the sigmoid
+13:11
+function and of these three problems I
+13:13
+really think number one is the most
+13:15
+problematic these number two and number
+13:17
+three are
+13:17
+that you should be concerned about or
+13:19
+should be aware of but it's really I
+13:21
+think really this this saturation
+13:22
+killing the gradient is the really the
+13:24
+most problematic aspect of the sigmoid
+13:26
+non-linearity so then we can move on
+13:30
+from sigmoid and we can look at another
+13:32
+popular non-linearity that people
+13:34
+sometimes use is the tan H non-linearity
+13:36
+now tan age is basically just a scaled
+13:38
+and shifted version of sigmoid if you go
+13:41
+and look up the definitions on paper
+13:42
+it's a definite the definitions of
+13:45
+sigmoid and 1010 H in terms of
+13:47
+exponential functions you can do a bit
+13:49
+of algebra and just show that a cat can
+13:51
+age is literally just a shifted and
+13:52
+rescaled sigmoid so it inherits all many
+13:56
+of the same problems as the sigmoid
+13:57
+non-linearity right it's still saturates
+14:00
+for very very large and very small
+14:01
+values so it still results in count in
+14:04
+difficult learning if we're in those
+14:06
+cases but it but unlike the sigmoid it
+14:09
+is zero centered so if for some reason
+14:12
+you have the urge to use the saturating
+14:13
+non-linearity in your neural networks
+14:15
+then I think tan H is a slightly better
+14:17
+choice than sigmoid but really it's
+14:19
+still a pretty bad choice due to these
+14:21
+saturating regimes so now the the next
+14:25
+non-linearity is our good friend or the
+14:27
+Ray Lu the rectified linear activation
+14:29
+and this one is very nice I think we're
+14:32
+very familiar with this one by now it's
+14:34
+very cheap to compute because it only
+14:36
+involves a simple threshold so you can
+14:38
+imagine like for a binary implementation
+14:40
+all we have to do is check the sign bit
+14:42
+of the floating-point number if it's
+14:44
+negative we set it to zero and if it's
+14:45
+positive we leave it alone
+14:47
+so Ray Lu is like the cheapest possible
+14:49
+nonlinear function you can imagine
+14:51
+implementing that it's very very fast
+14:53
+can typically don't be done in one clock
+14:55
+cycle on most things it's does not
+14:58
+saturate in the positive regime so as
+15:00
+long as our inputs are positive then we
+15:03
+never have to worry about this
+15:05
+saturation problem of killing our
+15:07
+gradients and in practice it could come
+15:10
+when you come when you try to train the
+15:12
+same network architecture with a sigmoid
+15:14
+versus at an H versus array Lu it's very
+15:16
+often to find that the Ray louver jeune
+15:18
+converges much much faster up to six
+15:20
+times as reported by Alex net and when
+15:23
+you go to very deep networks like 50
+15:25
+hundred layers then it can be very
+15:27
+challenging to get sigmoid networks to
+15:29
+converge at all unless you use something
+15:30
+like
+15:31
+normalization so there are some problems
+15:35
+with Ray Lu one of course is that it's
+15:37
+not zero centered so just like the
+15:39
+sigmoid non-linearity which we saw has
+15:42
+all of its outputs always positive the
+15:44
+same applies to the Ray Lou
+15:46
+so the rate Lu clearly all of its
+15:47
+outputs are also non-negative so that
+15:49
+means that Ray Lu suffers from the same
+15:51
+problem of gradients being all positive
+15:53
+or gradients being all negative as the
+15:54
+sigmoid but since we know in practice
+15:57
+that Rayleigh networks can be trained
+15:59
+without much difficulty that suggests
+16:01
+that this actual nonzero centering
+16:03
+problem was maybe less of a concern than
+16:05
+the other problems that we saw with the
+16:07
+sigmoid function so the big problem with
+16:11
+Ray lieu of course is what happens when
+16:14
+X is less than zero well here the
+16:17
+gradient is exactly zero so if you
+16:20
+imagine what happens for training this
+16:22
+rayleigh function when X is very very
+16:24
+large like plus ten then the local
+16:26
+gradient will be one and trained and
+16:28
+learning will proceed just fine when the
+16:30
+gradient when X is very very small like
+16:32
+minus 10 then the gradient will be
+16:34
+identically zero which means that our
+16:36
+local gradient is exactly zero which
+16:38
+means that our downstream gradients are
+16:40
+also exactly zero now this is somehow
+16:42
+even worse than a sigmoid because with a
+16:44
+sigmoid in the very small regime we
+16:47
+weren't exactly zero we were just very
+16:49
+very small so even if our gradients were
+16:51
+very very small we still had some
+16:53
+potential hope that maybe learning could
+16:55
+proceed but with a ray Liu
+16:57
+once our gradients are once are act once
+16:59
+our values are less than zero then all
+17:02
+of our gradients are identically zero
+17:04
+and learning cannot proceed our
+17:06
+gradients will be completely zero it
+17:07
+will be completely dead
+17:09
+so then this leads to this potential
+17:11
+problem that people worry about
+17:13
+sometimes called a dead ray Lu so the
+17:16
+idea here is that suppose in one of our
+17:18
+Ray lute nonlinearities the weights of
+17:20
+that layer get totally large get very
+17:23
+large and magnitude such that the neuron
+17:26
+in that layer has a negative activation
+17:28
+for every data point in our training set
+17:30
+well in that case it means that the Ray
+17:33
+Lu the the the weights corresponding to
+17:36
+that unit will always have gradients
+17:38
+identically equal to zero as we iterate
+17:41
+over the training set and that that way
+17:44
+sometimes
+17:44
+/ - as a dead rail Oh because it never
+17:47
+cat has the potential to learn once the
+17:49
+rail ooh kind of gets knocked off this
+17:51
+data cloud of your training examples
+17:52
+then all of the future updates it will
+17:54
+ever receive are going to be zero and it
+17:57
+will be stuck off in limbo hanging
+17:58
+outside your data cloud for the rest of
+18:00
+eternity no matter how long you train so
+18:02
+that seems like a problem in contrast we
+18:05
+want our we need our Rea lose to always
+18:07
+somehow stay intersecting with some part
+18:10
+of the data cloud those are active Rea
+18:11
+lose and they will receive gradients and
+18:13
+they will train even if the permit and I
+18:17
+should point out this problem only
+18:18
+occurs if your neuron if your activation
+18:21
+value is negative for your entire
+18:23
+training set as long as there's some
+18:25
+element of your training set where you
+18:26
+receive a positive activation then that
+18:29
+weight has the potential to get some
+18:30
+gradient and has the potential to learn
+18:32
+so one trick that I've seen people
+18:34
+sometimes do maybe I think it's less
+18:37
+popular now what but to avoid this
+18:40
+potential problem of dead ray lose one
+18:42
+trick you might second you might think
+18:43
+of is to actually initialize the biases
+18:46
+of layers that use Ray Lu to actually
+18:48
+have a slightly positive value that
+18:50
+means that that gives you the that makes
+18:53
+it harder to lie to fall into this
+18:55
+negative regime and harder to find
+18:56
+harder to have dead raters we saw that
+18:59
+one problem with the Rayleigh
+19:02
+non-linearity is the fact that it's not
+19:03
+like the two big problems with Ray Lu
+19:06
+are that it's not zero centered and that
+19:08
+it has zero gradient in the in the
+19:11
+negative regime so there was an
+19:13
+alternative proposed called the leaky
+19:15
+ray Lu that solves both of these
+19:17
+problems leaky Ray Lu is very simple it
+19:19
+looks just like Ray Lu except we're so
+19:22
+in the positive regime it computes the
+19:24
+identity function and when the input is
+19:26
+negative then we're going to we're going
+19:28
+to multiply it by a small positive
+19:29
+constant so rather than being
+19:31
+identically zero then in the negative
+19:33
+regime the leaky Ray Lu is instead has a
+19:35
+small positive slope and what this kind
+19:38
+of you can kind of imagine this as a ray
+19:40
+loo that is not exactly 0 it kind of
+19:42
+like leaks out some of its information
+19:43
+but just a little bit in the negative
+19:45
+regime and now this 0.01 this slope of
+19:50
+the leaky Ray Lu in the negative regime
+19:51
+is a hyper parameter that you need to
+19:53
+tune for your networks now the advantage
+19:56
+of a leaky rail ooh is that like the
+19:58
+it does not saturate in the positive
+20:00
+regime it's still computationally
+20:03
+efficient because it only takes a couple
+20:05
+instructions to execute and unlike the
+20:08
+Ray Lu or the sigmoid it doesn't ever
+20:10
+die the gradient never actually build
+20:13
+because our local gradients will never
+20:14
+actually be zero in the negative regime
+20:16
+our local gradient will just be this
+20:18
+zero point zero one or whatever ever
+20:19
+whatever other value for that high
+20:21
+program etre we could chosen what this
+20:23
+means is that these lake these leaky Rea
+20:25
+lose and in fact don't suffer from this
+20:27
+dying Ray Lu problem instead in the
+20:30
+negative regime they'll just receive
+20:31
+smaller gradients and have the potential
+20:33
+to keep learning but now an annoyance
+20:36
+with this leaky ray Lou is this 0.01
+20:39
+this kind of leaky hyper hyper parameter
+20:41
+value that we need to set and as you've
+20:44
+probably experienced when trying to -
+20:45
+and even Lin linear classifiers on us on
+20:47
+the first couple assignments the more
+20:48
+hyper parameters you need to search over
+20:50
+the more pain and frustration you have
+20:52
+when trying to train your models
+20:53
+so clearly whenever you see a hyper
+20:55
+parameter your one instinct you should
+20:57
+have is that maybe we should try to
+20:59
+learn that value instead so indeed this
+21:02
+is the exact idea behind the parametric
+21:04
+the the parametric renew or Prelude
+21:07
+where now it looks just like the leaky
+21:10
+ray Lu except this the slope in the
+21:13
+negative regime is now a learn about
+21:15
+perimeter of the network which now this
+21:18
+is kind of a funny thing because now
+21:19
+this parametric really with this prelude
+21:21
+is actually a non-linearity that itself
+21:23
+has learn about parameters but we can
+21:27
+imagine computing that just fine then
+21:29
+there in the backwards pass we'll just
+21:31
+back propagate our we'll just back
+21:33
+propagate into this value of alpha
+21:34
+compute derivative of loss with respect
+21:36
+to alpha and then also make gradient
+21:38
+sistah gradient descent steps on alpha
+21:40
+and this alpha might be a single
+21:42
+constant for each layer or maybe this
+21:44
+alpha could be a separate value for each
+21:47
+element of your for each channel in your
+21:49
+convolution or each output element in
+21:51
+your fully connected layer so that's
+21:54
+that's fine you'll see people work on
+21:57
+you'll see people use that sometimes but
+21:59
+one problem you might have with any of
+22:01
+these rayleigh functions is that they
+22:03
+actually have a kink at zero right
+22:05
+they're actually not differentiable
+22:07
+there at all you might ask what happens
+22:09
+is zero well it actually doesn't matter
+22:10
+what happens at zero because it does
+22:12
+happened very often so you can pretty
+22:14
+much choose whatever you want to have it
+22:15
+happen to zero and it's probably going
+22:16
+to be fine but in practice usually you
+22:18
+just pick one side with the other but
+22:22
+one kind of slightly more slightly more
+22:25
+slightly more theoretically grounded
+22:27
+non-linearity that you'll see sometimes
+22:28
+is the exponential linear unit and this
+22:32
+attempts to fix some of the problems of
+22:34
+Ray Lu that it's basically like a ray Lu
+22:36
+but it's smooth and it has its it tends
+22:39
+to be more zero centered so we you can
+22:42
+see the mathematical definition of the
+22:44
+exponential linear unit here at the
+22:45
+bottom of the slide in the positive
+22:47
+regime it just computes the identity
+22:48
+function just right just just like Ray
+22:50
+Lu but in the negative regime it
+22:53
+computes this exponential value instead
+22:55
+so on the left hand side it kind of
+22:57
+looks a little bit like the tail end of
+22:59
+a sigmoid and in fact we also see that
+23:02
+it asymptotes to some two minus one or
+23:06
+two some negative two some nonzero
+23:09
+negative value as we go to the left this
+23:12
+is to avoid this problem of zero
+23:14
+gradients that we might have feelings
+23:15
+concerned about with the normal radio so
+23:18
+if this was designed to kind of fix some
+23:20
+of these problems with really the exact
+23:23
+it right that now because the negative
+23:24
+regime actually is non zero then you can
+23:27
+imagine that the this this this
+23:29
+non-linearity you might actually have
+23:31
+zero centered outputs and there's some
+23:33
+math in the paper to support that
+23:34
+conclusion there's the problem here is
+23:37
+that the computation still requires this
+23:40
+exponential function which is maybe not
+23:41
+so good and it also has this additional
+23:43
+hyper parameter alpha that we mike that
+23:46
+we need to set although I guess you
+23:48
+could try to learn alpha as well and
+23:50
+come up with a parametric exponential
+23:52
+linear unit or pretty Lou but I've never
+23:55
+actually seen anyone do that in practice
+23:56
+but maybe you could try it I write a
+23:57
+paper who knows there's enough there's a
+24:01
+you know it doesn't stop there so there
+24:03
+was another paper
+24:04
+there's people love to propose very I
+24:06
+mean I think you should get that we get
+24:08
+this idea right now that this
+24:09
+non-linearity is kind of this small
+24:10
+modular piece of a neural network that
+24:13
+you can take out to find new things and
+24:15
+run controlled experiments so it's very
+24:17
+appealing for a lot of people to try to
+24:18
+modify a neural networks by coming up
+24:20
+with new nonlinearities so you'll
+24:22
+actually see a lot of papers that try to
+24:24
+come up with slight variance on them
+24:26
+and try to argue for why their ideas are
+24:28
+slightly better than anyone became
+24:29
+before so as a result there's a lot of
+24:31
+these things out there that you can find
+24:33
+one that's kind of fun is the sailu or
+24:36
+scaled exponential linear unit this one
+24:39
+is fun because it's just a rescale
+24:42
+version of a Luo that we just saw on the
+24:44
+previous slide the only difference is
+24:46
+that we set alpha equal to this very
+24:48
+long seemingly arbitrary constant and we
+24:50
+set lambda equal to this very long
+24:52
+seemingly arbitrary constant and the
+24:54
+reason that we might want to do this is
+24:56
+that this if you choose alpha and lambda
+24:59
+in this very particular way than a very
+25:02
+deep neural network with this solute
+25:04
+non-linearity has a kind of self
+25:06
+normalizing property that as you as your
+25:08
+layer depth goes to infinity then the
+25:11
+statistics of your activations will be
+25:14
+well-behaved and even converged to some
+25:16
+finite value as the depth of your
+25:18
+network goes Trent trends toward
+25:19
+infinity and what this means is that if
+25:22
+you have very very deep Network very
+25:24
+very deep networks with say looat
+25:25
+nominee era T's then sometimes people
+25:27
+can get these things to Train very very
+25:29
+deep networks even without using batch
+25:31
+normalization or other normalization
+25:33
+techniques now unfortunately in order to
+25:37
+understand exactly why this is true you
+25:39
+have to work through 91 pages of math in
+25:42
+the appendix of this paper so if you if
+25:46
+you have a lot of patience you can go
+25:47
+through this and figure out exactly why
+25:49
+we set the values of these constants to
+25:52
+those particular values but I think
+25:54
+that's a little kind of fun but I think
+25:57
+the bigger takeaway around a lot of
+25:59
+these nonlinearities is that in practice
+26:01
+they really don't vary too much in their
+26:04
+performance so here's a plot from a
+26:07
+paper from another paper that was
+26:09
+another of these papers about
+26:10
+nonlinearities that actually compared
+26:12
+the effects of different nonlinearities
+26:14
+on different network architectures on
+26:15
+all on the CFR 10 dataset and what's you
+26:19
+what's if you look at this plot you see
+26:21
+that some of the bars are higher than
+26:22
+some of the other bars but the most
+26:24
+important thing to take away from this
+26:25
+plot is really just how close all of
+26:26
+these things are something like Ray Lu
+26:29
+on ResNet is giving us 93.8 leaky Ray Lu
+26:32
+is 94 point to soft Plus as a different
+26:36
+one is 94 point six so basically all of
+26:38
+these things are
+26:39
+within a percent of each other in final
+26:41
+accuracy on CFR 10 so and the trends
+26:45
+here are just not consistent so if we
+26:47
+look at a resonate then something called
+26:49
+a Galu or a swish non-linearity is gonna
+26:52
+slightly outperform a rail ooh but if we
+26:54
+look at a dense net then rail ooh is
+26:56
+slightly better or equal to anything
+26:58
+else
+26:58
+so the real takeaway I think for
+27:00
+nonlinearities is just like don't stress
+27:03
+out about it too much because usually
+27:05
+the your choice of non-linearity as long
+27:08
+as you don't make a stupid choice and
+27:10
+choose sigmoid or 10h if you use any of
+27:12
+these more reasonable more modern
+27:13
+nonlinearities your network is going to
+27:16
+work just fine and maybe for your
+27:18
+particular problem you might see a
+27:20
+variance of maybe one or two percent on
+27:22
+your final accuracy depending on which
+27:24
+non-linearity you use but that's going
+27:26
+to be very dependent on your data set on
+27:28
+your model architecture and on all your
+27:30
+other hyper parameter choices so my
+27:32
+advice is just don't stress out too much
+27:35
+about activation functions just in
+27:38
+basically don't think too hard just use
+27:40
+rail ooh it'll work just fine and it'll
+27:44
+probably it'll probably work now if
+27:47
+you're in some situation where you
+27:49
+really really must squeeze out that one
+27:51
+last percentage point or that last half
+27:54
+a percentage point or a tenth of a
+27:55
+percentage point of performance then I
+27:57
+think is the time when you should
+27:58
+consider swapping out and experimenting
+28:00
+with these different nonlinearities so
+28:02
+in that case something like a leaky rail
+28:04
+ooh or in a loo or a sail ooh or a gale
+28:06
+ooh or whatever other thing you can
+28:09
+think of that rhymes with a loo is
+28:10
+probably a reasonable choice to try but
+28:13
+don't expect really too much too much
+28:15
+from it and basically don't use sigmoid
+28:18
+or tan h those are terrible ideas your
+28:20
+network will not converge and just don't
+28:23
+use those so that's kind of my my
+28:25
+executive summary on activation
+28:27
+functions any questions on activation
+28:30
+functions before we move on yeah yeah
+28:32
+the question was what all of these
+28:35
+activation functions are monotonic they
+28:37
+increase well and why don't we use
+28:40
+something like sine or cosine well I
+28:42
+actually lied to a little bit there's
+28:44
+this gallu non-linearity function that I
+28:45
+didn't talk about that is actually non
+28:47
+monotonic but the reason is that if your
+28:50
+activation
+28:51
+function is non-monotonic is something
+28:53
+like sine or cosine um if it increases
+28:55
+and then decreases then there exist
+28:58
+multiple values of X that have the same
+28:59
+Y and that can be problematic for
+29:02
+learning because that kind of destroys
+29:04
+information in some way so if your
+29:06
+activation function is not invertible
+29:09
+that means that it's destroying
+29:11
+information and we'd prefer and the
+29:13
+reason we wanted activation functions in
+29:15
+the first place was not so much to
+29:17
+perform useful computation it was more
+29:19
+just to add some non-linearity into the
+29:21
+system to allow it to represent
+29:23
+non-linear nonlinear functions I have
+29:25
+seen people try to show off and train
+29:28
+with sine or cosine or something if you
+29:30
+use batch normalization and are very
+29:32
+careful I think you could probably get
+29:33
+that to Train but I would not recommend
+29:35
+it
+29:36
+but I think that's that's a very astute
+29:37
+observation and actually the the Galen
+29:39
+on the non-linearity is a slight
+29:41
+slightly interesting one but to check
+29:44
+out so I think you should read that
+29:45
+paper if you're interested but there the
+29:47
+idea is that they actually interpret the
+29:49
+non monotonicity of the right of the
+29:51
+activation function as actually a bit of
+29:53
+regularization and they view that as the
+29:56
+expectation they kind of combine it with
+29:58
+something like drop out which we'll talk
+30:00
+about later and then show that if you
+30:01
+take this expectation combined with some
+30:03
+stochastic not some stochastic stuff
+30:05
+that is sort of equivalent in some rough
+30:07
+expectation way to a non monotonic
+30:10
+activation function but in general
+30:13
+they're not very widely used and most
+30:14
+activation functions you'll see in
+30:16
+practice are indeed monotonic or any of
+30:19
+any other questions on activation
+30:20
+functions great just use Ray Lu so then
+30:28
+the next thing we need to talk about is
+30:29
+data pre-processing and this is
+30:31
+something that you've been doing already
+30:33
+in all the notebooks if you've been
+30:35
+reading through maybe the starter code
+30:36
+and the data loading code and actually
+30:38
+looked at the parts outside the code
+30:40
+where we asked you to write code which
+30:41
+then you will have seen that you've been
+30:43
+already doing this thing called data
+30:45
+pre-processing at the beginning of all
+30:47
+of your homework assignments already so
+30:49
+what's the idea with that well basically
+30:51
+the idea is that we want to before we
+30:54
+feed our data into the neural network we
+30:56
+want to perform some pre-processing on
+30:58
+it to make it more amenable to efficient
+31:00
+training so the very cut so as kind of a
+31:04
+cartoon
+31:04
+here you can imagine your data your data
+31:07
+cloud of your training set shown here in
+31:09
+red on the Left where the X and the y
+31:12
+values are maybe two features of your
+31:14
+maybe your one two features of your data
+31:17
+set so like maybe the red the red value
+31:20
+of one pixel and the blue value of
+31:21
+another pixel if you're looking at
+31:23
+images and the idea is that your
+31:25
+original data is going to be this data
+31:27
+cloud which could be which could be very
+31:29
+long and skinny and shifted very far
+31:31
+away from the origin so in particular if
+31:33
+we're thinking about images then the way
+31:36
+we natively store image data is usually
+31:38
+as pixel values between 0 and 255 so if
+31:43
+so our data cloud for raw image data
+31:45
+would be kind of located very far away
+31:47
+from the origin and now before we come
+31:49
+before we feed the data into the neural
+31:51
+network we want to standardize it in
+31:53
+some way and pull it closer to pull it
+31:55
+into the origin by subtracting the
+31:58
+overall mean of the training data set
+31:59
+and then sum and then rescale each of
+32:02
+the features so that each feature has
+32:04
+the same variance and we can do this by
+32:07
+dividing by the by the standard
+32:09
+deviations of each feature computed on
+32:11
+the training set and this is this this
+32:15
+idea of why we might want to perform
+32:17
+pre-processing in this way also kind of
+32:19
+ties back to this discussion we had
+32:21
+about this about the not about the zero
+32:24
+about the bias problem with sigmoid
+32:26
+nonlinearities that recall if all of the
+32:28
+inputs are going to be positive then all
+32:30
+of our gradient directions are going to
+32:32
+always be positive or negative and if
+32:34
+similarly by the same logic if all of
+32:36
+our training data is always positive
+32:38
+then all of our weight updates will also
+32:41
+be constrained to have either one sign
+32:43
+or another sign but for the but for
+32:45
+training data we can easily fix this
+32:47
+problem by just rescaling everything
+32:49
+before we feed it into the neural
+32:50
+network so if for images it's very
+32:54
+common to subtract the mean and divide
+32:56
+by the standard deviation but for other
+32:58
+types of data you might see maybe non
+33:01
+image data you will sometimes see other
+33:02
+types of pre-processing called D
+33:05
+correlation or whitening so here the
+33:08
+idea is that if we compute the
+33:10
+covariance matrix of our data cloud of
+33:13
+the entire training set then we can use
+33:16
+that to rotate
+33:17
+the data cloud such that the features
+33:19
+are uncorrelated and this would be the
+33:22
+green this would be the the green data
+33:23
+cloud in the middle of the slide but now
+33:25
+we've basically taken our input data
+33:26
+cloud and rotated it actually moved it
+33:28
+to the centrum of to the origin and then
+33:30
+rotated it another thing you'll
+33:32
+sometimes do is then have not not only
+33:36
+have unit mean 0 mean unit variance for
+33:38
+each feature but actually perform this 0
+33:41
+mean unit variance fixing after D
+33:44
+correlating the data and that would
+33:45
+correspond to this now stretching your
+33:47
+data cloud out into this very
+33:49
+well-behaved circle at the center of the
+33:51
+of the coordinate axis here on the right
+33:53
+shown in blue and if you're perfect if
+33:55
+you perform both D correlation and this
+33:58
+normalization this is also this is often
+34:00
+called whitening your input data so this
+34:03
+is sometimes pretty common to use if you
+34:05
+have if you're working on non division
+34:07
+problems where maybe your inputs where
+34:09
+your inputs are maybe specified as low
+34:11
+dimensional vectors in some way but for
+34:14
+image data this is not so common another
+34:17
+way that you can think about why data
+34:20
+pre-processing is helpful is to think
+34:22
+about what happens if we try to learn
+34:24
+even a linear classifier on non
+34:27
+standardized data or non normalized data
+34:29
+so here on the Left suppose that we have
+34:33
+this data cloud that is located very far
+34:35
+from the origin and now we want to find
+34:38
+this linear classifier that is going to
+34:40
+separate the blue class from the red
+34:42
+class now if our data cut now if we
+34:45
+initialize our weight matrix with very
+34:46
+small random values as we've typically
+34:48
+done then our we can expect that at
+34:51
+initialization the boundary the boundary
+34:54
+that our linear classifier learns is
+34:56
+kind of near the origin and now if our
+34:58
+data cloud is very very far away from
+35:00
+the origin then making very very small
+35:02
+changes to the values of the weight
+35:04
+matrix will result in very drastic
+35:06
+changes to the way that that decision
+35:09
+boundary cuts through the training data
+35:11
+cloud and that can that means that kind
+35:13
+of intuitively if your data is not
+35:15
+normalized then that leads to a more
+35:17
+sensitive optimization problem because
+35:20
+very small changes in the weight matrix
+35:21
+can result in very large changes to the
+35:23
+overall classification performance of
+35:25
+the system in contrast on the right if
+35:28
+before
+35:30
+during training we had normalized our
+35:31
+data by moving it to the center now now
+35:34
+our entire data cloud also is sitting
+35:36
+over the origin so we can expect this
+35:39
+will result in a better conditioned
+35:40
+optimization problem yeah a question
+35:43
+yeah the question is um do people ever
+35:45
+use other color spaces other than RGB I
+35:48
+think people do use that sometimes in
+35:50
+practice I've seen that less for image
+35:52
+classification I've sometimes seen that
+35:54
+for more image processing type tasks
+35:56
+like super resolution or denoising and
+35:58
+there it's more common I think to feed
+36:01
+raw inputs to the network as some other
+36:04
+color space but in practice I think it
+36:07
+usually doesn't matter too much what
+36:08
+color space you use because in principle
+36:12
+the equations for converting from one
+36:14
+color space into another color space are
+36:16
+usually fairly compact simple equations
+36:18
+and you the network could kind of learn
+36:20
+in the first couple of layers to perform
+36:22
+that kind of conversion implicitly
+36:23
+within the first two layers or so if it
+36:26
+really wanted to so in practice you do
+36:29
+see it sometimes see people feed input
+36:33
+data of different color spaces but in
+36:34
+practice it usually is doesn't have
+36:37
+massive differences on the final results
+36:39
+so then talking about a little bit more
+36:42
+concretely about what people actually do
+36:44
+in practice for images there is a couple
+36:47
+things that are very common to do in
+36:48
+images one is to is to compute the mean
+36:51
+image on the training set this for
+36:53
+example was done in Alec's net where
+36:56
+they write if your if your training data
+36:59
+set is something like n trained by 32 by
+37:01
+32 by 3 then if you average over the
+37:03
+entire training data set then you get a
+37:05
+mean image of 32 by 32 by 3 and one
+37:07
+thing you can do is just subtract that
+37:08
+mean image from all of your training
+37:10
+samples another thing that's very common
+37:12
+is to subtract the per channel mean so
+37:15
+you effectively compute the mean RGB
+37:17
+color across the entire training data
+37:19
+set and then subtract only the mean
+37:21
+color from each pixel and this is the
+37:23
+way that for example vgg was trained
+37:25
+another thing that's very common to do
+37:27
+is to subtract the per channel mean and
+37:30
+the per channel standard deviation so
+37:32
+that means we're going to compute the
+37:34
+mean RGB color over the tract entire
+37:36
+training data set and we're going to
+37:37
+compute the standard deviation of the
+37:39
+three colour channels over the training
+37:40
+data set and that gives us
+37:42
+two three element vectors that we'll use
+37:44
+to subtract the mean and divide by the
+37:47
+standard deviation and that's kind of
+37:48
+the standard pre-processing that's used
+37:50
+for residual networks any any more
+37:53
+questions about data pre-processing yeah
+37:55
+so the question is what do we do during
+37:58
+training and testing so whenever you're
+38:00
+doing pre-processing you always compute
+38:01
+your statistics on the training set and
+38:03
+the reason we do that is not necessarily
+38:06
+for computational efficiency it's
+38:08
+because that's to simulate how we would
+38:09
+actually use the network out there in
+38:10
+the wild because in the wild there is no
+38:12
+such thing as a training set there is
+38:14
+just the real world upon which we want
+38:15
+to run this classifier and then there's
+38:17
+no reasonable way that you could expect
+38:19
+to recompute those statistics all the
+38:21
+time over whatever real-world data is
+38:23
+coming in so it's so to kind of simulate
+38:26
+that process we will always compute our
+38:29
+statistics on the training set and then
+38:30
+use the exact same normalization
+38:32
+statistics on the test set yeah so the
+38:35
+question was if we're using batch
+38:36
+normalization do we still need to use
+38:38
+data pre-processing I think so yeah this
+38:41
+is very intuitive you should think like
+38:43
+what if I just put batch formalization
+38:45
+as the very first thing in my lower
+38:46
+network before I do any convolution or
+38:48
+any fully connected layers or anything
+38:49
+this is a very first thing I think
+38:51
+that'll actually work but I think it
+38:53
+works a little bit less than a little
+38:55
+bit worse than actually doing this
+38:56
+pre-processing explicitly so in practice
+38:58
+people will people still prefer to do
+39:00
+this explicitly pre-processing and also
+39:03
+have batch normalizations okay so then
+39:07
+the next thing we need to talk about is
+39:08
+weight initialization so whenever you
+39:11
+start training your neural networks you
+39:13
+have to initialize your weights in some
+39:14
+way so here's a question what happens if
+39:17
+we just initialize all of the weights to
+39:19
+zero and all the biases to zero well
+39:23
+this is going to be very bad right
+39:25
+because if all of the weights are zero
+39:27
+and all the biases are zero then you
+39:29
+know assuming we have array Lu or some
+39:31
+other reasonable non-linearity then the
+39:33
+out the outputs are all going to be zero
+39:34
+and the outputs will not depend on the
+39:36
+inputs and even worse the gradients will
+39:38
+all be zero so we're like totally stuck
+39:40
+so in practice we cannot initialize the
+39:43
+zero that's gonna be very bad and this
+39:45
+problem of initializing to zero or more
+39:48
+generally of initializing to a constant
+39:49
+is referred to sometimes as not having
+39:52
+symmetry breaking because it doesn't
+39:55
+have any
+39:56
+to distinguish among different elements
+39:57
+in the training set or even among
+39:59
+different neurons in the network so if
+40:01
+you have these constant initializations
+40:03
+that in a very common failure mode is
+40:05
+that we'll compute the same gradient for
+40:07
+all of the training examples and the
+40:08
+network doesn't it's not actually able
+40:09
+to learn in any way so in practice what
+40:13
+we've got what we've always done instead
+40:15
+is just kind of hand wave and say let's
+40:18
+initialize with small random numbers and
+40:20
+this is what you've mostly done on your
+40:21
+homework assignments so far so for
+40:24
+example we could initialize with
+40:24
+Gaussian with zero mean from a Gaussian
+40:27
+and maybe set the standard deviation as
+40:29
+a hyper parameter and this is kind of
+40:31
+what you've done on your homework
+40:32
+assignments so far but let's dig into
+40:34
+this a little bit more because it turns
+40:36
+out that this strategy of initializing
+40:38
+with small random Gaussian values works
+40:40
+fairly reasonably ok for shallow
+40:43
+networks but it's going to be not worked
+40:45
+so well once you move to deeper and
+40:47
+deeper networks so to see why let's
+40:50
+think about activation statistics and
+40:52
+how they propagate as we move forward
+40:54
+through a deep network so here this
+40:56
+little snippet of code is computing the
+40:59
+four paths for a six layer neural
+41:01
+network with hidden for a fully
+41:03
+connected Network with hidden dimension
+41:04
+4096 and we're using at an age now
+41:07
+non-linearity because we're not
+41:09
+following the advice I told you a couple
+41:10
+slides ago and then what we're gonna do
+41:13
+is just plot the statistics of the
+41:15
+hidden unit values at each of the six
+41:17
+layers in this deep network and here you
+41:21
+can see that in now here each of these
+41:24
+plots is showing a histogram for the
+41:26
+activation values for the six layers of
+41:28
+this deep neural network and what we can
+41:30
+see is that for the first layer after a
+41:32
+single weight matrix anon and tannish
+41:34
+non-linearity we get kind of a
+41:36
+reasonable distribution of values for
+41:38
+the network but as we move deeper and
+41:40
+deeper into the network we see that the
+41:42
+activations the the activations all
+41:44
+collapse towards zero and now this could
+41:48
+be this is going to be very very bad for
+41:50
+learning because think about what this
+41:52
+means for the gradients so in particular
+41:54
+if all of the activations are zero
+41:56
+that's going to mean that all of the
+41:59
+gradients are also approximately going
+42:01
+to be zero because remember whenever we
+42:03
+compute the local gradient on the
+42:05
+weights the local gradient on the weight
+42:06
+is going to be equal to the activation
+42:08
+at the preview
+42:09
+lare if you remember that equation from
+42:11
+a few slides back so what that means is
+42:13
+that for this very thief network when
+42:15
+the activations collapse to zero then
+42:18
+the gradient updates will also all be
+42:20
+very close to zero and the network will
+42:21
+not learn very effectively okay maybe so
+42:25
+then maybe maybe this prop so kind of
+42:26
+our problem here maybe is that this
+42:29
+weight initialization was maybe too
+42:30
+small so instead of initializing with
+42:33
+0.01 standard deviation we could instead
+42:35
+try changing that to initialize from
+42:37
+0.05 standard deviation instead because
+42:40
+maybe the problem was that all of our
+42:42
+weights got too small because maybe our
+42:43
+weight our weight values were just too
+42:46
+small now it turns out this is also
+42:49
+really really bad and now if our weight
+42:51
+matrices are too big then all of our
+42:54
+activations are going to be pushed into
+42:56
+the saturating regime of 10h
+42:58
+non-linearity so if we look at these
+43:00
+histogram values again when we
+43:03
+initialize for this larger with this
+43:04
+with these larger weight matrices then
+43:06
+we see that all the activations are in
+43:09
+these saturating regimes of the tannish
+43:11
+non-linearity and again this means that
+43:14
+now the local gradients will again be 0
+43:15
+and everything will be 0 and learning
+43:19
+will also not work so we saw with that
+43:21
+when the we'll want to initialize the
+43:23
+weights to be too small then they all
+43:25
+collapsed a zero and when we initialize
+43:27
+the weights to be too big then the
+43:29
+activations all spread out to these
+43:31
+saturating regimes of the non-linearity
+43:33
+so somehow we need to find a value for
+43:37
+this weight initialization that is
+43:39
+somehow in this Goldilocks zone in
+43:41
+between too small and too large and it
+43:44
+turns out that the Goldilocks
+43:45
+initialization for these networks one
+43:49
+one definition is so this is called the
+43:51
+Xavier initialization after the first
+43:53
+author of this paper cited at the bottom
+43:55
+so here rather than setting the standard
+43:58
+deviation as a hyper parameter instead
+44:00
+we're going to set the standard
+44:01
+deviation to be 1 over the the square
+44:03
+root of the input dimension of the layer
+44:06
+and it turns out that if we make this
+44:08
+sort of very special Goldilocks regime
+44:11
+for initializing our weights then we'll
+44:14
+get very very nicely scaled
+44:15
+distributions activations no matter how
+44:18
+deep our network goes and I should also
+44:22
+that this this derivation is showing you
+44:24
+for a fully connected network but for a
+44:26
+convolutional network that DN will now
+44:29
+be the number of inputs to each neuron
+44:31
+so that will now be the number of input
+44:34
+channels times the kernel size times the
+44:36
+kernel size if you want to do this exact
+44:39
+same thing for convolutional networks so
+44:42
+then to derive this Xavier
+44:44
+initialization the trick is that we want
+44:46
+to have the variance of the output be
+44:49
+equal to the variance of the input so
+44:51
+the way that we set this up is we
+44:53
+imagine that this linear this linear
+44:56
+layer is going through you're going to
+44:58
+compute y equals with matrix multiply of
+45:01
+make weight matrix W and input
+45:03
+activation vector X so then each scalar
+45:06
+element of our next layer ignoring a
+45:08
+bias will be this inner product between
+45:10
+one of the rows of W and the entire
+45:13
+input vector X now if we you know if we
+45:17
+want to compute the variance of one of
+45:18
+these outputs y I then if we make a
+45:21
+simplifying assumption that all of the
+45:24
+X's and all the WS are independent and
+45:26
+identically distributed then we can use
+45:28
+the properties of the variance to
+45:30
+simplify in this way and then we know
+45:32
+that the variance of each one of the
+45:33
+elements of the output layer Y I will be
+45:36
+equal to DN times the variance of X I
+45:38
+times WI and then we make a couple then
+45:42
+we make a couple other simplifying
+45:43
+assumptions we assume that X and W are
+45:45
+independent random variables and when
+45:48
+you take the variance of the product of
+45:49
+two independent variables you look up on
+45:51
+Wikipedia what to do and you get a
+45:53
+formula that looks something like this
+45:55
+then the next assumption is that we make
+45:57
+another another simplifying assumption
+45:59
+that all of the inputs X are 0 mean
+46:02
+which is may be reasonable if they're
+46:04
+coming out of a batch normalization
+46:06
+layer and the previous layer and we also
+46:08
+assume that the WS are also going to be
+46:10
+0 mean which is may be reasonable if we
+46:12
+assume that they were it may be
+46:13
+initialized from some kind of Gaussian
+46:15
+distribution so then once we have all
+46:18
+these assumptions we can see that if we
+46:20
+choose the the magical value of variance
+46:23
+of standard deviation equal to 1 over
+46:26
+rather if if we set the variance of the
+46:29
+w i's to be 1 over d n then we see that
+46:33
+the variance of Y I is going to be equal
+46:35
+to the variance of
+46:36
+sigh so that bets that motivates this
+46:38
+derivation of the Xavier initialization
+46:40
+it's this idea of trying to match
+46:42
+variances between the inputs of the
+46:44
+layer and the outputs of the layer and
+46:45
+we see that if if we set the standard
+46:48
+deviations in this very special way then
+46:50
+it won't work out but there's a problem
+46:54
+what about rail ooh real ooh right this
+46:56
+this whole derivation not also hinges on
+46:59
+the non-linearity and the reason I and
+47:01
+that's the reason why I actually use 10h
+47:03
+in this experiment because this
+47:05
+derivation is only talking about the
+47:06
+linear layer but that linear will be
+47:09
+followed by a non-linearity and for
+47:11
+something like 10 H it's symmetric and
+47:14
+symmetric around zero so as long as are
+47:17
+we match the variances of the linear
+47:19
+layer then things will generally be ok
+47:21
+as we move through this through this
+47:23
+Center to non-linearity but for Rayleigh
+47:26
+with things would be very bad if we do
+47:28
+this exact same initialization and now
+47:31
+use our deep network to be rail ooh
+47:32
+instead of tan H then our activations to
+47:35
+statistics are again going totally out
+47:37
+of whack here these histograms look a
+47:40
+little funny because there's a huge
+47:41
+spike at zero because rail ooh kills
+47:43
+everything below zero but if you kind of
+47:46
+zoom in on the non zero part of these
+47:47
+histograms you'll see that also for a
+47:50
+deep network every all everything is
+47:52
+collapsing the algorithm the activations
+47:54
+are all collapsing towards zero again
+47:56
+which will again give us zero local
+47:58
+gradients and no learning so to fix this
+48:02
+we need to we need a slightly different
+48:04
+initialization for for Rayleigh
+48:07
+nonlinearities and the fix is just to
+48:10
+multiply our standard deviation by two
+48:12
+so now rather by square root 2 so for
+48:16
+Xavier Xavier we have standard deviation
+48:18
+of square root 1 over D n now for a loop
+48:20
+we have standard deviation 2 / DN and
+48:22
+intuitively that the factor of 2 is to
+48:25
+deal with the fact that Ray Lu is
+48:26
+killing off half of the half of its
+48:28
+inputs and setting them to 0 and this is
+48:31
+called a cunning initialization after
+48:33
+the first author of the paper that
+48:34
+introduced it or sometimes MSR a
+48:37
+initialization after Microsoft Research
+48:39
+Asia where he worked when writing this
+48:41
+paper now this is so then when you're
+48:44
+initializing with really nonlinearities
+48:45
+you need to use this MSR right
+48:47
+initialization for things too
+48:48
+work out well and it turns out that
+48:50
+actually the remember a couple of
+48:51
+lectures ago we talked about vgg and
+48:54
+that in 2014 there was no batch
+48:56
+normalization and people could not get
+48:58
+the VG to converge without crazy tricks
+49:00
+well it turned out that actually once
+49:03
+you have this timing wait initialization
+49:05
+scheme this is sufficient for getting
+49:07
+vgg to train from scratch and actually
+49:10
+the the paper that introduced this their
+49:11
+big claim to fame was that they got VG
+49:14
+to train from scratch by simply changing
+49:15
+the initialization strategy but this but
+49:20
+remember we've kind of moved on from bgg
+49:22
+now and we talked in the CNN
+49:24
+architectures lecture that the kind of
+49:26
+standard baseline architecture you
+49:27
+should only consider is a residual
+49:29
+network and it turns out that this MSR a
+49:32
+or climbing initialization is not very
+49:34
+useful for residual networks and the way
+49:37
+that we can see this is suppose we have
+49:39
+a residual Network and we've somehow
+49:40
+constructed the act the initialization
+49:42
+of those internal convalesce such that
+49:45
+the variance of the output matches the
+49:47
+variance of the input well if we if we
+49:49
+wrap those layers with a residual
+49:51
+connection now that means that the
+49:54
+variance of the output after the
+49:56
+residual connection will always be
+49:57
+strictly greater because we're adding
+49:59
+the input again so that means that if we
+50:01
+were to use this MSR a or Xavier
+50:03
+initialization with the residual Network
+50:05
+then we would expect the variances of
+50:07
+our activations to grow and grow and
+50:09
+grow and grow over many many layers of
+50:11
+the network and that would be very very
+50:12
+bad
+50:13
+that would lead to explode ingredients
+50:14
+and bad optimization dynamics again so
+50:17
+the solution for residual networks is
+50:19
+fairly simple what we normally do for
+50:21
+residual networks is to initialize the
+50:24
+although the first layer with your MSR a
+50:27
+initialization and then initialize the
+50:29
+last layer of your residual block to be
+50:31
+zero because that means that admission
+50:33
+at initialization this block will
+50:36
+compute the identity function and the
+50:38
+variances will be again perfectly
+50:39
+preserved at initialization so that's
+50:41
+the trick that that's the way that we
+50:43
+prefer to initialize residual networks
+50:45
+and I'd also point out that this this
+50:47
+whole area of how to initialize your
+50:49
+neural networks and the reasons that you
+50:51
+might prefer one initialization scheme
+50:53
+over another is a super active area of
+50:54
+research and you can see papers even
+50:56
+from this year that are giving new
+51:00
+just on the ways to initialize neural
+51:01
+networks so are there any other
+51:03
+questions on initialization yeah
+51:06
+that's not quite correct so that I so
+51:09
+yeah the idea was that oh maybe the idea
+51:12
+with initialization is we just want to
+51:13
+be as close as possible to the global
+51:15
+minimum of the loss function but before
+51:18
+we start training we don't know where
+51:19
+that minimum is so instead the
+51:21
+perspective that we normally take on
+51:22
+initialization is that we want to
+51:24
+initialize in such a way that all the
+51:26
+gradients will be well behaved at
+51:28
+initialization and because if you choose
+51:30
+maybe bad mountain air DS or bad
+51:32
+initialization schemes then you could
+51:34
+end up with zero gradients or close to
+51:36
+zero gradients right off the bat at the
+51:38
+beginning of training and then nothing
+51:39
+will train and you won't make any
+51:40
+progress towards the goal the way I'd
+51:42
+like to think about it is that we want
+51:43
+to initial so you imagine this like lost
+51:45
+landscape service that we're optimizing
+51:46
+then we want to initialize in a place
+51:48
+where it's not flat so we preferred not
+51:50
+to initialize in a local minima and
+51:53
+that's the main constraint that we want
+51:54
+to take into account when constructing
+51:56
+initialization schemes so this is all
+52:00
+about so so far we've talked about ways
+52:02
+for getting your model to Train we set
+52:04
+up the activation function we set up the
+52:05
+initialization but then once you get
+52:08
+your model to train you might if you've
+52:10
+done a really good job at optimizing it
+52:11
+you might see it start to overfit and it
+52:13
+might start to perform better on the
+52:15
+test set than it does on the training
+52:16
+set and this would be a bad thing so now
+52:19
+it's overcome this we need some
+52:20
+strategies for regularization so we've
+52:24
+already seen one simple scheme for
+52:26
+regularization which is to add another
+52:28
+term to the loss function the very
+52:30
+common one that you've used on your
+52:31
+assignments so far is l2 regularization
+52:34
+also sometimes called weight decay that
+52:36
+just penalize --is the l2 norm of your
+52:38
+weight matrices this is very common and
+52:40
+this is a very widely used regularizer
+52:42
+for deep neural networks as well but
+52:45
+there's a whole other host of other
+52:47
+regularization schemes that people use
+52:49
+in deep learning one of the most famous
+52:51
+is this idea called drop out so drop out
+52:54
+is kind of a kind of a funny idea what
+52:57
+we're gonna say is that when we add drop
+52:59
+out to a neural network we're going to
+53:00
+explicitly add some randomness to the
+53:02
+way that the network processes the data
+53:04
+so in each forward pass we're going to
+53:07
+randomly set some of the neurons in each
+53:09
+layer equal to zero so we're going to
+53:11
+compute a layer a for pass
+53:12
+they're randomly set some of the neurons
+53:14
+to zero and then compute another layer
+53:16
+now randomly set some of those to zero
+53:17
+then compute another layer and so on and
+53:19
+so forth and in and then the probability
+53:22
+of dropping into any individual neuron
+53:23
+is hyper parameter but a very common
+53:25
+choice would be 0.5 but every any
+53:27
+individual neuron has probability 1/2 we
+53:29
+flip a coin
+53:30
+whether or not to keep it or throw it
+53:31
+away seems crazy right
+53:34
+but it's very simple to implement right
+53:37
+this is implementing a two layer fully
+53:39
+connected neural network with dropout
+53:40
+and you can see that the implementation
+53:42
+is very simple we just compute this
+53:44
+binary mask after each layer and use
+53:46
+that to kill off so half of the neurons
+53:47
+in each layer after we compute the
+53:49
+matrix multiply so then the question is
+53:52
+why would you ever possibly want to do
+53:54
+this
+53:54
+well one interpretation of what dropout
+53:57
+is doing is that it prevents it forces
+54:00
+the network to have a kind of redundant
+54:02
+representation another way this is
+54:04
+phrased is that we want to prevent the
+54:05
+co-adaptation of features so we want to
+54:08
+encourage the network in some way to
+54:10
+develop representations where different
+54:12
+slots in that vector represent maybe
+54:14
+different robust ways of recognizing the
+54:16
+object so for example if we are building
+54:19
+a cat classifier maybe maybe one maybe a
+54:22
+bad thing would be for each element of
+54:24
+the vector to just learn independently
+54:25
+whether it's a cat but if we add
+54:28
+dropouts
+54:28
+then maybe we want it to learn kind of
+54:30
+more robust representations maybe some
+54:32
+neurons should learn about ears and some
+54:34
+should learn about furry and different
+54:36
+neurons should maybe focus on different
+54:38
+high-level aspects of katniss such that
+54:40
+if we randomly knock out half of these
+54:42
+neurons then it can still robustly
+54:44
+recognize the cat in even if we mess
+54:47
+with its representation another
+54:50
+interpretation of dropout is that it's
+54:52
+effectively training a large ensemble of
+54:54
+neural networks that all share weights
+54:56
+because if you imagine this process of
+54:58
+masking out half of the neurons in each
+55:01
+layer but we've affected what we've
+55:02
+effectively done is built a new neural
+55:04
+network that is that is a somehow a sub
+55:07
+Network of the original full network and
+55:09
+now at each forward pass we're going to
+55:11
+train a separate sub Network of this
+55:13
+full network and then somehow we're
+55:15
+going to have this very very large
+55:16
+exponentially large number of sub
+55:18
+networks that all share weights and then
+55:20
+the full network will somehow be some
+55:23
+ensemble of this very very large number
+55:25
+of sub
+55:25
+networks that are all sharing weights so
+55:28
+these are both to kind of admittedly
+55:30
+hand-waving explanations of what drop
+55:33
+out might trip might be trying to do and
+55:35
+there's a whole host of theory papers
+55:37
+that try to get more concrete
+55:38
+explanations for why this works but now
+55:41
+a problem with dropout is that it makes
+55:43
+the test time operation of the neural
+55:45
+network actually random right because we
+55:47
+were randomly knocking out half the
+55:48
+neurons in each layer at each forward
+55:50
+pass and this seems bad because if
+55:52
+you're deploying these networks in
+55:53
+practice you'd like their outputs to be
+55:55
+deterministic you wouldn't want to
+55:56
+upload a photo to your your web hosting
+55:59
+service one day and having recognized as
+56:01
+a cat and the next day the same photo is
+56:02
+recognized as something else that would
+56:04
+be a bad property for your neural
+56:05
+networks when they're deployed in
+56:06
+practice so a test time we want some way
+56:09
+to make dropout deterministic and what
+56:11
+we really want to do is kind of average
+56:13
+out this randomness because now once
+56:15
+we've rewritten those once we've built
+56:18
+drop out into our neural network we can
+56:20
+imagine that we're rewriting our neural
+56:22
+network to actually take two inputs one
+56:24
+is our actual input image X and the
+56:27
+other is this random
+56:28
+mask z which is some random variable
+56:30
+that we are drawing before we run the
+56:33
+forward pass the network and now the
+56:34
+output that our network computes is
+56:36
+dependent both on the input data as well
+56:38
+as on this random variable so then in
+56:40
+order to make the network deterministic
+56:42
+what we want to do is somehow average
+56:44
+out the randomness a test time and what
+56:46
+we can do is then take we can have the
+56:48
+test time forward pass be this
+56:50
+expectation of averaging out this random
+56:53
+variable so then if we want to compute
+56:55
+this analytically we just want to
+56:57
+compute this integral to marginalize out
+56:59
+this random variable Z but in practice
+57:02
+actually computing this integral
+57:04
+analytically is like we have no idea how
+57:05
+to do it that seems very hard and very
+57:07
+intractable for rent for arbitrary
+57:09
+neural networks so in practice we will
+57:12
+instead think about what happens well
+57:15
+how can we think about this integral for
+57:17
+the for only a single neuron well for a
+57:20
+single neuron that receives two inputs x
+57:22
+and y and has these connection strengths
+57:25
+w1 and w2 and then produces this single
+57:28
+scalar output a then at kind of the
+57:31
+normal forward past we might imagine
+57:33
+doing a test time is to take this inner
+57:35
+product of the weight matrix and the two
+57:36
+inputs X and y
+57:39
+now if we're using dropouts then there
+57:41
+are four different random masks that
+57:43
+we've made that we might have drawn
+57:44
+during training with equal probability
+57:46
+where we could have kept them both we
+57:48
+could have knocked out X but kept Y
+57:50
+knocked out why but kept X or knocked
+57:52
+out both of them and each of these four
+57:54
+options can occur with equal probability
+57:56
+so then if we we can in this case we can
+57:58
+write out this expectation exactly
+58:00
+because we've got exactly four outputs
+58:02
+and they all have equal probability and
+58:03
+what we see is that for this example
+58:05
+this output this expected output is
+58:10
+actually equal to 1/2 the probability of
+58:12
+this normal forward pass and this turns
+58:16
+out to hold in general that if we want
+58:19
+to compute the expectation of a single
+58:21
+layer with dropout then all we need to
+58:24
+do is multiply by the dropout
+58:27
+probability so simply multiplying by the
+58:29
+drop of probability allows us to compute
+58:31
+this expectation for a single dropout
+58:33
+layer so that means that a test time we
+58:36
+just that that so this this derivation
+58:39
+it means that we need to a test time we
+58:42
+want the output to be equal to be
+58:43
+expected input a training time which
+58:46
+means that an output and at test time we
+58:48
+want all neurons to be active we want
+58:50
+them all to action all of our learn ways
+58:51
+to actually do something so at test time
+58:53
+we'll use all the neurons but then we'll
+58:55
+rescale the output of the layer using
+58:58
+this drop this dropping probability that
+59:00
+we've used to drop individual neurons so
+59:03
+this gives us our summary of
+59:04
+implementing dropout that it's actually
+59:06
+quite straightforward that when
+59:08
+implementing dropout during the forward
+59:10
+pass during training we're going to drop
+59:12
+these random we're going to generate
+59:14
+these random masks and use those to
+59:16
+dropout or zero out of random elements
+59:18
+of the of the activation of the
+59:20
+activation factors and at test time
+59:22
+we'll simply use the proper probability
+59:23
+to rescale the output and have no
+59:26
+randomness now this expectation is exact
+59:29
+only for individual layers and this kind
+59:32
+of way of computing expectations is not
+59:34
+actually correct if you imagine stacking
+59:36
+multiple dropout layers on top of each
+59:37
+other but it seems to work well enough
+59:39
+in practice I'd also like to point out
+59:42
+that a slightly more common thing that
+59:44
+you'll see for implementing dropout is
+59:46
+another variant called inverted dropout
+59:48
+that's really fundamentally the same
+59:50
+idea it's just a different implement
+59:52
+the same thing and the question is where
+59:54
+do we want to do the rescaling we want
+59:56
+to do rescaling during test time or we
+59:58
+want to do rescaling during training
+60:00
+time and maybe we would prefer to not do
+60:03
+rescaling during test time because
+60:05
+during test time we want to really
+60:06
+maximize the efficiency of the system
+60:08
+because maybe it's gonna run on mobile
+60:09
+devices or in servers on lots of images
+60:11
+or whatever so we maybe prefer to pay a
+60:14
+little bit of extra cost of training
+60:15
+time instead so in practice a very
+60:18
+common thing you'll see with dropout is
+60:20
+to generate these random masks at
+60:22
+training time and then actually then
+60:24
+like if you're having drop a probability
+60:26
+1/2 then during training time we'll
+60:28
+we'll drop half the neurons and then
+60:30
+we'll multiply all of the remaining
+60:31
+neurons by 2 and then at test time we'll
+60:34
+have we'll just use all the neurons and
+60:36
+use our normal way matrix and in this
+60:37
+way again the expected value the
+60:39
+expected value of the output at training
+60:41
+time will be equal to the actual output
+60:43
+at test time but it's just a question of
+60:45
+where do we put the rescaling we put it
+60:47
+during training time or test time then
+60:49
+the question there's another question of
+60:50
+now that we've got this idea of a
+60:52
+dropout layer where do we actually
+60:53
+insert it into our neural network
+60:54
+architectures well if we remember back
+60:57
+to the Alex net and vgg architectures we
+61:00
+remember that the vast majority of the
+61:02
+learn about parameters for those for
+61:04
+those architectures lived in these fully
+61:06
+connected layers at the end of the
+61:07
+network and that's indeed the exact
+61:09
+place where we tend to put dropout in
+61:11
+practice is in these large fully
+61:14
+connected layers at the end of our
+61:15
+convolutional neural networks but if
+61:18
+you'll remember that as we moved forward
+61:19
+in time and looked at more recent
+61:21
+architectures things like ResNet or
+61:24
+Google net actually did away with these
+61:26
+large fully connected layers and instead
+61:28
+use global average pooling instead so
+61:30
+actually for these later network
+61:32
+architectures so this actually did not
+61:34
+use dropout at all
+61:35
+but prior to something prior to 2014 or
+61:38
+so dropout was really a critical
+61:41
+essential piece of getting neural
+61:42
+networks to work because it actually
+61:44
+helped a lot for reducing overfitting
+61:45
+and something like Alex net or bgg and
+61:48
+they've actually become it's actually
+61:49
+become slightly less important in these
+61:51
+more modern architectures like res nets
+61:52
+and so on and so forth now this idea of
+61:57
+dropout is actually something of a
+62:00
+common pattern that we see repeated a
+62:02
+lot in different types of neural network
+62:03
+regularization
+62:05
+basically during training we've added
+62:06
+some kind of randomness to the system
+62:08
+like by adding a dependence on some
+62:10
+other random source of information and
+62:12
+then at testing we average out the
+62:14
+randomness to make a deterministic for
+62:17
+dropout we this randomness took the
+62:19
+source of random masks but you can see
+62:21
+many other types of regularization that
+62:23
+use other sorts of randomness instead
+62:25
+and we've actually seen another
+62:27
+regularizer
+62:27
+already in this class that has like this
+62:30
+exact same flavor and that regularizer
+62:32
+is batch normalization because if you
+62:35
+recall batch normalization adds
+62:36
+randomness during training time because
+62:39
+it makes the outputs of each elements in
+62:41
+the batch depend on each other elements
+62:44
+in the batch because during training
+62:46
+remember for batch normalization we
+62:48
+compute these per mini batch means and
+62:50
+standard deviations which means that
+62:52
+they depend on which random elements
+62:54
+happens to get shuffled into each mini
+62:55
+batch at each iteration of training so
+62:58
+then at so Batchelor normalization is
+63:00
+adding randomness by take by making by
+63:04
+depending on the weight which we form
+63:05
+batch as a training time and then a test
+63:07
+time that averages out this randomness
+63:09
+by using these running averages of means
+63:11
+and standard deviations and using these
+63:13
+fixed values instead a test time to
+63:15
+average out this randomness and in fact
+63:18
+for these later architectures like
+63:20
+residual networks and other types of
+63:22
+more modern architectures batch
+63:23
+normalization has somewhat replaced
+63:25
+dropout as the main regularizer in these
+63:28
+deep neural networks so for something
+63:30
+like that for something like a residual
+63:32
+Network the regularizer is that it's
+63:34
+used to train our l2 l2 weight decay and
+63:37
+best normalization and that's it and
+63:39
+that tends to be actually a very useful
+63:42
+success way to successfully train large
+63:45
+deep neural networks is actually just
+63:46
+relying on the stochasticity of batch
+63:48
+normalization but there's some actually
+63:51
+there I lied a little bit there's one
+63:53
+other type of thing of one other source
+63:55
+of randomness that happens a lot in
+63:57
+practice but most people don't refer to
+64:00
+it as a type of regularization and
+64:02
+that's this notion of data augmentation
+64:04
+so so far in this class whenever we've
+64:06
+talked about loading and training
+64:08
+iterations we always imagine that we
+64:10
+load up our training data loading load
+64:12
+up the label for that training data like
+64:14
+this picture of a cat and label cat
+64:15
+we're on the image through the network
+64:17
+and then compare the predictive label to
+64:19
+the true label and then use that to get
+64:20
+our loss and compute our gradients but
+64:23
+it's actually very common in practice to
+64:25
+perform transforms on your data samples
+64:28
+before you feed them to the neural
+64:30
+network and perform and somehow
+64:32
+manipulate or modify the input image in
+64:34
+a random way that preserves the label of
+64:37
+the of the data sample so for example
+64:40
+for images some comments some common
+64:43
+things would be horizontal flips because
+64:44
+we as humans know that if we flip the
+64:47
+image horizontally then it's still a cat
+64:50
+other common things would be random
+64:52
+crops and scales so at every training
+64:55
+iteration we might resize the image to
+64:57
+have a random size or take a random crop
+64:59
+of the image because we expect that a
+65:01
+random crop of a cat image should still
+65:04
+be a cat image and should still be
+65:05
+recognized as a cat by the neural
+65:07
+network and the idea here is that this
+65:10
+adds a way this is this effectively
+65:12
+multiplies your training set because we
+65:14
+add these data transformations to the
+65:16
+model in a way that we know doesn't
+65:18
+change the training label and this
+65:19
+somehow moult is kind of multiplies your
+65:21
+training set for free because now your
+65:24
+network is trained on more raw inputs
+65:27
+and then but this is again adding
+65:31
+randomness at training time so for the
+65:33
+answer this example of random cropping
+65:35
+and flipping and scaling for something
+65:37
+like res Nets the way that they're
+65:39
+trained is that at every iteration every
+65:41
+training image we pick a random size
+65:43
+resize it to a random size then take a
+65:45
+random two to four by two to four crop
+65:47
+of this randomly resized image and this
+65:50
+and we just do this random cropping and
+65:52
+random resizing and random flipping for
+65:54
+each element at every iteration but now
+65:56
+again this is adding randomness to the
+65:57
+network in some way so we want to
+66:00
+fitting with this idea of marginalizing
+66:02
+out randomness at test time we want some
+66:04
+way to marginalize they get out this
+66:06
+other source of randomness in our neural
+66:08
+network so then the way this is done in
+66:11
+data augmentation is to pick some fixed
+66:13
+set of crops or scales to evaluate at a
+66:15
+test time so for example for in the
+66:18
+ResNet paper they take these five
+66:21
+different image scales and then for each
+66:23
+scale they evaluate five crops of the
+66:26
+image for the four-corners and the
+66:27
+center as well as the horizontal flips
+66:30
+of all these things
+66:31
+and then average the predictions after
+66:32
+running each of those different random
+66:34
+crops through the network and again and
+66:36
+again this is a way that we are adding
+66:38
+randomness to the network at training
+66:40
+time and then averaging out that
+66:42
+randomness at test time there's some
+66:45
+other other times people play tricks
+66:47
+around also randomly jittering the color
+66:49
+of your of your images during training
+66:51
+time but in general this this idea of
+66:54
+data augmentation is a way that you can
+66:55
+get creative and add some of your own
+66:57
+human expert knowledge to the to the to
+66:59
+the to the system because depending on
+67:01
+the problem you're trying to solve
+67:02
+different types of data augmentation
+67:04
+might or might not make sense so like
+67:07
+for example if you were building a
+67:08
+classifier to try to tell right and left
+67:10
+hands apart then probably horizontal
+67:12
+flipping would not be a good type of
+67:13
+data augmentation to use but if we want
+67:16
+to recognize cats versus dogs then
+67:18
+horizontal flipping is maybe very
+67:19
+reasonable or sometimes I've seen like
+67:23
+in like medical imaging context we want
+67:26
+to recognize like slides or cells then
+67:29
+even performing random rotations is
+67:31
+reasonable because depending on that for
+67:33
+that source of data you don't really
+67:34
+know what orientation it might have come
+67:36
+in at so data augmentation is really a
+67:38
+place where you can inject some of your
+67:40
+own human expert knowledge into the
+67:42
+training of the system about what types
+67:43
+of transformations do and do not affect
+67:45
+the labels that you're trying to predict
+67:49
+so now we've seen this pattern in
+67:52
+regularization of adding randomness at
+67:54
+training time and then marginally
+67:56
+marginalizing out the randomness at test
+67:58
+time so I just want to very quickly go
+68:00
+through like a couple other examples of
+68:02
+this pattern but I don't expect you to
+68:04
+know in detail just to give you a flavor
+68:05
+of other ways this has been instantiated
+68:08
+well one way another idea is drop
+68:10
+connect so this is very similar to drop
+68:12
+out but rather than zeroing random
+68:15
+activations instead we're going to zero
+68:17
+random weights during every four pass
+68:19
+the network and again we'll have some
+68:20
+procedure to average out test elasticity
+68:22
+at test time another idea is this that I
+68:26
+find very cute is this notion of
+68:28
+fractional max pooling so here what
+68:30
+we're going to do is actually randomize
+68:32
+the sizes of the receptive fields of our
+68:34
+pooling regions inside each of the
+68:36
+pooling layers of the neural network so
+68:38
+that maybe some neurons will have a two
+68:40
+by two portaling region some neurons
+68:41
+will have a one by one pooling region
+68:43
+and they'll be
+68:43
+and every four pass and this is
+68:46
+fractional max pooling because this
+68:47
+randomness between choosing a one-by-one
+68:49
+receptive field and a two-by-two
+68:51
+receptive field means you can have like
+68:53
+1.35 pooling in expectation so this is
+68:57
+sometimes referred to as fractional max
+68:58
+pooling another crazy one is we can
+69:02
+actually build networks deep networks
+69:04
+with stochastic death so we can build
+69:06
+something like a hundred layer ResNet
+69:08
+and then every four pass will use a
+69:10
+different subset of the residual blocks
+69:12
+during training and then a test time
+69:14
+will use all of the blocks so we saw
+69:17
+kind of drop out that's dropping weights
+69:19
+dropping individual neuron values we saw
+69:22
+a drop connect that's dropping
+69:23
+individual weight values this is
+69:24
+something like drop block it's dropping
+69:26
+whole blocks from this deep residual
+69:28
+network architecture another one that's
+69:32
+actually more commonly used is this
+69:34
+notion of cutout so here we're simply
+69:36
+going to 0 set random image regions of
+69:38
+the input image to 0 at every at every
+69:40
+four pass during training and then at
+69:43
+test time we'll use the whole image
+69:44
+instead and again you can see that we're
+69:46
+performing some kind of randomness to
+69:48
+corrupt the the neural network at
+69:49
+training time and then averaging out
+69:51
+that one that that randomness at test
+69:53
+time and now this last one is really
+69:56
+crazy that I can't believe it works
+69:57
+it's called mix up so here with mix up
+70:01
+what we're going to do is train on
+70:02
+random blends of training images so now
+70:06
+rather than training on just a single
+70:08
+image at a time we'll form our training
+70:10
+samples by taking a cat image and a dog
+70:12
+image and then blending them and with a
+70:15
+with a random blend weight and then the
+70:17
+predicted target should now be like 0.4
+70:19
+cat and 0.6 dog where that that that ran
+70:23
+that that that target is now going to be
+70:25
+equal to the blend weight and this
+70:27
+actually seems totally crazy like how
+70:29
+can this possibly work but the reason
+70:31
+that it may maybe seems slightly more
+70:33
+reasonable is that these blend weights
+70:35
+are actually drawn from a beta
+70:36
+distribution which we have the the PDF
+70:38
+of the beta distribution up there which
+70:40
+means that in practice these blend
+70:42
+weights are actually very close to zero
+70:44
+or very close very close to one so in
+70:46
+practice rather than being 0.4 cat and
+70:49
+0.6 dog it's more likely to be like 0.95
+70:52
+cat and 0.5 dog so it's not
+70:57
+as crazy as it initially seems but then
+71:01
+kind of my might your kind of takeaways
+71:04
+for which regular answers should you
+71:05
+actually use in practice is that you
+71:07
+should consider drop out if you have an
+71:09
+architecture if you're facing an
+71:10
+architecture that has very very large
+71:12
+fully connected layers but for but but
+71:15
+otherwise drop out is really not used
+71:17
+quite so much these days and in practice
+71:19
+batch normalization l28 decay and data
+71:22
+and data augmentation are the main ways
+71:24
+that we are regularizing neural networks
+71:26
+in practice today and actually
+71:28
+surprisingly these two these two wild
+71:31
+ones of cut out and mix up actually end
+71:33
+up being fairly useful for small data
+71:36
+sets like CFR 10 so I think state of the
+71:38
+art and see part n actually uses both of
+71:40
+these techniques but for larger data
+71:41
+sets like image net then these drop up
+71:44
+these cut up cut out and mix up are
+71:46
+usually not so helpful so that gives us
+71:49
+our summary of part one of a lot of
+71:52
+these nitty gritty details about choices
+71:53
+you need to make when training neural
+71:55
+networks and then on Wednesdays lecture
+71:57
+we'll we'll talk about some more of
+71:59
+these details that you need to know in
+72:01
+order to get your neural networks to
+72:02
+Train
+
+?? (?? ???)
+
+

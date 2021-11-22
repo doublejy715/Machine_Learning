@@ -1,0 +1,3314 @@
+﻿00:00
+welcome I hope y'all in the right place
+00:01
+welcome to ECS four nine eight zero zero
+00:04
+seven slash five five eight zero zero
+00:06
+five this special topics class talk with
+00:09
+a first-time here at Michigan departing
+00:11
+for computer vision
+00:12
+I wish we had a snappier easier more
+00:14
+easy to remember course type course
+00:15
+number but when you teach a special
+00:17
+topics class they give you numbers like
+00:19
+this so I'm sorry about that but
+00:21
+hopefully you're all in the right place
+00:22
+so the title of this class is deep
+00:25
+learning for computer vision so I think
+00:27
+we need to unpack a little bit what this
+00:29
+what these terms mean before we get
+00:31
+started so computer vision is the study
+00:34
+of building artificial systems that can
+00:36
+process perceive and otherwise reason
+00:38
+about visual data and this couldn't this
+00:41
+kind of quite a broad definition on what
+00:42
+does process we'll just perceive what
+00:45
+does reason mean it's kind of up for
+00:46
+interpretation or what this visual data
+00:48
+that could be images that could be
+00:50
+videos that could be medical scans that
+00:52
+could be just about any type of
+00:54
+continuously valued signal you can think
+00:56
+about can sometimes be found in computer
+00:58
+vision conferences or publication
+01:00
+somewhere so these terms are really
+01:02
+defined quite broadly so why is computer
+01:05
+vision important well I think computer
+01:07
+vision is particularly particularly
+01:09
+important and exciting topic to study
+01:11
+because it's everywhere I think many of
+01:14
+us in this room right now are carrying
+01:15
+around one or more some several cameras
+01:17
+and who were just taking millions of
+01:19
+photos every day there's cameras all
+01:22
+around us all the time people are always
+01:24
+creating visual data sharing digital
+01:25
+data talking about visual data and this
+01:28
+is very important that we build
+01:29
+algorithms that can perceive reason and
+01:31
+process for a couple country statistics
+01:34
+if you look at YouTube actually
+01:37
+anomalous looking instagramers so
+01:39
+Instagram is very popular many of you
+01:41
+are familiar with it and they some
+01:44
+there's something like 100 million
+01:45
+photos and videos uploaded on Instagram
+01:47
+every single day if we go on YouTube
+01:50
+it's even worse so on YouTube as of 2015
+01:53
+so I'm sure it's grown since then people
+01:55
+are uploading roughly 300 hours of video
+01:58
+on YouTube every minute so that means if
+02:00
+you do the math and you think if I
+02:02
+wanted to as a single individual human
+02:04
+being look at all the visual data just
+02:07
+being uploaded
+02:07
+Instagram in YouTube in one day if you
+02:09
+do the math say I'm going to look at
+02:11
+images for maybe you call one second
+02:13
+each I'm going to look at my YouTube
+02:14
+videos at double speed it's gonna take
+02:16
+me about 25 years to look at the visual
+02:18
+data that's going to be uploaded on just
+02:20
+these two sites in a single day so when
+02:23
+you think about this these massive
+02:24
+statistics and think about the massive
+02:26
+amount of visual data being processed
+02:28
+and shared across the Internet these
+02:30
+days it becomes clear that we need to be
+02:32
+able to build automated systems that
+02:34
+kind of deal with it because we just
+02:36
+don't have the human manpower to look
+02:38
+anything process and perceive all of the
+02:40
+data that were created so that's why I
+02:42
+think computer vision is such an
+02:43
+important topic to be to be studying
+02:45
+these days and it's only going to get
+02:47
+more important as the number of visual
+02:48
+sensors out in the world keep increasing
+02:50
+with new with new emerging technologies
+02:52
+like autonomous vehicles augmented and
+02:54
+virtual reality drones you can imagine
+02:57
+that the role of computer vision in our
+02:59
+modern society will just continue
+03:00
+getting more and more and more important
+03:02
+so clearly I'm is because this is my
+03:05
+research area but I think this is the
+03:06
+most important and exciting research
+03:08
+topic that we can be studying right now
+03:09
+to your science
+03:10
+so that's computer vision computer
+03:13
+vision is a is the problem that we're
+03:15
+trying to solve its X force this problem
+03:17
+of understanding digital data but it
+03:19
+doesn't but computer vision doesn't
+03:21
+really care how we solve that problem
+03:23
+our goal is just to stop just to crunch
+03:25
+through all of those images and videos
+03:26
+however we have but the way it that
+03:30
+means the the technique that we happen
+03:32
+to be using in computer vision in across
+03:34
+the field these days is deep learning so
+03:37
+deep learn so before get to the report
+03:40
+we get to deep learning what is learning
+03:42
+learning is the process of building
+03:44
+artificial systems that can learn from
+03:46
+data and experiences notice that this is
+03:49
+someone worth bogging all to the goals
+03:50
+of computer vision computer vision just
+03:52
+says we want to understand visual data
+03:54
+we don't care how you do it
+03:56
+learning is this separate problem of
+03:58
+trying to build systems that can adapt
+04:00
+to the data that they see and the
+04:01
+experiences that they have in the world
+04:03
+and from the outside it's not
+04:05
+immediately clear why these two go
+04:07
+together but it turns out that in the
+04:10
+last 10 to 20 years
+04:11
+we found that building learning based
+04:13
+systems is very important for building
+04:16
+many kinds of generalizable computer
+04:17
+systems both in computer vision and
+04:19
+across many areas artificial
+04:21
+intelligence and computer science more
+04:22
+broadly so now when we think about deep
+04:25
+learning deep learning is then yet
+04:28
+another subset of machine learning where
+04:30
+deep learning is sort of maybe a bit of
+04:32
+a bit of a baby name a bit of a buzzword
+04:34
+a name but my definition is that it's a
+04:37
+type of type the deep learning consists
+04:39
+of hierarchical learning algorithms with
+04:42
+many layers whatever that means in the
+04:44
+context of Han that are very very
+04:46
+loosely inspired by it by the out by the
+04:48
+architecture of the mammalian brain and
+04:50
+some types of a million visual system
+04:52
+now I know could I say loosely this is a
+04:55
+thing that you'll often see people talk
+04:57
+about in deep learning that it's how the
+04:58
+brain learns or how the brain works I
+05:00
+think you should take any of these
+05:02
+comparisons with a massive grain of salt
+05:04
+there's some very coarse comparisons
+05:06
+between brains and neural networks that
+05:08
+we use today but I think you should not
+05:10
+keep them too seriously so that I'm kind
+05:14
+of stepping back a little bit from these
+05:15
+two topics computer vision and machine
+05:18
+learning both fall within the purview of
+05:20
+the larger research field of artificial
+05:23
+intelligence so artificial intelligence
+05:26
+is very general very broad it's broadly
+05:28
+speaking how can we build computer
+05:30
+systems that can do things that normally
+05:33
+people do so that's kind of my
+05:35
+definition I think people will argue
+05:37
+about what is and is not artificial
+05:39
+intelligence but I think we just want to
+05:41
+build smart machines whatever that means
+05:42
+to any of us and I think there's clearly
+05:46
+many different sub disciplines of
+05:48
+artificial intelligence but two of the
+05:49
+most important clearly again in my
+05:51
+biased opinion our computer vision
+05:53
+teaching machines to see and machine
+05:55
+learning teaching machines to learn and
+05:58
+these are the topics that we'll study in
+06:00
+this class so then kind of where is deep
+06:03
+learning fall in this regime ether me
+06:05
+would be a subset of machine learning
+06:06
+and it intersects both computer vision
+06:08
+and falls within the larger AI ground I
+06:10
+think it's important at the outset to
+06:12
+end so then this class is going to focus
+06:15
+at kind of this
+06:16
+section right in the middle the
+06:18
+intersection of computer vision machine
+06:19
+learning and deep learning to start out
+06:22
+with this slide is because it's really
+06:24
+easy to get caught up in the hype these
+06:26
+days and think that computer vision is
+06:28
+the only type of AI deep learning is the
+06:30
+only type of AI deep learning is the
+06:32
+only type of computer vision but I think
+06:34
+none of these are true there are many
+06:36
+there are types of AI which have nothing
+06:37
+to do with learning nothing to do with
+06:39
+deep learning
+06:40
+there's classical results about symbolic
+06:42
+systems and other approaches to AI that
+06:44
+are very different technically there's
+06:46
+areas of computer vision that do not use
+06:48
+any very much machine learning over much
+06:49
+deep learning so I love it even though
+06:52
+the focus of this class will be the
+06:54
+intersection of these different research
+06:55
+areas I just want to keep I just want
+06:57
+you to keep in mind as a whole that
+06:59
+there is a much broader realm of AI
+07:01
+research being done tonight around the
+07:03
+world by different groups that falls
+07:05
+into different pieces of this pipe heart
+07:06
+and of course there's many other areas
+07:09
+within AI that we won't talk about too
+07:11
+much so there's natural language
+07:13
+processing things like speech
+07:14
+recognition things like robotics and I
+07:17
+kind of ran out of space on the chart
+07:19
+with many more sub areas but suffice to
+07:22
+say artificial intelligence is a
+07:25
+massively
+07:25
+is a massively successful a massively
+07:28
+popular area of research an area of
+07:30
+study these days that again with the
+07:33
+broad goal of making machines do things
+07:35
+that people normally do you can imagine
+07:37
+that there's a whole lot of things that
+07:38
+we might do out in the world that fall
+07:40
+under this umbrella of our different
+07:42
+intelligence so that's kind of the big
+07:45
+picture roadmap and now for the route
+07:47
+for the rest of the semester we're gonna
+07:49
+focus on this little red area in here
+07:51
+but again don't forget that there's a
+07:52
+lot more to the world than what we're
+07:54
+talking about in this class so today's
+07:58
+agenda is a little bit different from
+08:00
+most of the lectures in this class
+08:01
+because again it is the first week so
+08:04
+before we can really dive into that red
+08:05
+piece of the pie chart and talk about
+08:07
+machine learning and deep learning and
+08:09
+computer vision all that really good
+08:10
+stuff I think it's important to get a
+08:12
+little bit of historical context about
+08:14
+how we got here as a field this has been
+08:17
+a hugely successful research area in the
+08:19
+last five to ten years but deep learning
+08:21
+machine learning in computer vision
+08:22
+these are areas with decades and decades
+08:24
+of research built upon them and all of
+08:27
+the successes we've seen in the last few
+08:28
+years
+08:29
+have been a result of building upon
+08:30
+decades of prior research in these areas
+08:32
+so today I want to give a bit a bit of a
+08:35
+brief history and overview of someone
+08:38
+who puts historical context that let up
+08:40
+with the successes of today and then
+08:42
+following that we need to talk about
+08:43
+some of the boring stuff of course
+08:45
+overview logistics all that other stuff
+08:47
+that you expect to see in the first
+08:48
+election class so let's start with so
+08:52
+we're going to do this in two ways right
+08:54
+we're going to do a parent we're going
+08:55
+to do a parallel stream first we're
+08:57
+going to talk about the history of
+08:58
+computer vision and we're going to sort
+09:00
+of switch switch a little bit and we'll
+09:02
+cover the history of deep learning so
+09:05
+before we dive into the material as any
+09:07
+sort of questions before we launch into
+09:09
+this historical s-capepod know ok
+09:13
+perfectly clear
+09:14
+so if we go I think whenever you talk
+09:18
+about a research area it's always
+09:19
+difficult to pinpoint the start right
+09:21
+because everything builds on everything
+09:22
+else
+09:22
+there's always prior work everyone was
+09:24
+inspired by something else that came
+09:26
+before but with a finite amount of time
+09:28
+to talk about a finite number of things
+09:29
+you got to cut the line somewhere so one
+09:32
+place where I like to draw the line and
+09:33
+point to as maybe the start of computer
+09:36
+vision is actually not with computer
+09:38
+scientists at all and happen it's from
+09:40
+this this seminal study of Hubel and
+09:42
+Wiesel back in 1959 who were not
+09:45
+interested in computers at all they
+09:47
+wanted to understand how the malian
+09:49
+brains work so what they did is they got
+09:51
+a cat they got an electrode they put the
+09:54
+electrode into the brain of the cat into
+09:56
+the visual cortex of the cat just the
+09:58
+part in the back of your head that
+10:00
+processes visual data and with this
+10:02
+electrode they're able to record the
+10:04
+neuronal activity of some of the
+10:06
+individual neurons in the cat's visual
+10:08
+cortex so then with this somewhat
+10:11
+grotesque experimental setup they were
+10:13
+able to have the cat watch TV and then
+10:16
+not really TV because it was 1950 time
+10:19
+but they were able to show different
+10:21
+sorts of slides to the cat they cash in
+10:23
+and with they had this general
+10:25
+hypothesis that maybe there's certain
+10:27
+neurons in the brain that responds
+10:28
+different types of visual stimuli and by
+10:31
+showing the cap different types of
+10:32
+visual stimuli and recording the neural
+10:34
+activity from individual neurons maybe
+10:37
+we can start to puzzle out how this
+10:38
+thing called vision works at all so
+10:41
+that's exactly
+10:41
+they did they got these cats they stuck
+10:43
+neurons in their brains and they started
+10:45
+showing a bunch of different images on a
+10:46
+slideshow to try to see what kinds of
+10:48
+images would activate the neurons and
+10:50
+cats brains so they tried different
+10:52
+things you can show them make mice and
+10:56
+fish and other kinds of things that cats
+10:58
+like to eat or play with but it was
+11:00
+really hard to get any any solid signal
+11:02
+about what these neurons were responding
+11:04
+to so what what one really interesting
+11:07
+discovery happened is you know today
+11:10
+we're using PowerPoint back in the day
+11:12
+we've natural slide projectors and when
+11:14
+you change the slide like there's kind
+11:15
+of a vertical bar that would move up and
+11:17
+down the screen and what they
+11:18
+surprisingly found is that some of the
+11:20
+neurons in the cat's brain which
+11:22
+consistently responds to the time when
+11:24
+they change the slides and they even
+11:26
+though they couldn't recognize any
+11:27
+patterns of what was how it was the cat
+11:30
+responding to things on the slides and
+11:32
+they eventually discovered that it was
+11:34
+in fact this this moving vertical bar
+11:36
+that was indeed causing some of the
+11:38
+neuronal activity in the cat's brain so
+11:41
+with this hint they were able to puzzle
+11:42
+out that there are certain that there
+11:44
+are different types of cells in the
+11:45
+brain that are responding to different
+11:47
+types of visual stimuli many of them are
+11:49
+very hard to interpret but some of these
+11:51
+easiest are these so-called simple cells
+11:54
+that they that they discovered so the
+11:56
+simple cells would respond to an edge
+11:57
+that's maybe light on one side dark on
+12:00
+another side at a particular orientation
+12:01
+at a particular position in the cat's
+12:04
+visual field and if there happened to be
+12:06
+an edge at the right position on the
+12:07
+right angle in the right place then that
+12:09
+particular neuron might fire that was
+12:11
+very exciting because men may have some
+12:13
+concrete evidence of what it is that
+12:14
+cats are actually responding to in their
+12:16
+brains then with a bit more exploration
+12:19
+they remember to find other types of
+12:20
+cells in the brain that responded to
+12:22
+even more complex patterns like the
+12:24
+complex cells that would respond to bits
+12:26
+of motion or could respond to orienting
+12:28
+edges but anywhere in the visual appeal
+12:30
+to give a sense of some sense of
+12:31
+translation and Berryman's in the visual
+12:33
+representations that they perceive so I
+12:36
+think that this is really one of the
+12:37
+bounding oh and by the way of course I
+12:40
+have to mention that these guys this was
+12:41
+very seminal research and these guys won
+12:43
+the Nobel Prize for it in 1981 so this
+12:45
+was a very important research in history
+12:47
+of science and psychology and vision
+12:50
+overall but I like to point to this as
+12:52
+the beginning of computer
+12:53
+for a couple reasons one is this
+12:56
+emphasis on oriented edges will see this
+12:58
+come up over and over again on the
+13:00
+different architectures that we study
+13:01
+throughout the semester on the other is
+13:03
+this hierarchical representation of the
+13:05
+visual system of building from simple
+13:07
+cells that represent one thing combining
+13:09
+with complex cells and more and more
+13:11
+complex cells that respond to more and
+13:13
+more complex types of visual stimuli
+13:14
+this broad idea was hugely influential
+13:17
+on the way that people thought about
+13:18
+visual processing and even on neural
+13:22
+representations more generally so then
+13:25
+if we move forward a couple years in
+13:26
+1963 Larry Roberts then his that's when
+13:30
+Larry Roberts graduated from MIT PhD and
+13:33
+did perhaps what was the first PhD
+13:34
+thesis on computer vision here of course
+13:38
+it was 1963 doing anything with
+13:40
+computers was very cumbersome doing
+13:41
+anything with digital cameras was very
+13:43
+cumbersome so large portions of his
+13:45
+thesis just to talk about how do you
+13:46
+actually get photographic information
+13:48
+into the computer because this was not
+13:50
+something you could take for granted at
+13:52
+that time but even working through those
+13:54
+constraints he built some system that
+13:56
+was able to take this this raw visual
+13:58
+picture detect some of the edges in the
+14:00
+picture sort of inspire inspired by
+14:02
+useful and weasels discovery that edges
+14:04
+were fundamental to visual processing
+14:05
+then from there detect feature points
+14:08
+and then from there start to understand
+14:09
+the 3d geometry of objects and images
+14:12
+now what's really interesting is that if
+14:14
+you go and look at your Larry Roberts
+14:15
+for Wikipedia page it actually doesn't
+14:17
+mention any of this at all
+14:18
+because after he finished his PhD he
+14:21
+went on to become the founding father of
+14:22
+the internet and did went on to be a
+14:26
+hugely a major player in the World Wide
+14:29
+Web and all of the networking
+14:30
+technologies that were developed around
+14:31
+that time so doing the first PhD thesis
+14:35
+in computer vision was kind of a low
+14:36
+point in his career
+14:38
+I think all of us can aspire to that
+14:41
+successful so then moving forward a
+14:44
+couple of a couple more years people are
+14:45
+getting really excitement so there was
+14:47
+this very famous study in 1966 from MIT
+14:50
+a similar pack word proposed the the
+14:52
+summer computer vision project the
+14:54
+summer computer vision project basically
+14:56
+what he wanted to do is like oK we've
+14:58
+got digital cameras now they can detect
+15:00
+edges we know how all those cubed Wiesel
+15:02
+told us how the brain works what we're
+15:04
+gonna do is hang a couple undergrads put
+15:06
+them to work over the summer and after
+15:07
+the summer we show it we should be able
+15:09
+to construct a significant portion of
+15:12
+the visual system man these guys are
+15:14
+really ambitious back in the day because
+15:16
+now it's a clearly computer vision is
+15:18
+not solved they did not achieve this
+15:20
+this a lot people and nearly 50 years
+15:22
+later we're still plugging away trying
+15:24
+to achieve this what they thought they
+15:25
+could do in the summer with my brother
+15:29
+so moving forward into the 1970s one
+15:33
+hugely influential figure in this era
+15:36
+was was being Tamar who proposed this
+15:39
+idea of stages of visual representation
+15:42
+then again kind of harkens back to
+15:44
+Google and reasonable so here you can
+15:46
+see that maybe we want the input image
+15:47
+then we have another prop another stage
+15:49
+of visual pops and we extract edges then
+15:52
+from the edges we extract some kind of
+15:54
+depth information that maybe beacon
+15:56
+segment objects and say which which
+15:57
+which parts of image belong to which two
+16:00
+different types of objects and then
+16:02
+think about the relative depths of those
+16:03
+objects and then eventually start to
+16:05
+reason about whole 3d models of the
+16:07
+world and of the scene and then we'll be
+16:11
+bored of the seventies people were
+16:12
+started to become interested in
+16:14
+recognizing objects and thinking about
+16:16
+ways to build computer systems that
+16:18
+could not just detect edges and simple
+16:20
+geometric shapes but more complex
+16:22
+objects like people bombs it was work
+16:24
+about some things like generalized
+16:26
+cylinders and pictorial structures that
+16:28
+built that try to recognize people as
+16:30
+easy formal configurations of rigid
+16:32
+parts with some kind of known topology
+16:34
+and you can see ideas and this was this
+16:38
+was out this was very influential work
+16:40
+at a time but the problem is that in the
+16:43
+nineteen seventies processing power was
+16:45
+was very limited visual cameras were
+16:47
+very limited so a lot of this stuff was
+16:49
+sort of
+16:50
+toy in a sense and as we move into the
+16:53
+80s people's people have much more
+16:55
+access to better digital cameras more a
+16:57
+more computational power and people
+16:59
+began to work on slightly more realistic
+17:00
+images so one one kind of theme in the
+17:05
+80s was trying to recognize objects and
+17:07
+images via edge detection I told you
+17:10
+that edges were going to be super
+17:11
+influential throughout the history of
+17:12
+computer vision so there was a very
+17:14
+famous paper from John Candy in 1986
+17:16
+that proposed the very robots algorithm
+17:18
+for detecting edges and images and then
+17:21
+David Lowe the next year in 1987
+17:23
+proposed the mechanism for recognizing
+17:25
+objects images by matching their edges
+17:27
+so in this example you can imagine we've
+17:30
+got this this cluster razors and then we
+17:32
+detect the edges then maybe we have some
+17:34
+template rate picture of a razor that we
+17:36
+know about then we can detect the edges
+17:38
+of our template razor and try to match
+17:39
+it into this image this cluttered image
+17:41
+there's a menu of all the razors and
+17:43
+then by kind of matching edges in this
+17:45
+way you might be able to recognize that
+17:47
+there are many ten razors in this image
+17:48
+and what are their relative
+17:49
+configurations just based on matching
+17:51
+with our tumbler image and now I'm
+17:54
+moving at moving on into the 1990s
+17:56
+people again wanted to build to more and
+17:58
+more complex images more and more
+18:00
+complex scenes so here a big theme was
+18:03
+trying to recognize objects via grouping
+18:05
+so here rather than maybe just matching
+18:07
+the edges what we want to do is take the
+18:09
+input image and segment and segmented
+18:11
+into semantically meaningful chunks
+18:13
+maybe like maybe we know that the person
+18:16
+is composed of one meaningful chunk the
+18:19
+the different umbrellas would be
+18:20
+composed of a different meaningful chunk
+18:21
+with the idea that if we can first do
+18:24
+some sort of grouping then later Dallas
+18:26
+tree and recognizing or giving a label
+18:28
+to those groups might be an easier
+18:29
+problem then in the 2000s a big theme
+18:33
+was was recognition via matching and
+18:36
+this is a there was a hugely famous
+18:38
+paper called sift by David loved by
+18:40
+David Lowe again in 1999 that proposed a
+18:43
+different a different way of recognition
+18:45
+via matching so here the idea is that we
+18:48
+would take our input image detect little
+18:50
+recognizable key points and different
+18:51
+position 2d positions in the image and
+18:53
+have each of those key points we're
+18:55
+going to represent its appearance using
+18:57
+some kind of feature vector and that
+18:59
+feature vector is going to be a real
+19:01
+valued vector this somehow encodes the
+19:03
+of image at that little point in space
+19:05
+and the end by very careful design of
+19:09
+exactly how that feature vector is
+19:11
+computed you can encode different types
+19:13
+of invariances into that feature vector
+19:15
+such that if we were to take the same
+19:17
+image and rotate it a little bit or
+19:19
+brighten or darken the lighting
+19:21
+conditions in the scene a little bit
+19:22
+that hopefully we would compute the same
+19:24
+value for that feature vector even if
+19:26
+the underlying image were to change a
+19:28
+little bit and there was a lot of work
+19:30
+in the it's been once we can extract
+19:32
+these sets of robust and invariant
+19:34
+feature vectors then you can improve
+19:36
+again perform some kind of recognition
+19:38
+via matching so that on the left if we
+19:40
+have some template image of a stop sign
+19:42
+we can detect all these all these
+19:43
+distinctive invariant feature key points
+19:45
+then on the right if we have another
+19:47
+another image of at a stop sign this may
+19:50
+be taken from a different angle with
+19:51
+different lighting conditions then by a
+19:53
+careful clever design of these invariant
+19:55
+robust features then we can match and
+19:58
+then correspond points in the one image
+20:00
+into points in the other image and
+20:01
+thereby be able to recognize that the
+20:03
+right image is indeed a stop sign so
+20:07
+then another hugely influential work in
+20:09
+the 2000s was the viola Jones algorithm
+20:11
+published in 2001 and this was really
+20:14
+and they developed a very very powerful
+20:16
+algorithm for recognizing faces in
+20:18
+images so here they would you know you
+20:20
+have an image then you want to draw a
+20:21
+box where all the people's faces are and
+20:23
+this was notable for this this piece of
+20:25
+work was notable for a couple reasons
+20:26
+one it was the first major use of
+20:29
+machine learning and computer vision so
+20:31
+viola and Jones used some algorithm
+20:34
+called the boosted decision trees that
+20:36
+were able to learn somehow the right
+20:38
+combination of features to use in order
+20:40
+to recognize images they were to
+20:41
+recognize faces and to what was
+20:44
+particularly notable was the very fast
+20:46
+commercialization of this algorithm that
+20:48
+this this piece of research went very
+20:50
+quickly from a sort of academic piece of
+20:52
+research publishing 2001 and within a
+20:55
+few years this was actually being
+20:56
+shipped in digital cameras at the time
+20:58
+so if you remember maybe they had like
+21:00
+an autofocus feature or you would kind
+21:02
+of hold the shutter half down and it
+21:03
+would like beep a little bit and draw
+21:05
+boxes are on the faces and then focus on
+21:06
+the people in the scene well that was
+21:08
+most likely using this viola Jones
+21:10
+algorithm so this is a particularly
+21:12
+notable piece of work
+21:14
+for those two reasons so now after they
+21:17
+kind of unlocked the box of using data
+21:20
+and using machine learning to augment
+21:22
+our visual representations then moving
+21:25
+on into the 2000s we began to see more
+21:28
+and more uses of machine learning more
+21:30
+and more uses of data in order to
+21:32
+improve our visual recognition systems
+21:33
+so one hugely influential piece of work
+21:37
+here was the Pascal visual object
+21:39
+challenge so here they download a bunch
+21:41
+of them because now it's 2,000 layered
+21:43
+Roberts had excellent computer vision
+21:45
+and invented the internet so we could
+21:47
+then download images from the internet
+21:48
+to help build these datasets images and
+21:53
+then we could get graduate students to
+21:55
+go and label those images and then then
+21:58
+we could use your machine learning
+22:00
+algorithms to mimic the labels that the
+22:02
+graduate students have written down the
+22:04
+images and then if you do that then you
+22:07
+can see this nice crack on the right
+22:08
+performance increasing on this of this
+22:10
+recognition challenge increased steadily
+22:13
+over time from about 2005 to 2011 so
+22:18
+then this this brings us to the image
+22:20
+net learners feel visual recognition
+22:22
+challenge so here this was a very very
+22:26
+large scale data set in computer vision
+22:28
+that has become hugely influential and
+22:31
+has become one of the main benchmarks in
+22:33
+computer vision even leading up to this
+22:34
+day so the image in that classification
+22:37
+challenge was this fairly large data set
+22:40
+of more than about 1.4 million images
+22:42
+and each of those 1.4 million images
+22:45
+were labeled with one with one of a
+22:47
+thousand different category labels and
+22:49
+the big the big new piece of innovation
+22:53
+here was that if you kind of do the math
+22:55
+here you gonna be a lot of graduate
+22:56
+students label all this stuff so the big
+22:59
+piece of innovation here was to not
+23:01
+label data using graduate students
+23:02
+instead this this made use of
+23:04
+crowdsourcing so here you could go on
+23:07
+services like Amazon Mechanical Turk and
+23:09
+then person up little pieces of work and
+23:11
+then blast mode on over there over there
+23:13
+over the Internet and then people
+23:14
+anywhere in the world could label
+23:16
+McConnel images get paid a couple of
+23:18
+cents for each image they label and that
+23:19
+was able to massively increase those
+23:21
+amano I mean this this is beneficial in
+23:24
+two ways right because one researcher
+23:26
+get people to label their data without
+23:27
+being constrained by the number of
+23:29
+graduate students that they have and to
+23:32
+it become a nice source of income for
+23:34
+some people who were bored at worked and
+23:36
+just like this or or in classes that
+23:39
+gets maybe or not it's still weird it's
+23:41
+the running by the lady that grew up
+23:42
+introducing tasks but anyway this became
+23:45
+a hugely influential data set and
+23:48
+computer vision and more than a data set
+23:50
+it became a benchmark challenge so they
+23:53
+had every year they ran a competition
+23:55
+when they were different researchers
+23:57
+would compete and try to build their own
+23:59
+algorithms that would try to recognize
+24:01
+objects in this limit in this in his
+24:02
+classification challenge and this became
+24:06
+somewhat jokingly known sometimes as the
+24:09
+Olympics of computer vision that there
+24:11
+was a period of time from maybe in the
+24:13
+the mid 20 2010 the late 2000s early 20
+24:16
+times when people would just really
+24:18
+excitedly want to look at the results of
+24:20
+imagenet competition every year and see
+24:22
+what kind of advances the field had made
+24:24
+last year then then given that I told
+24:28
+you is this competition you can look at
+24:30
+what was the error rate on this on this
+24:31
+competition moving over time so the
+24:33
+first time the competition was ran in
+24:35
+2010 in 2011 we were sitting in error
+24:37
+rates of around 28 around 25 and then
+24:40
+something big happened in 2012 so at the
+24:44
+2012 imagenet competition suddenly the
+24:47
+error rates dropped in a single year
+24:48
+from 25% all the way down to 16% and
+24:53
+when it and this and after 2012 errors
+24:57
+just kept on diminishing diminishing
+24:59
+very very fast such that once we got to
+25:02
+about 2017 we were building systems that
+25:04
+could compete on this imagenet challenge
+25:06
+and to perform even better than humans
+25:08
+when they try to recognize images in
+25:10
+this data set so then the question is is
+25:13
+what happened in 2012 so what happened
+25:15
+in 2012 is that deep learning came onto
+25:17
+the scene and this was really the
+25:19
+breakthrough moment for deep learning
+25:21
+and computer vision researchers suddenly
+25:23
+woke up and saw that there's this this
+25:25
+crazy new thing that is suddenly
+25:27
+sweeping our field so in 2012 there was
+25:30
+this absolutely seminal paper from Alex
+25:33
+pachowski
+25:33
+Ilya Salisbury and Geoff Hinton where
+25:36
+they proposed that deep convolutional
+25:38
+not work Alex not that just crushed
+25:40
+everyone else at the imagenet
+25:41
+competition five years and four people
+25:43
+working in computer vision at that time
+25:45
+this was shocking this felt like there
+25:47
+was this Brandon thing that just came
+25:49
+out of nowhere and just suddenly crushed
+25:51
+all these algorithms that we've been
+25:52
+working on you know as we kind of watch
+25:55
+this history of computer vision walking
+25:57
+from the 1950s all the way up into the
+25:59
+bat'leth till the 2000s
+26:00
+you'll notice that neural networks were
+26:02
+not a mainstream part of that history
+26:04
+throughout much of computer visions
+26:05
+history so when this suddenly appeared
+26:09
+it felt a lot of computer vision
+26:10
+researchers like this was this brand-new
+26:12
+thing suddenly appearing all at once
+26:14
+that this brand-new exciting technology
+26:17
+and that was a little bit flawed because
+26:20
+this was not a brand new technology
+26:21
+there had been a parallel stream of
+26:23
+researchers going back similar similarly
+26:25
+similar amounts of time that had been
+26:27
+developing and holding these techniques
+26:29
+for decades and 2012 was the sudden
+26:31
+breakthrough moment where all of that
+26:33
+hard work paid off and became mainstream
+26:35
+so then let's talk a little bit about
+26:38
+the history of deep learning kind of
+26:40
+going back in time yet again so then
+26:42
+about the same time that Hubel and
+26:44
+Wiesel were doing some of their seminal
+26:45
+work on the visual recognition and Katz
+26:49
+there was another very influential
+26:51
+algorithm called though actually wasn't
+26:53
+even algorithm Oh called the perceptron
+26:54
+so the perceptron was one of the
+26:56
+earliest systems that could learn as a
+26:58
+computer system but what's interesting
+27:00
+is that this was what 1958 so the idea
+27:03
+of an algorithm the idea of programming
+27:05
+the computer these were already quite
+27:07
+these were quite novel research topics
+27:09
+on their own at that Friedan style so
+27:11
+the perceptron was actually implemented
+27:12
+as a piece of hardware they there's a
+27:15
+picture of it on the right that is the
+27:16
+perceptron it was this giant like
+27:18
+cabinet size thing with like wires going
+27:20
+all over the place it had weights that
+27:23
+rep that were stored in these
+27:25
+potentiometers which I don't even know
+27:27
+what that is because I'm a computer
+27:28
+scientist
+27:30
+and and these these these weights were
+27:33
+just mechanically up the values of these
+27:35
+weights were changed mechanically dear
+27:36
+during learning by a set of electric
+27:38
+motors which again I'm not a mechanical
+27:40
+engineer so I definitely could not build
+27:42
+this thing but what was but even though
+27:45
+this was this mechanical device that was
+27:46
+bigger than a person it actually could
+27:49
+learn from from data somehow and it was
+27:52
+able to learn to recognize letters of
+27:54
+the alphabet on these tiny 20 20 by 20
+27:57
+images that were super state-of-the-art
+27:58
+in 1958 but so if I don't want to talk
+28:04
+about any of the math with us for the
+28:05
+perceptron but if you were to look at it
+28:07
+with modern eyes we would probably call
+28:08
+it a linear classifier and we'll talk
+28:10
+about next week on Wednesdays lecture so
+28:13
+this perceptron got a lot of people
+28:15
+really excited it caught people thinking
+28:17
+like wow here's a mechanism that allows
+28:19
+machines to learn novel stuff from data
+28:21
+without people having to explicitly
+28:23
+program how it's going to work and all
+28:26
+of that kind of came to a crashing halt
+28:28
+in 1969 when Marvin Minsky and Seymour
+28:31
+Packard who published this this infamous
+28:34
+book called perceptrons in 1969 and what
+28:38
+mitts in Peppard pointed out in their
+28:40
+book basically was that perceptrons are
+28:42
+not magical devices right the perceptron
+28:45
+is a particular learning algorithm and
+28:47
+there are certain types of functions
+28:48
+that it can learn for our present and
+28:49
+other types of functions that it cannot
+28:51
+to learn to represent in particularly
+28:53
+they pointed out that the act of the the
+28:55
+actual function is not something that is
+28:57
+learn about my eyelid by the linear
+28:58
+perceptron learning algorithm that we'll
+29:00
+talk about again a little bit more next
+29:02
+week and this is this sudden realization
+29:04
+well okay so the normal story that gets
+29:07
+told is that the sudden realization of
+29:10
+this book was that oh these these
+29:11
+learning algorithms are not magical
+29:13
+there's things they can't learn and
+29:14
+people just lost interest in the field
+29:16
+and work in learning work in perceptrons
+29:19
+kind of dried up for a period of time
+29:20
+following the release of this bugger but
+29:23
+what's interesting is that I think
+29:24
+nobody actually read the book because um
+29:26
+if you actually read it there are
+29:28
+sections where they say yes
+29:29
+the original perceptron learning
+29:31
+algorithm is quite limited and it can
+29:33
+only represent certain functions but
+29:35
+there's something else there's another
+29:36
+potential version of the algorithm
+29:38
+called a multi-layer perceptron that
+29:40
+actually can learn
+29:41
+many many many many different types of
+29:43
+functions and is very flexible in its
+29:45
+representations but that Penna got lost
+29:48
+in the headlines at the time and nobody
+29:50
+realized that and people just heard that
+29:52
+for sub Tron's didn't work and we're
+29:53
+dead
+29:55
+so you should definitely read the
+29:57
+assigned reading but then going forward
+30:01
+because then going forward quite some
+30:03
+amount of time we skip ahead to 1980 and
+30:05
+there was this very influential paper
+30:07
+called system proposed called the neocon
+30:10
+neutron that was developed by Fukushima
+30:12
+with a Japanese computer scientist and
+30:14
+he wanted he was directly inspired by
+30:16
+Hubel and Wiesel idea of this
+30:18
+hierarchical processing of neurons
+30:20
+remember people and Wiesel talk about
+30:22
+these business simple cells these
+30:24
+complex cells
+30:25
+he's hierarchies of neurons that could
+30:26
+gradually learn more learn to and see
+30:29
+more and more complex visual stimuli in
+30:31
+the image so Fukushima proposes this
+30:36
+computational realization people and
+30:39
+weasels formulation if you call the new
+30:41
+economy economy so the neocon Neutron
+30:43
+interleaved two types of operations one
+30:46
+were these computational simple cells
+30:48
+that if we were to look at them with
+30:50
+modern terminology would they would they
+30:52
+look very much like convolution and the
+30:53
+latter was these computational
+30:55
+realizations of complex cells that again
+30:58
+under modern terminology look very much
+31:00
+like the pulling operations that we use
+31:02
+in modern evolution or networks so
+31:04
+what's striking is that even back in
+31:08
+this neo cognate Ron from 1980 had an
+31:10
+overall architecture and overall method
+31:13
+of processing that looked very similar
+31:14
+to this famous Alex net system that
+31:17
+swept in 2012 um even the figures that
+31:19
+they have in the papers look pretty
+31:21
+similar so they gotta be the same thing
+31:23
+right but what was striking but the Neo
+31:26
+cognate Ron is that they defined this
+31:28
+computational model they had the right
+31:30
+idea of convolution and pooling and
+31:32
+hierarchy but they did not have any
+31:34
+practical method to train the algorithm
+31:36
+because remember this there's a lot of
+31:38
+learning awaits in this system a lot of
+31:40
+connections between all the neurons
+31:41
+inside they need to be set somehow and
+31:44
+even then Fukushima did not have an
+31:47
+efficient algorithm for learning to
+31:49
+properly set all those although
+31:50
+free-weight parameters in the system
+31:52
+based on the based on data
+31:55
+so then a couple years later there was
+31:56
+this again massively influential paper
+31:58
+by rumelhart
+31:59
+and Ted Williams in 1986 the interview
+32:02
+introduced the backpropagation algorithm
+32:04
+for training these multi-layer
+32:06
+perceptrons so remember that in the
+32:10
+perceptrons book there was this thing
+32:11
+called a multi-layer perceptron that was
+32:13
+thought to be very powerful in its
+32:15
+ability to represent and learn to
+32:16
+protects functions well in the back
+32:18
+propagation in in this paper that
+32:21
+introduced the back propagation
+32:21
+algorithm was one of the first times
+32:24
+that people were able to successfully
+32:25
+and efficiently training these deeper
+32:27
+models with multiple layers of
+32:30
+computations and this looks very much
+32:33
+like a modern neural network that we're
+32:35
+using today that if you look at one you
+32:37
+kind of look at this paper and over to
+32:38
+knock them through it you'll see they
+32:39
+talk about gradients and they talk about
+32:41
+jacobians impressionnant all this kind
+32:43
+of mathematical terminology that we
+32:45
+think about today when we're when we're
+32:47
+building and training neural networks so
+32:49
+these look very much like the modern
+32:52
+fully connected networks that we still
+32:54
+use today there are sometimes called
+32:55
+multi-layer perceptrons in homage to
+32:57
+this of this long history so now that
+33:00
+does not let a lot of people that let's
+33:04
+do a lot of small people sort of get
+33:05
+really excited about them there are
+33:06
+networks together and try to figure out
+33:09
+different types and structures of neural
+33:10
+networks that could be built and trained
+33:12
+powered by this new back propagation
+33:13
+algorithm and one of the most
+33:15
+influential works are on that time was a
+33:18
+young McCune at almost paper in 1998
+33:20
+that introduced the idea of a
+33:22
+convolutional neural network so this
+33:24
+looks again very much like the Fukushima
+33:27
+algorithm that we split this what they
+33:29
+do here is they took Fukushima this kind
+33:32
+of idea of convolution and pooling and
+33:33
+multi-layer multiple layers inspired by
+33:36
+the visual system and combine that with
+33:38
+the back propagation algorithm from
+33:40
+rumelhart
+33:40
+paper in 1986 and with that combination
+33:43
+they were able to train this
+33:44
+convolutional these very large at the
+33:47
+time convolutional neural networks that
+33:48
+could learn to recognize different types
+33:50
+of things and images and this was a
+33:53
+hugely successful system it didn't I
+33:56
+think it actually was very successful
+33:58
+commercially so in addition to being a
+34:00
+piece of very influential academic
+34:02
+research it was also deployed in a
+34:04
+commercial system by NEC
+34:06
+labs and
+34:08
+for a period of time this convolutional
+34:10
+neural net system developed by that
+34:12
+group was actually being used to process
+34:13
+the handwriting get a lot of checks that
+34:15
+were written in the United States at
+34:17
+that time um one thing that I found
+34:19
+stated that up to 10% of all cheques in
+34:22
+the United States we're actually being
+34:23
+having their the numbers on the cheque
+34:25
+being read automatically by these
+34:28
+convolutional neural net systems in the
+34:29
+late 90s and early 2000s and again if
+34:32
+you look at exactly what this this
+34:34
+algorithm is doing Lynette was kind of
+34:36
+like this
+34:37
+so the algorithm here was called
+34:38
+Lynette's after Don McCune ironies
+34:40
+pressure and then that if you look at
+34:43
+the structure of an algorithm it looks
+34:45
+very similar almost identical to the
+34:47
+types to the to the algorithm that was
+34:49
+used in Aleks that near nearly nearly 30
+34:52
+years later
+34:53
+so then emboldened by the success they
+34:56
+were again a small group of people
+34:58
+throughout the late 90s and early 2000s
+35:00
+whom were really interested in trying to
+35:02
+move them in in push neural net systems
+35:05
+and figure out ways to train neural net
+35:07
+systems that were ever bigger ever
+35:09
+deeper ever wider and could be used on
+35:12
+an increasing variety of tasks and
+35:14
+around this period of time in the 2000s
+35:16
+was wearing the term deep learning first
+35:18
+emerged where it records were it where
+35:21
+the term deep was meant to refer to
+35:23
+multiple layers in these neural network
+35:25
+type algorithms there's a and so this
+35:28
+was really not a super mainstream
+35:30
+research area at this time there was a
+35:33
+relatively small number of research
+35:34
+groups and relatively small number of
+35:36
+people studying these ideas are on this
+35:38
+time but I think a lot of the
+35:40
+fundamentals that were reaping the
+35:42
+rewards of now were really developed
+35:44
+during this period of time in the 2000s
+35:46
+when people started figuring out all the
+35:48
+new modern trips to train different
+35:50
+types of neural network systems so that
+35:52
+finally brings us back to Alex fat and
+35:55
+then in 2012 we had this great
+35:58
+confluence of this great this this
+36:01
+computer vision task called image net
+36:03
+that people in computer vision were
+36:05
+super excited about we had the second
+36:07
+new techniques convolutional neural
+36:08
+networks and efficient ways to train
+36:10
+them that have been developed by this
+36:11
+parallel research community and
+36:13
+everything just seemed to come together
+36:14
+just
+36:15
+time in 2012 so then from 2012 to
+36:18
+present day we've seen an absolute
+36:20
+explosion in the in the usage of
+36:23
+convolutional and other types of neural
+36:24
+networks across both across computer
+36:27
+vision and across other types of related
+36:29
+areas in AI and across computer science
+36:31
+so here on the Left we have the Google
+36:33
+Trends for deep learning that shows you
+36:35
+this massive sort of exponential growth
+36:37
+that really took off starting in 2012
+36:39
+and on the right this is a photo I took
+36:42
+at the computer vision of pattern
+36:44
+recognition conference on this summer in
+36:46
+2019 so this is one of the premier
+36:48
+venues for academic publications in
+36:51
+computer vision and here is a graph that
+36:54
+they were showing at the keynote for
+36:55
+that for that conference where they
+36:57
+showed on the x-axis the year of the
+37:00
+conference and on the y-axis of the
+37:01
+number of submitted and accepted papers
+37:03
+in this and this conference so you can
+37:05
+see that even though the last five to
+37:08
+ten years have resulted in this massive
+37:10
+explosion both of machine learning
+37:11
+systems both maybe in popular perception
+37:14
+especially from Google Trends as well as
+37:16
+the massive increase in academic
+37:18
+interest into both machine learning
+37:20
+systems and computer vision systems as
+37:22
+evidenced by this fine spot on the right
+37:24
+and if you look around the field today
+37:26
+we see the convolutional networks other
+37:28
+types of deep neural network you see are
+37:30
+being used for just about every possible
+37:32
+application of computer vision that you
+37:34
+can imagine
+37:34
+so from 2012 these convolutional
+37:37
+networks are really everywhere they're
+37:39
+getting use from such a wide diversity
+37:41
+of tasks like image classification we
+37:43
+want to put labels on images or image
+37:46
+retrieval or want to retrieve images
+37:47
+from collections things like object
+37:49
+detection we want to recognize the
+37:51
+positions of objects and images while
+37:53
+simultaneously label like that the
+37:55
+record should be image segmentation I'm
+37:56
+threatening to fix the slide where we
+37:58
+want to label the what where this is
+38:00
+going back to this idea of semantic
+38:01
+grouping you saw for computer vision in
+38:03
+the 90s where we want to label the pics
+38:05
+of pixels as being part of a cohesive
+38:06
+whole comments are going to use for
+38:09
+things like video classification on
+38:11
+activity recognition things they're
+38:13
+gonna use for things like pose
+38:14
+estimation where you want to say how are
+38:17
+the exact geometric poses of people
+38:19
+arranged in images even for things that
+38:21
+don't really feel like classical
+38:23
+computer vision like playing Atari games
+38:25
+with a
+38:26
+process the visual input of the Atari
+38:28
+game with a convolutional neural network
+38:30
+and combine that with other sorts of
+38:32
+learning techniques in order to both
+38:33
+jointly learn a visual representation of
+38:36
+the video game world as well as how to
+38:38
+play in that normal um convolutional
+38:42
+neural networks are also getting use for
+38:44
+visual tasks that are about visual data
+38:46
+that humans don't real aren't very good
+38:48
+at
+38:49
+so convolutional networks are getting
+38:51
+used in things like medical imaging to
+38:53
+diagnose different types of tumors
+38:54
+diagnose different types of skin lesions
+38:56
+other medical conditions they're going
+38:58
+to use in galaxies classification
+38:59
+they're getting used in tons of
+39:01
+scientific applications like classifying
+39:04
+whales or elephants or other types of
+39:06
+people or because there's this problem
+39:09
+where scientists want to go out into the
+39:10
+world and collect a lot of data and then
+39:12
+be able to use images and visual
+39:14
+recognition as a kind of universal
+39:16
+sensor to make use of all this data that
+39:18
+they collect and gain insights into
+39:20
+their their particular field of
+39:21
+expertise that they're interested in and
+39:23
+we've seen computer vision and
+39:24
+convolutional networks branch out into
+39:26
+all these other areas of science and
+39:28
+just open up and unlock lots of new
+39:30
+applications just across the board
+39:32
+they're big the comments are going to
+39:34
+use for all kinds of fun tasks like
+39:36
+image captioning that we can write
+39:37
+systems we can build systems they can
+39:39
+write natural language descriptions but
+39:41
+images these are using convolutional net
+39:42
+words we can use convolutional networks
+39:45
+for generating arts so we can know we
+39:48
+can make all these kind of psychedelic
+39:49
+portraits again using a convolutional
+39:51
+neural networks so then we might ask
+39:54
+what was it that happened in 2012 that
+39:57
+made all of this take off well I think
+39:59
+the jury's out and we'll have to see
+40:01
+what the story ins right 50 years from
+40:03
+now but my personal interpretation is
+40:05
+that it was a combination of three big
+40:07
+components that came together all at
+40:09
+once one was the set of algorithms that
+40:12
+we saw that there was a stream of people
+40:14
+working on deep learning at common
+40:16
+neural networks and machine learning who
+40:18
+had developed these powerful set of
+40:19
+tools for representing learning
+40:22
+functions and for learning that was the
+40:24
+fact propagation algorithm we saw this
+40:26
+the second stream of data that with the
+40:28
+rise of digital cameras later Robertson
+40:31
+running the internet and people to
+40:32
+develop a crowdsourcing we were able to
+40:35
+collect unprecedented
+40:36
+to label data that could be used to
+40:38
+train these systems and the third piece
+40:40
+that we haven't really talked about was
+40:42
+the massive rise in computational
+40:44
+resources that has been continually
+40:46
+happening throughout the history of
+40:48
+computer science so one graph that I put
+40:51
+together that I find particularly
+40:52
+striking is looking at the gigaflops of
+40:54
+computation per dollar as a function of
+40:56
+time so here on the blue you can see
+40:59
+these are different types of CPUs are in
+41:01
+a CPU central processing units the thing
+41:03
+that's remained on your cloud with all
+41:04
+of your laptops truck and they get
+41:07
+faster but not that much faster over
+41:10
+time but starting in 2008 there was some
+41:14
+really interesting developments with
+41:16
+GPUs graphics processing units and so
+41:19
+these were these special-purpose pieces
+41:21
+of hardware that were originally
+41:22
+developed to pump up pixels in computer
+41:24
+graphics applications but around 2008
+41:27
+people started developing techniques to
+41:29
+run generalized programs on these
+41:32
+graphics processing units and starting
+41:34
+and and then over time these techniques
+41:38
+became more and more easy to write
+41:40
+general-purpose scientific code and
+41:42
+mathematical code to run on these
+41:44
+massively parallel or graphics pasta
+41:45
+units and then if you look at the
+41:48
+timeline from 2006 to 2007 teen and look
+41:51
+at the gigaflops per dollar on these
+41:53
+graphics processing units you can see
+41:55
+that although this exponential moore's
+41:57
+law may not have held up for CPUs it
+41:59
+actually has been we actually haven't
+42:01
+seen exponential increases in GPU
+42:04
+computing power over time over the last
+42:06
+10 years and if you look at maybe the
+42:09
+Alec and this has been striking even in
+42:11
+the last couple of years so if you look
+42:13
+at the Alex next system in 2012 he was
+42:15
+using this GTX 580 GPU that was very
+42:17
+very exciting at the time if you're a
+42:19
+gamer and if you push it on into more
+42:21
+recent cards like the gtx 980ti
+42:23
+or more recently a 2080 ti about update
+42:26
+the slides then you can see that the
+42:28
+cards we have even five years later are
+42:31
+are literally exponentially more
+42:33
+powerful than the cards that they were
+42:35
+going to keep it in 2000 as well so I
+42:37
+think that it was really this this
+42:39
+confluence of algorithms of data and of
+42:42
+massive increase
+42:43
+in computation fueled by advances in
+42:45
+GPUs that led to them all this magic
+42:47
+happening in 2012 that led to all these
+42:50
+these new applications of convolutional
+42:51
+networks on different types of computer
+42:53
+vision and in recognition of all of this
+42:57
+in recognition of the impact of computer
+42:59
+vision and deep learning across the
+43:01
+field the 2018 Turing award was awarded
+43:04
+to Yahoo of NGO Jack Hinton and Yama kun
+43:07
+for their work on pioneering many of the
+43:10
+deep learning ideas that we'll learn
+43:11
+throughout this class and for those of
+43:14
+you who don't know the Turing award is
+43:15
+basically that considered the Nobel
+43:16
+Prize equivalent in the field of
+43:18
+computer science so this just happened
+43:20
+last year and this was just a
+43:23
+recognition that this has been a
+43:24
+massively influential piece of research
+43:26
+that's been changing all of our lives
+43:29
+over the last over the last several
+43:31
+years but I think it's important to stay
+43:34
+humble and realize that despite all of
+43:37
+the successes that we've seen in
+43:38
+convolutional networks in deep learning
+43:40
+and computer vision I think we're really
+43:42
+still a long way away from building
+43:45
+systems that can perceive and understand
+43:47
+visual data to the same fidelity and and
+43:49
+power and strength as humans one image
+43:52
+that I like to use to exemplify this is
+43:56
+this this example
+43:58
+so what's if we were to send this to a
+44:01
+convolutional network he would probably
+44:03
+say person or scale or locker-room maybe
+44:06
+but if we were to look at this you see
+44:09
+quite a different story
+44:10
+you see a guy standing on a scale you
+44:13
+know how scales were which require some
+44:15
+into some idea of physics you know that
+44:17
+he's looking at the scale you know that
+44:20
+he's trying to measure his own weight
+44:22
+you know that people tend to be
+44:24
+self-conscious about their weight you
+44:26
+know that the person behind him is
+44:28
+stepping on the scale and pushing down
+44:30
+because of your knowledge of physics you
+44:32
+know that that's going to make you feel
+44:33
+for a bigger number because of your
+44:34
+knowledge of that guys psychology you'll
+44:36
+know that that might make him feel
+44:37
+embarrassed or uncomfortable because he
+44:38
+thinks he ate too much and then you also
+44:41
+know who that person pushing down on the
+44:44
+scale is and because of your knowledge
+44:46
+of who he is it makes it may be
+44:47
+surprising that he's acting in this way
+44:49
+you understand you can see the people
+44:51
+behind him watching this scene and
+44:54
+laughing and understand that you need to
+44:56
+know
+44:56
+how it is the people look at each other
+44:59
+you understand that maybe they're
+45:00
+surprised that this guy is doing this
+45:01
+thing that's causing this guy to be
+45:02
+embarrassed so there's a lot going on in
+45:04
+this image that we as human as visually
+45:07
+intelligent humans could understand and
+45:08
+perceive and I think we're a long way
+45:10
+away from building computer vision
+45:12
+systems that can match that level of
+45:14
+visual fidelity but I'm hoping that as
+45:16
+we move forward and continue to advance
+45:18
+the field maybe one day we'll get there
+45:20
+but in the meantime I think that
+45:23
+computer vision technology really has
+45:24
+massive and massive potential to improve
+45:27
+all of our lives
+45:28
+it'll make our lives more fun through
+45:29
+sort of new videoman applications
+45:31
+applications in VR AR it'll make our
+45:33
+transportation safer with advances in
+45:36
+autonomous vehicles it'll lead to
+45:38
+improvements in medical imaging and
+45:40
+diagnosis and overall I think computer
+45:44
+vision as a whole has a massive Trek
+45:46
+massive ability and potential to
+45:48
+continue leading to massive improvements
+45:50
+in all of our day-to-day lives so that's
+45:53
+why I think we should be studying
+45:54
+computer vision that's why I make it
+45:55
+excited to be teaching this class this
+45:57
+year so that basically covers our brief
+46:01
+history of computer vision of deep
+46:02
+learning except there's one little spot
+46:05
+on the timeline that we didn't fill out
+46:06
+and that's this class so with that it's
+46:13
+time to if there was any if there's any
+46:15
+questions about historical stuff then
+46:17
+we're going to move on to course
+46:18
+logistics
+46:18
+you're out no okay great so for staff
+46:25
+who are wheaton I'm Justin Johnson I'm a
+46:28
+new assistant professor here in the
+46:29
+computer science and engineering
+46:30
+engineering department this is the first
+46:32
+class I'm teaching here at Michigan this
+46:34
+is the first time I've been in this room
+46:35
+so glad I found it about the laptop
+46:37
+identity but I'm excited to be here
+46:39
+excited to be teaching you guys this
+46:40
+class there we have an amazing team of
+46:42
+graduate student instructors that are
+46:44
+going to be helping us out this semester
+46:45
+how is your guy
+46:58
+the standard will be docile so these
+47:06
+guys are all experts in computer vision
+47:08
+they're all PhD students here moonscape
+47:11
+works and video understanding and
+47:12
+generative models keep on course and
+47:14
+robustness and generalization gluant
+47:17
+works a lot in visual vision plus
+47:19
+language so if you have questions both
+47:21
+those particular research areas you
+47:22
+should go talk to them
+47:24
+so how to contact us so this is an
+47:27
+important slide right taking pictures
+47:29
+with this comes a good idea I probably
+47:30
+could feel some kindness to something
+47:32
+we'll extract abuse formation out from
+47:33
+them automatic but we kept on a course
+47:37
+website that's up in this URL the course
+47:39
+website has followed the information
+47:41
+that you'll need for others throughout
+47:42
+the quarter you can find the syllabus
+47:44
+this head so the schedule you'll find
+47:46
+links to assignments they're your
+47:48
+clients links the lecture videos
+47:49
+assuming a set of lecture capture
+47:51
+properly really important we're going to
+47:54
+use the Gaza or most communication with
+47:56
+you guys so we really encourage you if
+47:59
+you have questions for the course
+48:00
+material we're going to use the Gala's F
+48:02
+is our main mechanism to communicate
+48:04
+back and forth with you guys so if you
+48:06
+have questions about course content
+48:07
+questions about material post post on
+48:10
+Piazza and similarly if we when we need
+48:12
+to make announcements back to the class
+48:14
+to announce thing is like of the
+48:16
+homeworks about changes to logistics
+48:18
+will be announcing all of those through
+48:19
+Piazza
+48:20
+so it's really important that you guys
+48:21
+get signed up as quickly as possible and
+48:23
+one piece of the note is that please
+48:26
+don't post any code on P about public
+48:28
+questions on Piazza if you do need to
+48:31
+ask particular questions about code we
+48:33
+ask that you make private questions that
+48:35
+are visible only to you start only to
+48:36
+the instructor so we will have canvas I
+48:39
+I think I need to suck that up still
+48:42
+this week but we're really use canvas
+48:45
+primarily for just turning in
+48:46
+assignments
+48:46
+mostly will be using Piazza and the
+48:48
+course website for this class we will
+48:51
+have office hours both me and the GSIS
+48:54
+started next week and you'll be able to
+48:56
+find the times and locations of the
+48:58
+office hours on the Google Calendar that
+49:00
+I set up here finally
+49:02
+we really want most the vast majority of
+49:04
+communication you do with us should be
+49:06
+should be through Piazza but if you have
+49:09
+some kind of very sensitive topic that
+49:11
+you would prefer to discuss directly
+49:12
+with me then you can email me directly
+49:15
+but for the vast majority of
+49:17
+circumstances you should be going
+49:18
+through Piazza for four course
+49:20
+communication that will ensure that
+49:21
+everyone all will all open teaching
+49:23
+staff is able to help you in a timely
+49:25
+manner and if you're able to make and if
+49:27
+you're making public questions and lets
+49:29
+you all help each other and learn
+49:30
+collectively and learn from each other's
+49:31
+mistakes
+49:32
+I think Piazza is really great learning
+49:34
+tool for that so we're going to have an
+49:37
+optional test in text level there's no
+49:39
+required textbook for this class
+49:41
+on this schedule you'll find on the
+49:43
+website there will be recommended
+49:45
+readings for all of the lectures this
+49:47
+this text this textbook is totally
+49:49
+optional and it's completely available
+49:52
+for free online you don't have to visit
+49:54
+being purchased a copy if you don't
+49:55
+watch it so on course content and
+49:58
+grading we're gonna the main bulk of the
+50:01
+course is gonna be six programming
+50:03
+assignments oh is that a problem is
+50:06
+that's I think these are gonna be really
+50:15
+exciting assignments we're going to use
+50:16
+Python high court and Google collab and
+50:19
+we're gonna walk you through the
+50:21
+implement eight the detailed
+50:22
+implementations a lot of the ideas that
+50:24
+we talked about in lecture we will have
+50:26
+a midterm exam and we will have a final
+50:28
+exam but there will not be an important
+50:30
+project the majority of the stuff will
+50:32
+be learning us through the programming
+50:34
+assignments so we have a leak policy so
+50:38
+don't turn it in late but more seriously
+50:42
+you all get three free big days of use
+50:43
+on your homework assignments you don't
+50:45
+have to tell us beforehand just randomly
+50:47
+and then I can automatically once you've
+50:49
+exhausted your late days I'm gonna take
+50:52
+25% earth-protecting something like
+50:54
+that's reasonable
+50:55
+are there any questions about content of
+50:57
+policies late days anything like that
+50:59
+yeah over here yeah so the question is
+51:01
+will the course materials be available
+51:03
+for people not on the waitlist and they
+51:05
+will be as really available as I can
+51:07
+possibly make not so even if you can't
+51:09
+get an open the class you can definitely
+51:11
+feel free to follow along with the
+51:12
+lecture slides with lecture videos what
+51:14
+the course
+51:14
+yeah question yeah it's up to you you're
+51:17
+all grown up so you can use the funny
+51:18
+lengthiest first time as you want but we
+51:21
+you take too many and we were zero so I
+51:24
+don't recommend that but three ladies
+51:25
+you can use as many as you want and
+51:27
+expert ladies you somebody as you want
+51:28
+for sign that but we'll just take this
+51:30
+tape off lines and sizes here yeah so
+51:33
+let's talk about collaboration policy so
+51:38
+we really encourage you guys to work
+51:40
+together in groups I think it's great to
+51:41
+discuss which course material it with
+51:44
+your classmates and to learn together
+51:45
+but we have a couple of ground rules
+51:47
+about that for a collaboration policy
+51:49
+one is that everything you submit should
+51:52
+be your own work it's fine to talk about
+51:54
+ideas with other other students that's
+51:56
+great and encourage but you shouldn't be
+51:59
+sharing or looking at each other's code
+52:00
+word necessarily you can talk about
+52:02
+things conceptually but you shouldn't be
+52:04
+turning on the same code as as people
+52:05
+you work with secondly on the flip side
+52:08
+don't share your solution code to other
+52:10
+people this means don't post on Piazza
+52:12
+don't give it to your to your roommates
+52:14
+don't throw down big puzzles because
+52:17
+that will make it easier and more
+52:19
+tempting for other people to violate
+52:21
+collaboration policy and review
+52:22
+charities and third when you turn in
+52:24
+assignments we have to indicate who you
+52:26
+work with what would in turn in your
+52:28
+assignment and will be more equal in
+52:30
+instructions on that later
+52:31
+and in general training in something
+52:33
+late or incomplete is much better than
+52:35
+potentially violating collaboration
+52:38
+policies and not just in this course but
+52:40
+more generally any questions about that
+52:44
+okay so then of course philosophy what
+52:49
+are we here for right all right yeah
+52:52
+this class is not learn pipework too
+52:55
+many games this class is dogs learn deep
+52:58
+learning in ten lines of Python you can
+53:00
+find tutorials on the internet that tell
+53:02
+you how to do that that's what you want
+53:04
+but I think that learning about deep
+53:07
+learning in that way does yourself a
+53:09
+huge disservice I think that you want to
+53:12
+focus on fundamental concepts we want us
+53:14
+we want you to understand not just the
+53:16
+latest and raised API level API is the
+53:19
+raft
+53:19
+answer club we want you to understand
+53:21
+the fundamentals of how those these guys
+53:23
+might have been implemented why I didn't
+53:26
+let it the way they work such that when
+53:27
+faced with the next piece the next bit
+53:29
+of technological tools you you
+53:32
+understand the fundamentals and you do
+53:33
+them yourself what that means is that
+53:36
+you'll be writing a lot of backdrop code
+53:38
+yourself in this course I think that
+53:40
+it's very important for people to learn
+53:42
+how to compute gradients and how and how
+53:45
+the computation of gradients affects the
+53:48
+overall flow of learning pressure system
+53:50
+so for the first several assignments
+53:52
+you'll be using no autographs you'll be
+53:54
+using Java tensorflow still be deriving
+53:56
+and in fluent in your own background
+53:58
+your own gradient computations and you
+54:00
+will be a better computer scientist born
+54:02
+so given that we prefer to move afraid
+54:05
+to write inventory for the purpose of
+54:07
+pedagogy we encourage you we're going to
+54:10
+encourage you to write and stretch
+54:11
+rather than relying on existing open
+54:13
+source implementations again this will
+54:15
+make you a better keep learning
+54:16
+practitioners that said we're also
+54:19
+practical we will well we're going to
+54:21
+give you lots of tools and techniques
+54:23
+for debugging and training big neural
+54:25
+networks because it's tricky when you
+54:27
+can't rely on that find that ten lines
+54:29
+of code wrapping around lots of stuff so
+54:31
+we're going to talk a lot about how you
+54:33
+can practically get these things to work
+54:35
+what tips and tricks should you be using
+54:37
+when developing and debugging and
+54:39
+training their networks we will use
+54:42
+state of the art software tools like I
+54:44
+taught you tensor flow but only after
+54:46
+you've earned your wings by writing a
+54:48
+lot of Badcock code yourself we're going
+54:51
+to focus on state of the art a lot of
+54:52
+the material that we cover in this
+54:54
+course despite the long historical
+54:56
+context we talked about in this lecture
+54:58
+but the majority of the actual concrete
+55:00
+implementations and concrete results
+55:02
+we've discussed that we'll talk about in
+55:04
+this course
+55:04
+have been discovered in the last five to
+55:06
+ten years so this has a couple of
+55:09
+interesting applications for
+55:11
+implications for teaching a course that
+55:13
+means that there aren't good textbooks
+55:15
+for this stuff that means that no you
+55:18
+there might not be great resources
+55:20
+outside of original piece of original
+55:22
+research papers for learning about this
+55:24
+stuff
+55:25
+so that's going to be maybe a bit of us
+55:27
+a bit of a struggle and a bit
+55:28
+challenging but on the upside I think
+55:32
+it's really exciting to be learning
+55:33
+about such deep in our material in a
+55:35
+classroom setting so also in philosophy
+55:37
+we want you could also have a little bit
+55:39
+of fun
+55:40
+so we'll be Petzl we'll be covering some
+55:41
+some sort of fun topics like image
+55:43
+captioning that you've got a good laugh
+55:45
+when I put it up here couple slides ago
+55:47
+and some B's on a deep dream and our
+55:49
+artistic style transfer that lets you
+55:51
+use neural networks to generate new
+55:52
+pieces of art not just improving our
+55:54
+lives so in terms of the course
+55:56
+structure the first the bird the take
+55:59
+down the first half the course will
+56:01
+focus on fundamentals we'll talk about
+56:03
+the details of how to implement
+56:04
+different types of neural networks
+56:06
+we'll cover building a fully connected
+56:07
+commotion all recurrent net neural
+56:09
+networks will talk about pug debug them
+56:11
+how to implement them how to train them
+56:13
+and they'll be very detailed and by the
+56:15
+end of this module is goal basically
+56:16
+implementing your own convolutional
+56:18
+neural network system from scratch now
+56:20
+in the second half of the course we're
+56:21
+going to shift a little bit in flavor
+56:23
+and here we're going to focus more on
+56:25
+applications and more emerging sort of
+56:28
+research topics so around that point in
+56:30
+the course you'll notice the bit of
+56:32
+shift in tone in the lectures so they
+56:34
+will become a little bit less detail
+56:35
+will sometimes skip over some of the
+56:37
+low-level details and perhaps refer to
+56:39
+put your papers if you need to know
+56:41
+those details and instead the lectures
+56:43
+will more focus on giving you an
+56:45
+overview of how people are how these
+56:47
+different things are used across
+56:49
+different applications in computer
+56:50
+vision and beyond well in the second
+56:52
+half we'll talk about things like 100
+56:54
+detection image segmentation 3d vision
+56:56
+videos we'll talk about attention
+56:58
+formers
+56:59
+vision language generative models I
+57:02
+think it's gonna be a lot of fun but
+57:04
+because there's a lot to get through
+57:05
+first homework assignment will be out
+57:07
+over the weekend that will cover
+57:09
+basically an intro and a warm-up to the
+57:12
+collab and height or the environment
+57:14
+that we'll be using for our quarter so
+57:16
+this should not this is not intended to
+57:18
+be difficult or a long assignment this
+57:20
+should be your home over the weekend and
+57:21
+whenever we get it out it'll be Zoo will
+57:23
+be after that and everything you need to
+57:26
+do this first homework assignment will
+57:27
+get through the con based lecture so
+57:30
+with that said welcome to the class
+57:33
+come back on Monday when we'll talk
+57:34
+about English concertina
+57:39
+[Applause]
+57:53
+you

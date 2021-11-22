@@ -1,0 +1,4156 @@
+﻿00:00
+alright let's get started so welcome
+00:02
+back to lecture 19 and today we're going
+00:05
+to talk about generative models part one
+00:06
+and then coming up after this will be
+00:08
+generative models part two next time as
+00:09
+you could probably guess so last time we
+00:12
+talked as a as a recap last time we
+00:14
+talked about different ways to deal with
+00:15
+videos with convolutional neural
+00:17
+networks so we saw a bunch of different
+00:19
+strategies for extending our neural
+00:21
+networks from working with two spatial
+00:22
+dimensions to working with two spatial
+00:24
+dimensions and one temporal dimension so
+00:27
+you'll recall that first off we saw the
+00:29
+super simple method of a single frame
+00:30
+CNN actually worked really well and we
+00:32
+should always use that the first time we
+00:33
+try to do any kind of video tasks and
+00:36
+then we saw other techniques like late
+00:38
+fusion early fusion 3d CNN's to stream
+00:41
+networks CN n plus RN n convolutional
+00:43
+ardennes all these different mechanisms
+00:45
+for fusing in spatial and temporal
+00:46
+information so that was all I was all
+00:49
+really good stuff that hopefully will be
+00:51
+useful if you ever find yourself
+00:52
+confronted with the need to process
+00:54
+videos with deep neural networks but
+00:57
+today we're gonna take a kind of
+00:59
+different approach and talk about a very
+01:01
+broadly of a very different sort of
+01:03
+problem than we have the rest of the
+01:05
+semester so this will be the problem of
+01:07
+generative models and what exactly a
+01:09
+generative model is we'll take a little
+01:11
+bit of unpacking but I do feel the need
+01:13
+to warn you on this lecture that there's
+01:15
+gonna be a bit more math in this lecture
+01:17
+than we have seen throughout the most of
+01:19
+the semester so I think we'll see more
+01:21
+equations and fewer pretty pictures but
+01:23
+we'll hopefully try to get through it
+01:25
+together and then so this lecture a next
+01:28
+lecture we're going to talk about
+01:29
+different approaches to generative
+01:31
+models last lecture I promised that
+01:33
+today would be generative adversarial
+01:35
+networks while I was going over the
+01:36
+material I realized that that was not a
+01:38
+good idea so today I'm gonna talk about
+01:41
+so I'm going to talk about the minute
+01:42
+different order today we're gonna talk
+01:43
+about variational auto-encoders and auto
+01:46
+regressive models and then next time
+01:48
+we'll cover variation we'll cover cover
+01:49
+generative adversarial networks so it's
+01:53
+kind of unpack what is a generative
+01:55
+model I think we need to step back a
+01:56
+little bit and talk about two sorts of
+01:59
+distinctions to keep in mind when
+02:01
+training neural network systems or
+02:03
+really machine learning systems more
+02:04
+broadly so one big distinction that we
+02:07
+need to think about is the distinction
+02:09
+between supervised learning
+02:11
+unsupervised learning so supervised
+02:14
+learning is what we've been doing the
+02:16
+majority of the semester so in
+02:18
+unsupervised learning the setup is that
+02:21
+we're given some data set and this data
+02:23
+set consists of tuples so each each
+02:26
+element in our data set gives us some
+02:28
+input piece of data X which might be an
+02:30
+image as well as some kind of output Y
+02:33
+that we want to predict from that input
+02:34
+and that might be a label like like cat
+02:37
+or something like that and the general
+02:39
+goal of supervised learning is to learn
+02:42
+some function that maps from the inputs
+02:44
+X to the outputs y and the protego and
+02:48
+one thing to keep in mind about
+02:49
+supervised learning is that most
+02:51
+supervised learning datasets require
+02:53
+humans to annotate them right so we can
+02:55
+go on the internet and we can download
+02:57
+lots and lots of images to give us lots
+02:59
+of examples of X but in order to get the
+03:01
+labels Y that we want our system to
+03:03
+predict we typically have to have people
+03:05
+go out and annotate all of that pop all
+03:08
+of the outputs that we want for all of
+03:10
+our training images so supervised
+03:12
+learning is really really effective as
+03:14
+we've seen over and over and over again
+03:16
+this semester that if you have access to
+03:18
+a big data set of X's and Y's that have
+03:21
+been labeled by people then you can
+03:23
+usually train a good neural network to
+03:24
+predict that to learn some - mapping and
+03:26
+predict the Y's given the X's so we've
+03:29
+seen examples of supervised learning
+03:31
+over and over again this semester so far
+03:33
+the canonical example has been something
+03:35
+like image classification where X is an
+03:37
+image Y is a categorical label this can
+03:41
+be something like object detection where
+03:42
+X is an image Y is a set of boxes in the
+03:45
+image of categorical labels this can be
+03:48
+something like semantic segmentation
+03:49
+where X as an image why is this list
+03:52
+label this semantic category label per
+03:54
+pixel in the image or this can be even
+03:56
+something like image captioning where
+03:57
+then acts as an image and Y is some
+03:59
+natural language description of the
+04:01
+input image that has been written by
+04:03
+people and the kind of underlying thing
+04:06
+to remember about this is that this we
+04:09
+can train on big datasets using neural
+04:10
+networks but with supervised learning we
+04:12
+need someone to annotate the datasets
+04:14
+for us so this data annotation can put
+04:17
+be a potential barrier in our ability to
+04:20
+scale up models to the extent that we
+04:21
+really liked
+04:22
+like to sew of course um we need to
+04:25
+contrast this with a different approach
+04:27
+to machine learning which is that of
+04:29
+unsupervised learning
+04:30
+so unsupervised learning I think is a
+04:32
+little bit of a nebulous term right so
+04:35
+sort of unsupervised learning is like
+04:36
+everything that's not supervised to some
+04:38
+extent but the general idea with
+04:41
+unsupervised learning is that we only
+04:43
+get raw data we don't get we only get
+04:45
+for example a large collection of images
+04:47
+X and we do not get access to any kind
+04:50
+of ground truth labels or outputs Y we
+04:52
+only get the raw images X and the goal
+04:55
+and unsupervised learning is to somehow
+04:57
+build a model that can process this
+04:59
+large set of images and uncover some
+05:02
+kind of hidden structure in that data
+05:04
+now hidden structure is a little bit of
+05:06
+a fuzzy term which is why I think that
+05:08
+unsupervised learning as a whole is a
+05:09
+little bit of a fuzzy term and the
+05:12
+important part but unsupervised learning
+05:14
+is that we don't require human
+05:16
+annotation so the kind of the dream of
+05:19
+unsupervised learn learning is that we
+05:21
+like to build systems where we can just
+05:23
+download all the possible data that's
+05:25
+out there on the web or all bits of data
+05:27
+that we get access to and then train
+05:29
+models the kind of uncover structure on
+05:31
+these large quantities of data without
+05:33
+having to go through and label them one
+05:34
+by one with human annotators so if so
+05:37
+this is kind of like a holy grail of
+05:38
+machine learning in some way is that we
+05:40
+want to discover methods that can just
+05:42
+slurp in as much unsupervised data as we
+05:44
+can and use that unsupervised data to
+05:46
+make them better and better and better
+05:47
+so I think we're a little bit far away
+05:49
+from achieving that sort of holy grail
+05:51
+task and unsupervised learning but
+05:53
+that's kind of where we strive towards
+05:55
+when we think about this unsupervised
+05:57
+learning problem so then to kind of make
+05:59
+this a little bit more concrete we can
+06:01
+talk about maybe a couple concrete
+06:02
+examples of unsupervised learning tasks
+06:05
+that you may have seen that you may
+06:06
+maybe have seen before in other contexts
+06:08
+so one example is something like
+06:10
+clustering so in clustering we just get
+06:13
+a whole bunch of data samples and the
+06:14
+goal is to break the data samples into
+06:16
+clusters now note that there's no labels
+06:19
+here we're just trying to uncover this
+06:21
+this latent structure in the data which
+06:23
+are these sort of clusters that might
+06:24
+naturally alert emerge from the image
+06:26
+pair from from the raw data another
+06:29
+example of an unsupervised learning
+06:31
+problem would be dimensionality
+06:32
+reduction which if you've taken an
+06:34
+introductory
+06:35
+machine learning class you may have seen
+06:36
+techniques like principal component
+06:38
+analysis which can be used to project
+06:40
+high dimensional data down into lower
+06:42
+dimensional spaces and they are the kind
+06:45
+of objective in these dimensionality
+06:46
+reduction tasks is that we've got this
+06:48
+large set of data points that maybe live
+06:50
+in some very high dimensional space and
+06:52
+we'd like to find some very low
+06:54
+dimensional subspace within the high
+06:55
+dimensional space that sort of captures
+06:57
+most of the structure or most of the
+06:59
+variability of the raw input data set so
+07:02
+then somehow discovering this low
+07:04
+dimensional sub manifold of data would
+07:06
+be some way that we could try to
+07:07
+discover structure in the raw data
+07:10
+without requiring labels to make our
+07:13
+predictions another example today that
+07:16
+will actually cover in more detail today
+07:18
+is this idea of an autoencoder so this
+07:20
+is a special type of neural network that
+07:22
+tries to reconstruct its input and in
+07:24
+doing so it tries to learn a latent
+07:26
+representation in the middle that can be
+07:28
+useful for other downstream applications
+07:30
+and again this can be done using only
+07:32
+raw data X and no labels Y whatsoever
+07:35
+and then another example would be
+07:37
+something like density estimation where
+07:39
+suppose we are given a large selection
+07:41
+of the collection of data samples and
+07:43
+our goal is to learn a probability
+07:45
+distribution that puts high probability
+07:47
+mass on all the data samples that we see
+07:49
+in our data set and low probability mass
+07:51
+on all of the other on all other
+07:53
+potential points that correspond to
+07:54
+images or our samples that did not
+07:56
+appear in our data set so this gives us
+07:59
+this this big contrast between
+08:00
+supervised and unsupervised learning
+08:02
+where you know supervised learning is
+08:04
+what we've done and it actually works
+08:06
+very well but it relies on these large
+08:08
+quantities oh not just large not just
+08:11
+big data but requires on but requires a
+08:13
+big label data and that's a big
+08:14
+constraint and where we want to get to
+08:16
+with unsupervised learning is to develop
+08:18
+techniques that can uncover or learn
+08:20
+useful latent structure using very large
+08:22
+quantities of unlabeled data so I think
+08:25
+this is a big distinction that we need
+08:27
+to keep in mind because this distinction
+08:29
+of supervised purses so it turns out
+08:31
+that our topic today of generative
+08:34
+models is going to be one way that we
+08:36
+can try to approach these these
+08:38
+unsupervised learning tasks so by
+08:40
+learning large large scale generative
+08:42
+models will be a way that we can try to
+08:44
+learn structure in our data using a lot
+08:47
+of label data
+08:48
+but without requiring human annotation
+08:50
+on that data so then that's that's the
+08:53
+first major distinction that I wanted to
+08:54
+point out and was this was clear to
+08:56
+everyone was any kind of questions on
+08:57
+this supervised versus unsupervised the
+09:00
+distinction all right then let's then
+09:05
+let's talk about our second big
+09:06
+distinction in machine learning models
+09:08
+that we need to be clear on so this is
+09:11
+so here the distinction is we want to
+09:15
+sort of think about different sorts of
+09:17
+probabilistic frameworks that we can use
+09:19
+to represent different types of machine
+09:21
+learning models so in particular it's
+09:24
+often we often like to think about a
+09:26
+distinction in discriminative models
+09:28
+versus generative models and the
+09:30
+distinction here is in the type of
+09:32
+underlying probability structure that
+09:35
+these different type of models are
+09:36
+trying to learn so one kind of lens
+09:39
+through which we can view a lot of
+09:40
+different machine learning models is
+09:42
+that we're trying to fit some under some
+09:44
+some probabilities some kind of
+09:46
+probability distribution to the data
+09:48
+that we're training on and now the exact
+09:50
+structure of what we're trying to model
+09:52
+in that probability distribution has
+09:54
+these different names so in a
+09:56
+discriminative model what we're trying
+09:58
+to do is learn a probability
+09:59
+distribution that predicts the
+10:01
+probability of the label y conditioned
+10:03
+on the input image x and this is
+10:06
+something that we've seen over and over
+10:07
+again so discriminative models sort of
+10:10
+go hand-in-hand with supervised learning
+10:11
+that whenever you build a discriminative
+10:14
+model like an image classifier it's
+10:16
+going to input the image and then output
+10:18
+a probability distribution over all
+10:19
+possible labels for that image so then a
+10:24
+generative model on the other hand is
+10:25
+going to try to learn a probability
+10:27
+distribution over images X and there's
+10:31
+another thing called a conditional
+10:32
+generative model which is going to try
+10:34
+to learn a probability distribution over
+10:35
+images X conditioned on labels Y and it
+10:40
+seems like these three different
+10:41
+categories of probabilistic machine
+10:43
+learning models don't seem that
+10:45
+different when you just look at the
+10:47
+symbols on the page because it seems
+10:48
+like we've got an X on a Y we kind of
+10:50
+swapped the order what's the big deal
+10:51
+but it turns out that there's actually a
+10:53
+huge mathematical distinction between
+10:55
+these three different categories of
+10:57
+machine learning models so the reason
+10:59
+for that is this we need to do a really
+11:01
+quick recap on what is the what what is
+11:04
+a density function in probability right
+11:06
+so anytime we're kind of working with
+11:07
+probabilistic models the mathematical
+11:09
+objects that we often use to model
+11:11
+probability distributions are these
+11:13
+these functions called density functions
+11:15
+so a density function P of X what it's
+11:18
+going to do is input some kind of piece
+11:20
+of data ax and then output some positive
+11:22
+number that sort of tells us how likely
+11:25
+was that piece of data under this
+11:26
+probability distribution and the where
+11:29
+we're higher numbers mean that it's more
+11:31
+likely and lower numbers mean that that
+11:32
+piece of data was less likely yeah
+11:34
+question the question is do we need to
+11:40
+use supervised learning to learn
+11:42
+conditioner conditional generative
+11:43
+models so there you tell you typically
+11:45
+would need to use supervised learning
+11:46
+because it needs access to both the data
+11:49
+and the labels so a conditional
+11:51
+generative model will will typically
+11:52
+require require human labels but now the
+11:56
+critical aspect about probability
+11:58
+distribution functions is that they're
+11:59
+normal APIs right so if you take your
+12:02
+you're completely distributed function
+12:03
+your probability density function it
+12:05
+needs to integrate to one so if you
+12:07
+integrate over all possible inputs to
+12:09
+the distribution and we'll just run that
+12:11
+integral it might be finite fin there's
+12:13
+some sum over oh if you're doing a
+12:15
+distribution over a finite set or and or
+12:17
+a continuous integral if you're
+12:19
+integrating over some some infinite sets
+12:21
+like a vector space but the key
+12:23
+distinction is that these density
+12:24
+functions need to be normalized so they
+12:26
+need to they need to they need to
+12:27
+integrate to one and that's a really
+12:29
+critical piece that leads to huge
+12:32
+distinctions between these different
+12:33
+categories of probabilistic machine
+12:35
+learning models what this means is that
+12:37
+because of probability distribute but
+12:39
+because of probability density function
+12:41
+needs to integrate to one it means that
+12:43
+different elements within the support of
+12:46
+the probabilities reduce distribution
+12:48
+need to compete with each other for
+12:50
+probability mass so because the
+12:52
+distribution because the density
+12:53
+functions integrate to one in order to
+12:55
+assign higher probability to one element
+12:57
+we must by design assign lower
+13:00
+probability to a different element so
+13:02
+this this this into this normalization
+13:04
+constraint introduces some kind of
+13:06
+competition among the different elements
+13:08
+over which we are modeling probabilities
+13:09
+and this
+13:11
+this this this question of what is
+13:12
+competing under the probability
+13:14
+distribute distribution leads to pretty
+13:16
+huge implications in the different in
+13:18
+the differences between these different
+13:19
+kinds of probabilistic models so that
+13:22
+first let's let's think about this this
+13:24
+idea of discriminative models or super
+13:26
+supervised classification through this
+13:28
+lens of probability distribution
+13:30
+functions and labels competing with each
+13:31
+other well here what we're doing is that
+13:33
+we input a piece of data acts like an
+13:35
+image and then it outputs of
+13:37
+probabilities just distribution over all
+13:39
+of the labels that could potentially be
+13:41
+assigned to that in the input image and
+13:43
+width and so in this toy example or
+13:45
+where may be modeling to different out
+13:47
+labels a cat and a dog and we're just
+13:49
+outputting a binary decision a binary
+13:51
+distribution over these two different
+13:53
+types of labels and because the density
+13:56
+function is normalized then in when we
+13:58
+assign a higher probability mass to cat
+14:00
+then by design we must assign lower
+14:02
+probability mass to dog because it has
+14:04
+to integrate to one but what's critical
+14:07
+right and but what's what's what's
+14:11
+critical here is that under this and if
+14:13
+we assign and if we run our run a
+14:15
+different image like this image of a dog
+14:16
+through the same classifier then we
+14:20
+would produce a different probably
+14:22
+distribution probability of cat
+14:23
+conditioned on the dog image probability
+14:25
+of dog conditioned on the dog image and
+14:28
+in under that second probably
+14:29
+distribution again the labels would have
+14:31
+to compete with each other but the
+14:33
+critical that the critical thing to
+14:35
+realize about about discriminative
+14:38
+models is that images don't ever have to
+14:41
+compete with each other under an under a
+14:43
+discriminative model there's no
+14:45
+competition among different types of
+14:47
+images there's only competition among
+14:49
+different types of labels that could
+14:51
+potentially be assigned to each
+14:52
+different image and that has a couple
+14:54
+important distinctions so one is like
+14:57
+what happens if we try to run an image
+14:59
+into a discriminative model that just
+15:01
+doesn't fit the label set so for example
+15:03
+in this image on the top we were
+15:05
+training a binary classifier that knows
+15:08
+how to recognize cats and dogs and if we
+15:10
+feed an image of a monkey then there's
+15:12
+nothing the classifier can do to sort of
+15:14
+tell us that this was an unreasonable
+15:16
+image that did not fit its label space
+15:18
+because the way that a discriminative
+15:20
+model works is that for every possible
+15:22
+image
+15:23
+it's forced to output a normalised
+15:24
+probably distribution over the labels
+15:26
+and now another and this this gets even
+15:28
+more extreme when you imagine feeding
+15:30
+like totally crazy or totally wild
+15:32
+images into a discriminative model so if
+15:34
+we feed these like really abstract
+15:36
+images that clearly have no business
+15:37
+being called either a monkey or a cat
+15:39
+then again our model is still forced to
+15:42
+output a normalized distribution over
+15:44
+these two different types of labels so
+15:47
+um personally I think that this is one
+15:49
+reason why things like adversarial
+15:52
+attacks are possible on discriminative
+15:54
+models because when you generate an
+15:56
+adversarial attack on a supervised
+15:58
+machine learning model what you're doing
+16:00
+is kind of synthesizing an unreasonable
+16:02
+image which is sort of not in the
+16:04
+support of the types of images that that
+16:06
+model was trained on so then when you
+16:09
+pass this sort of unreasonable image to
+16:11
+a discriminative model then it's still
+16:13
+forced to output some normalized
+16:15
+distribution over the possible label
+16:17
+space so I think that this this this
+16:19
+fact that so there's this fundamental
+16:21
+shortcoming with discriminative models
+16:23
+is that they just have no capacity to
+16:25
+tell us when we feed them with an
+16:27
+unreasonable input image so then let's
+16:30
+think about what happens with a
+16:32
+generative model in contrast well a
+16:34
+generative model is learning a probably
+16:36
+distribution over all possible images
+16:38
+that could exist in the world and now so
+16:41
+what this means is that for each
+16:42
+possible input image that we could
+16:44
+imagine feeding to the system this model
+16:47
+needs to assign a number to say how
+16:49
+likely is this image to exist and what's
+16:52
+really fundamental is that this is a
+16:55
+really hard problem because it needs to
+16:57
+tell us forever because because these
+16:58
+these probability these are these
+17:01
+likelihoods that are being output from
+17:03
+the density function are sort of need to
+17:05
+tell us whether any pair of images is
+17:07
+going to be more likely than another so
+17:09
+this is like a really really hard
+17:11
+problem that requires some kind of
+17:12
+really really deep visual understanding
+17:14
+right so if you train a generative model
+17:17
+on images it kind of needs to be able to
+17:19
+know what is more likely in the world
+17:21
+maybe a three-legged dog or a three
+17:24
+armed monkey because a generative model
+17:26
+needs to kind of input any image that we
+17:28
+could possibly throw at it and then
+17:30
+output this this likelihood value that
+17:33
+tells us how probably probable was that
+17:35
+image
+17:36
+so then even sort of then with a
+17:38
+generative model different potential
+17:40
+images are competing with each other for
+17:42
+probability mass and in order to assign
+17:44
+reasonable probabilities to all possible
+17:47
+input images that it's very likely that
+17:49
+this generative model would actually
+17:50
+need to have a very deep understanding
+17:52
+of the visual world so even in this
+17:54
+example I kind of I can this is not a
+17:57
+real generative model I just kind of
+17:58
+like put bars and PowerPoint right but
+18:00
+even in deciding this it's like kind of
+18:02
+tricky right so I decided that maybe the
+18:04
+the dog bar should be the highest in
+18:06
+this example because I think probably
+18:07
+dogs are more likely to be outside than
+18:10
+cats or maybe this is an adult dog and
+18:13
+it's more likely to see adults dogs
+18:14
+outside than it is to see like kidneys
+18:16
+outside because I know that this is a
+18:18
+kitten and I know that cats are only
+18:20
+kittens for a very small period of their
+18:21
+life span and then maybe photos of
+18:24
+monkeys are maybe less likely than
+18:25
+either dogs or kittens just because
+18:27
+people tend to take less photos of
+18:29
+monkeys and then this may be abstract
+18:31
+our image is maybe even less likely
+18:33
+because I don't know what this is I
+18:34
+think it's maybe very unlikely to see
+18:36
+images that look exactly like this yeah
+18:38
+questions yes so you got you got to be
+18:40
+careful that on a density function over
+18:42
+an infinite space there's not actually a
+18:43
+sign of probability instead it assigns a
+18:46
+likelihood or is it apply of science
+18:49
+among some amount of density so once
+18:51
+you're operating over an infinite
+18:52
+dimensional space it doesn't make sense
+18:53
+to talk about the probability of a
+18:55
+single data point instead what you can
+18:57
+do is integrate the density function
+18:59
+over some finite region and then
+19:01
+integrating a density function will
+19:02
+actually give us a probability of
+19:04
+observing some piece of data that lies
+19:06
+within the region over which we
+19:07
+integrate so you need to be very careful
+19:09
+with the word probability when you talk
+19:11
+about density functions over infinite
+19:12
+infinite dimensional spaces yesterday
+19:15
+that's a fantastic question it's very
+19:17
+insightful so the question is how can we
+19:19
+tell how good is a generative model and
+19:21
+that's an extremely challenging question
+19:23
+that I think a lot of people struggle
+19:24
+with but one sort of mechanism that we
+19:28
+use to evaluate generative models is
+19:30
+often this idea of perplexity so then if
+19:33
+I train a generative model on some
+19:35
+training set and then I present the
+19:36
+generative model with a unseen test
+19:39
+images then if it did a good job of
+19:41
+learning the underlying visual structure
+19:43
+of the world then it should assign
+19:45
+relatively high probability density to
+19:48
+unseen
+19:49
+images even if those particular images
+19:51
+had not been seen during training time
+19:53
+so that's kind of the best I think
+19:55
+that's the gold standard evaluation
+19:56
+metric that we have for generative
+19:57
+models so then another interesting fact
+20:01
+about generative models is that they
+20:03
+have the capacity to reject samples that
+20:05
+they think are just unreasonable so for
+20:08
+example if we maybe put in this abstract
+20:10
+art then the generative model can just
+20:11
+tell us that this was an unreasonable
+20:13
+input that had very little to do with
+20:15
+any of the inputs that it saw during
+20:16
+training so a generative model has his
+20:19
+capacity to tell us when inputs that we
+20:21
+present it with are maybe very unlikely
+20:23
+under the training data that it was that
+20:25
+it was trained on so then we have this
+20:28
+third category of model called a
+20:30
+conditional generative model so now a
+20:32
+conditional generative model is learning
+20:34
+for every possible label why it's
+20:36
+learning a probably distribution over
+20:38
+all possible images acts which means
+20:40
+that now every possible label that we
+20:42
+could learn is going to induce a
+20:43
+separate competition among all possible
+20:46
+images so then for example in the top
+20:49
+row we're showing that the probability
+20:51
+of each image conditioned on the fact
+20:52
+that that image is a cat and we see that
+20:54
+maybe the cat is a very high density
+20:56
+under the under the top distribution and
+20:58
+now in the but in the middle we're
+21:00
+showing probability of each image given
+21:02
+that it's a dog and now again now the
+21:04
+dog should have a higher density and all
+21:06
+the other images should be lower but now
+21:08
+what's interesting is that a conditional
+21:10
+generative model sort of has this
+21:12
+capacity to tell us when inputs were so
+21:16
+you could imagine doing classification
+21:18
+with a conditional probability with a
+21:19
+conditional generative model you could
+21:21
+take your input image X and then
+21:23
+evaluate the likelihood of that image
+21:24
+and evaluate probability of our input
+21:27
+image x over each you over each possible
+21:29
+label Y and then you could make a
+21:31
+classification decision based on which
+21:32
+one of those were higher so you could
+21:35
+indeed imagine training a supervised
+21:36
+classifier using a conditional
+21:38
+generative model but the distinction is
+21:41
+that if you were to train a classifier
+21:42
+using a conditional generative model
+21:44
+then it would actually have the capacity
+21:45
+to reject unlikely data samples because
+21:48
+with a conditional generative model it's
+21:50
+possible that an input that some input
+21:53
+image could have a low density under all
+21:55
+possible labels and we see that for
+21:57
+example with the abstract art example in
+21:59
+this slide so then this
+22:02
+tract art image is given a very low
+22:04
+likelihood under each different under
+22:07
+both of the probability of distributions
+22:08
+which leads us to which so that if you
+22:10
+imagine building a classifier that was
+22:12
+based on conditional generative models
+22:14
+then you can imagine like maybe there's
+22:16
+a threshold under which we say this is
+22:18
+an unreasonable image and I refuse to
+22:19
+classify it so that's kind of a big
+22:21
+distinction between these different
+22:22
+categories of models although I think
+22:26
+it's also important and interesting to
+22:28
+realize that these different types of
+22:29
+models are actually not fully distinct
+22:32
+so if you recall Bayes rule then Bayes
+22:34
+rule lets us sort of flip around the
+22:36
+conditioning in a properly distribution
+22:38
+so Bayes rule tells us that the
+22:40
+probability of X given Y is equal to the
+22:43
+probability of Y given X divided by the
+22:45
+probability of Y times the probability
+22:47
+of X and what this means is that using
+22:50
+Bayes rule we can actually build a
+22:52
+conditional generative model out of
+22:54
+existing pieces that we've already seen
+22:56
+so this this expression on the Left
+22:59
+probability of X given Y is a
+23:01
+conditional generative model now the top
+23:03
+expression in this the numerator in this
+23:05
+fraction is the discriminative model
+23:07
+probability of Y given ax the term on
+23:10
+the right in purple is an unconditional
+23:12
+generative model and the term at the
+23:14
+bottom probability of Y is some prior
+23:16
+distribution over labels so prior
+23:19
+distributions over labels you can sort
+23:20
+of just count up the number of labels
+23:22
+that occur in the training set so this
+23:24
+is kind of a nice beautiful relation
+23:26
+among these different types of
+23:27
+probabilistic models and it shows that
+23:29
+shows us that maybe the really the two
+23:31
+most fundamental types are the
+23:32
+discriminative model and the generative
+23:34
+model and if you can build those two
+23:36
+then you can build a conditional general
+23:38
+a conditional generative model as well
+23:39
+so then kind of a big thing that we want
+23:42
+to do is learn how to build these
+23:44
+unconditional generative models because
+23:46
+we already know how to build
+23:47
+discriminative models and then if we
+23:48
+could build both then we could put them
+23:50
+together to build a conditional
+23:51
+generative model so then it's sort of
+23:54
+interesting to think about what we can
+23:56
+do with these different types of
+23:58
+probabilistic models once we've learned
+23:59
+them so discriminative models we've seen
+24:01
+many times already
+24:02
+basically what they can do is we can
+24:04
+learn we can assign labels to new data
+24:07
+at test time we've also seen that they
+24:09
+can be used for a type of supervised
+24:10
+feature learning so for example we can
+24:13
+train a big model that is supervised
+24:15
+using
+24:15
+images and labels on the image net data
+24:17
+set and that we can strip off the final
+24:19
+classification layer and then use the
+24:21
+body of our neural network as a kind of
+24:23
+feature extractor so then this tells us
+24:25
+that as a discriminative model can learn
+24:27
+to extract useful meaningful semantic
+24:29
+features from images assuming that it's
+24:32
+allowed to be trained with a lot of
+24:33
+label data now a generative model we can
+24:36
+do a lot of we can do a lot of more
+24:38
+interesting things one that we've
+24:40
+already kind of mentioned these one it
+24:41
+can detect outliers that is it can tell
+24:44
+us when input images are very unlikely
+24:46
+given the data on which it was training
+24:47
+um it also can potentially let us do
+24:50
+feature learning without labels right
+24:53
+because if we could learn a really good
+24:54
+generative model that could assign
+24:56
+really meaningful probability or really
+24:58
+sorry you I almost got myself really
+25:00
+meaningful likelihoods to all the
+25:01
+different images that we could pass it
+25:02
+then it's very likely that a model which
+25:04
+was good at this generative modeling
+25:06
+task mutt might also have been good at
+25:09
+learning useful feature representations
+25:10
+for its images and now another really
+25:13
+cool thing we can do with generative
+25:14
+models is actually sample from the
+25:16
+generative models to actually synthesize
+25:18
+new data that kind of matches the input
+25:21
+data on which it was trained now because
+25:23
+generative models are actually learning
+25:24
+a distribution over images then we can
+25:27
+sample from a learned generative model
+25:29
+to synthesize new images which is a
+25:31
+really cool application and now a
+25:34
+conditional generative model we've sort
+25:35
+of already seen that it can be used to
+25:37
+assign labels while also simultaneously
+25:39
+rejecting outliers and then similarly
+25:41
+conditional generative models can be
+25:43
+used to synthesize novel images that are
+25:46
+conditioned on labeling date on label on
+25:48
+a label value so for example with a
+25:50
+conditional generative model you could
+25:52
+you could you could ask it to generate
+25:54
+new cats or new dogs or if maybe Y was a
+25:57
+sentence rather than a label then you
+25:59
+could learn to generate images that were
+26:00
+conditioned on natural language inputs
+26:02
+like give me a cat give me an image of a
+26:05
+cat with four legs and a purple and a
+26:07
+purple tail or something like that
+26:08
+I don't think that would actually work
+26:10
+unfortunately so then this this kind of
+26:12
+gives us a lens through which we can
+26:14
+view different types of machine learning
+26:16
+models do a bit of probabilistic
+26:17
+formalism ok so then actually it turns
+26:21
+out that this this this idea of
+26:23
+generative models is so important that
+26:25
+it's a massive topic and there's really
+26:26
+no possible way that we can cover it
+26:28
+even in
+26:29
+to lectures so to give you a sense of
+26:31
+the different types of generative models
+26:32
+that live out there I wanted to go
+26:34
+through this very brief sort of family
+26:35
+tree of different categories of
+26:37
+generative models to give you a bit of
+26:38
+the lay of the land so it's a very it's
+26:40
+a very root node we've got this
+26:41
+generative models and then a big split
+26:44
+that we get is between what are called
+26:46
+models that have explicit density
+26:48
+functions versus models which have
+26:50
+implicit density functions so I told you
+26:53
+that a generative model was all about
+26:54
+assigning density functions to images
+26:56
+well it turns out that there there are
+26:59
+some categories of generative models
+27:00
+where after training you can input a new
+27:04
+image and then it spits out this this
+27:05
+likelihood value but there and that's
+27:07
+those are these explicit density these
+27:10
+gendered models with explicit density
+27:11
+functions and now on the right hand side
+27:14
+models with implicit density functions
+27:16
+we do not week there's no way we can
+27:18
+extract a likelihood value but we can
+27:20
+sample from the underlying distribution
+27:22
+after the models been trained now with
+27:25
+even within explicit density functions
+27:27
+there's sort of two categories that you
+27:29
+need to think about one are tractable
+27:31
+density models here are models where you
+27:34
+know it sort of does what you expect you
+27:35
+can actually input a new image at test
+27:38
+time and receive the actual value of the
+27:40
+density function on that image now with
+27:43
+an approximate now there's also models
+27:44
+that use approximate density functions
+27:47
+that have no way to efficiently spit out
+27:50
+an actual value of the density function
+27:52
+but instead can compute some kind of
+27:54
+approximation to the density function
+27:55
+and now within those maybe there's two
+27:58
+categories of methods one there's sort
+27:59
+of different ways that you can make
+28:01
+these approximations so one category our
+28:03
+variational methods and we'll actually
+28:04
+see an example of that later and the
+28:06
+other may be Markov chain models that I
+28:08
+don't expect you to know too much about
+28:09
+and then over on the implicit density
+28:12
+side again these are models where you
+28:14
+can sample from the underlying density
+28:16
+function but you cannot get out the
+28:17
+value of the function so maybe examples
+28:20
+here would be some kind of Monte Carlo
+28:21
+chain methods where you have to you can
+28:23
+sample from it or these direct methods
+28:26
+where you can just directly sample from
+28:28
+the function so within this big taxonomy
+28:30
+we're going to cover sort of three
+28:32
+different pieces three different types
+28:35
+of generative models within this
+28:36
+taxonomy that will help you to get get a
+28:38
+flavor of these different types of
+28:40
+generative models and what powered
+28:41
+he's one of these different things mean
+28:43
+so today we'll talk about auto
+28:45
+regressive models which are examples of
+28:48
+explicit a generative model with an
+28:50
+explicit and tractable density function
+28:52
+and we'll also talk about variational
+28:54
+auto-encoders which an example of an
+28:56
+exposure of model with an approximate
+28:59
+but explicit density function and then
+29:01
+next lecture we'll talk about generative
+29:03
+adversarial networks which are our
+29:04
+example of a generative model with an
+29:06
+implicit density functions then we can't
+29:09
+get out of a Lu of the density function
+29:11
+but we can sample from it yeah yeah so
+29:14
+whenever you generate a sample that
+29:15
+means that I want to generate a random
+29:18
+value and the probability they're things
+29:23
+that I generate are what I'm going to
+29:25
+I'm going to be more likely to generate
+29:26
+things which have high values of the
+29:28
+density function and less likely to
+29:29
+generate things which have low values of
+29:31
+the density function and that's what I
+29:33
+mean by sample it was it was there a
+29:35
+question in the back or is it just
+29:36
+retching yeah so I think the question is
+29:38
+you don't quite see the distinction of
+29:40
+being implicit in approximate density I
+29:41
+think that's fine at this point but if
+29:43
+you still are confused maybe at the end
+29:45
+of this lecture that I think a really at
+29:46
+the end of next lecture I think that's
+29:48
+going to be a problem so this is meant
+29:49
+to be kind of a lay of the land so and
+29:51
+that hopefully you can return to this
+29:52
+map once we've seen exam or concrete
+29:54
+examples and then you'll be able to
+29:56
+better understand the distinctions
+29:57
+between them okay so then with this and
+30:01
+a book any more questions and this kind
+30:02
+of overview of generative models all
+30:04
+right then let's actually talk about our
+30:06
+first generative model so this is an
+30:08
+example of an autoregressive so we're
+30:09
+going to talk about auto regressive
+30:10
+models so an auto regressive model as we
+30:13
+talked about is an example of a
+30:15
+generative model it has an explicit
+30:17
+density function which is tractable so
+30:20
+this is kind of like the easiest type of
+30:22
+generative model to wrap your brain
+30:23
+around basically the idea is that we
+30:25
+want to write down some parametric
+30:27
+function that's going to input a piece
+30:29
+of data X and a learnable settlor noble
+30:32
+weight matrix W and it's going to spit
+30:34
+out the value of the density function
+30:35
+for that image and then what we're going
+30:38
+to do is we're going to train this model
+30:39
+by taking some data set of data samples
+30:43
+X and we're going to try to maximize the
+30:46
+the value of the density function we're
+30:48
+trying to maximize the likelihood of the
+30:50
+observed data so we want to observe a
+30:52
+science sort of high probability
+30:54
+to all of the samples in our dataset and
+30:57
+we and then because of the normalization
+30:59
+constraint that will by design force the
+31:01
+model to assign low-mass to things that
+31:03
+were not in the training dataset
+31:05
+and if we make this so then this is sort
+31:08
+of sort of very standard probabilistic
+31:09
+formalism and whenever we're training
+31:11
+any kind of probabilistic model then we
+31:13
+can assume that the samples of our
+31:14
+dataset are independent so then the
+31:16
+probability of observing the data set is
+31:18
+just the product of the probabilities of
+31:19
+all of the independent samples and then
+31:22
+we want to learn the value of the weight
+31:23
+matrix that will maximize the likelihood
+31:25
+of the maximum that will cause the
+31:27
+likelihood of the datasets to be
+31:29
+maximized
+31:30
+of course products are a little bit ugly
+31:33
+to work with so it's common to do a log
+31:34
+transform on this to transform the
+31:36
+product into a sum and we want to find
+31:38
+the value of the weight matrix that
+31:40
+maximize the sum of a log probability
+31:42
+over our data set and now now our log
+31:46
+probability is going to be represented
+31:47
+with some kind of parametric function
+31:49
+that inputs the data and input in inputs
+31:51
+to the training sample and inputs the
+31:53
+weight matrix and it's going to spit out
+31:54
+the value of the density function on
+31:56
+that piece of data and spoiler alert
+31:58
+this F is going to be a neural network
+32:00
+for us so then the question is that we
+32:03
+need some way to write so this is kind
+32:05
+of um this is kind of a general
+32:07
+formalism for any kind of explicit
+32:09
+density estimation so this is this will
+32:11
+apply to any kind of explicit density
+32:14
+estimation where we can actually
+32:15
+evaluate and compute and back propagate
+32:18
+through the value of this density
+32:20
+function which is parametrized by a
+32:21
+neural network so now we need to
+32:23
+actually write down some concrete
+32:25
+mathematical form for this density
+32:27
+function so an autoregressive model is a
+32:29
+particular way of writing down and
+32:31
+parameter izing these these likelihood
+32:34
+these these density functions so here
+32:36
+the assumption is that each train each a
+32:38
+piece of data acts so access like an
+32:41
+image each piece of data is going to be
+32:43
+composed of different sub pieces of data
+32:45
+or sub parts so for an image on each of
+32:48
+these X 1 X 2 X 3 might be the different
+32:50
+pixels that make up an image and what
+32:52
+we're going to do is sort of assume that
+32:54
+there are raw data samples ax just
+32:56
+consists of these many different sub
+32:57
+parts and then what we want to know is
+33:00
+that the the probability of an image is
+33:02
+equal to the probability of observing
+33:04
+all the sub parts in the right order and
+33:06
+then based
+33:07
+the chain rule we can write we can
+33:09
+factor this joint distribution over all
+33:11
+the sub parts in a particular way so
+33:14
+then the joint distribution over all the
+33:16
+sub parts we can factor out as the
+33:18
+probability of the first one times the
+33:20
+probability of the second one
+33:21
+conditioned on the first times the
+33:23
+probability of third conditioned on the
+33:24
+second and the first so on and so on and
+33:26
+so forth and this sort of holds in
+33:29
+general right this is the this is the
+33:30
+this is the chain rule that we can use
+33:32
+to factor joint probability
+33:33
+distributions so this is always true and
+33:35
+then if you kind of iterate this then it
+33:38
+means that the we're going to write down
+33:39
+the probability of the density function
+33:42
+of our data sample X is going to be
+33:44
+equal to a product where each term in
+33:47
+the product is going to be the the
+33:48
+probability or likelihood of observing
+33:50
+the current piece of data conditioned on
+33:53
+observing all the previous pieces of
+33:54
+data and now this formula actually
+33:57
+should remind you of something that
+33:59
+we've seen already can you what can
+34:01
+anyone guess it Bayes rule not not quite
+34:03
+not this lecture something we've seen in
+34:05
+previous lecture recurrent neural
+34:06
+network yep that's it right so this this
+34:08
+this structure that we've gotten auto
+34:10
+regressive model is that we want to
+34:11
+break down this probability of a
+34:13
+sequence by modeling it as the
+34:14
+probability of the current token
+34:15
+conditioned on all the previous tokens
+34:17
+and it turns out that's the exact
+34:18
+structure that we have in a recurrent
+34:20
+neural network so then what we can do is
+34:22
+build a recurrent neural network that's
+34:23
+going to input that every time step the
+34:25
+one of the tokens and then output the
+34:27
+probability of observing the next token
+34:29
+and through the recurrent design of the
+34:32
+network then each prediction is going to
+34:34
+be implicitly conditioned on all of the
+34:36
+sequence of sub parts that occurred
+34:38
+before so it turns out we've already you
+34:41
+guys have already trained autoregressive
+34:43
+generative models for generating
+34:44
+sequences of words and sequences of
+34:46
+letters so this is actually not a new
+34:48
+not a new concept it's just an old idea
+34:50
+that we're sort of couching in different
+34:51
+mathematical formalism and now the idea
+34:54
+is that we connect so so far we've used
+34:56
+this idea of autoregressive sequence
+34:58
+models to model probabilities of
+35:00
+captions and probabilities of sequences
+35:02
+of words and now it turns out we can
+35:04
+actually use the exact same thing the
+35:06
+exact same mechanism to model
+35:08
+probabilities of images but now all we
+35:11
+need to do is write down sort of break
+35:12
+up our image into pixels and then
+35:14
+iterate over the pixels in some
+35:16
+meaningful order and now we can use this
+35:18
+exact same mechanism of recurrent
+35:20
+networks plus an autoregressive model to
+35:22
+generate to build a density to train a
+35:25
+density function that is an explicit
+35:27
+density function of a generative model
+35:29
+of images so then we can train a pixel
+35:33
+RNN which is going to be a generative
+35:36
+model with an explicit that's an
+35:37
+explicit and tractable density function
+35:39
+that we can train on input images so
+35:41
+here the idea is that we're going to
+35:42
+generate image pixels one at a time
+35:44
+starting from the upper left-hand corner
+35:46
+and now we're going to compute sort of
+35:48
+an RNN hidden state for every pixel in
+35:50
+our grid of pixels and it with within
+35:54
+each within each of those hidden states
+35:56
+it's going to be conditioned on the
+35:58
+hidden state of the pixel directly above
+35:59
+it as well as the hidden state of the
+36:01
+pixel directly to the left of it and
+36:02
+then within each pixel we're going to
+36:04
+output the colors one at a time so first
+36:07
+it's going to output the red the value
+36:09
+of the red channel of the pixel then the
+36:11
+value of the blue Channel the pixel then
+36:12
+the value of the green Channel of the
+36:13
+pixel and for each of these color
+36:15
+channels we're going to divide it up
+36:16
+into this discrete space over values
+36:18
+from 0 to 255 and and within each pixel
+36:22
+it's going to predict a soft max
+36:23
+distribution over each of these discrete
+36:25
+values 0 to 255 for each of the three
+36:28
+color channels and now to kind of see
+36:30
+how this generation proceeds then we're
+36:32
+going to start by kind of generating the
+36:34
+pixel of the colors of this very upper
+36:36
+left-hand pixel and then we're going to
+36:38
+march sort of run one RNN LST M over
+36:41
+each row of the image and one on another
+36:43
+RN n over each going down over each
+36:45
+column of the image so then after we
+36:47
+generated the value of the RGB the RGB
+36:50
+value of the pixel in the upper
+36:51
+left-hand corner then we can condition
+36:53
+the the pixel immediately below and the
+36:55
+pixel immediately immediately to the
+36:57
+right and compute their hidden States
+36:58
+and predict their pixel values then once
+37:01
+we've got all three of these computed
+37:02
+and we can kind of expand out in a going
+37:05
+diagonally across the image so then for
+37:07
+each pixel that we want to generate the
+37:09
+color of we're going to compute a new
+37:10
+sort of RN and hidden state for the
+37:12
+pixel that is conditioned on the hidden
+37:14
+state of the pixel directly above and
+37:16
+the hidden state of the pixel directly
+37:17
+to the left and then after we predict
+37:20
+the hidden state for the pixel then
+37:22
+we're going to generate the colors of
+37:24
+that pixel so this is going to sort of
+37:26
+march from the upper left to the lower
+37:28
+right sort of down over the entire image
+37:31
+and now due to the structure
+37:33
+the RNN that means that the the
+37:35
+prediction that we make for each pixel
+37:37
+is going to have an implicit dependency
+37:39
+on all of the pixels above it and all of
+37:41
+the pixels to the left of it so it will
+37:43
+have an explicit dependency on the
+37:45
+hidden state immediately above and the
+37:46
+hidden state immediately to the left but
+37:48
+because those in turn depend on other
+37:50
+hidden states then each pixel will have
+37:52
+an implicit dependency over all of the
+37:54
+previously generated pixels that occur
+37:56
+up in to the left and now we can and
+37:58
+then then this sort of occurs for all of
+38:01
+the images and then to train this thing
+38:03
+it's going to look exactly like training
+38:04
+these RN ends that we've done for tasks
+38:06
+like image captioning except rather than
+38:08
+generating words of a caption one at a
+38:10
+time
+38:10
+instead we're going to be generating
+38:11
+values of pixels of an image one at a
+38:14
+time and other than that it's going to
+38:15
+look very similar to what you've already
+38:17
+seen in the context of captioning but
+38:20
+now a big problem with these pixel RN
+38:21
+ends is that they're very very slow
+38:23
+during both training and testing right
+38:26
+because this is sort of a continual
+38:28
+problem that we've seen with ardennes
+38:29
+is that they have a sequential
+38:31
+dependency because each hidden state
+38:33
+depends on the value of the hidden state
+38:35
+before it in time so that means that
+38:37
+during training if we want to model an
+38:38
+n-by-n image then we need to mock tape
+38:41
+like 2 n minus 1 steps in order to sort
+38:44
+of march all the way down and all the
+38:45
+way on the bottom so this is going to
+38:47
+get expensive if we want to generate
+38:48
+really high resolution images so these
+38:50
+pixel RN models are super slow for both
+38:53
+training and evaluate and and evaluation
+38:55
+a test time when we want to sample new
+38:57
+images so then there's there's an
+39:00
+alternative formulation called a pixel
+39:01
+CNN which does a very similar mechanism
+39:04
+and is still going to generate pixels
+39:06
+one at a time starting from the upper
+39:08
+left-hand corner but rather than using a
+39:10
+recurrent neural network to model this
+39:12
+dependency instead we're going to use a
+39:14
+sort of masked convolution to handle
+39:17
+this dependency so then here then to
+39:20
+generate the the new hidden state and
+39:23
+the pixel values of this highlighted
+39:24
+pixel in red we're going to run sort of
+39:26
+a convolution where the convolution only
+39:28
+is looks over the pixels to the left of
+39:31
+it in the same row and the pixels above
+39:33
+it in within some finite receptive field
+39:35
+and then using this formalism you can
+39:38
+actually compute all these receptive
+39:39
+fields kind of in parallel so it makes a
+39:41
+pixel CNN is much much much much faster
+39:43
+to train although they're still quite
+39:45
+slow at
+39:46
+at sampling time so then at training the
+39:49
+pixel CNN can kind of paralyze these
+39:51
+receptive fields over all regions of the
+39:53
+of the training image but at test time
+39:55
+we kind of to generate pixels one at a
+39:57
+time so it's al it's still quite slow at
+39:59
+test time and now if we actually look at
+40:03
+some generated samples from a pixel our
+40:05
+gannett model then on the Left what
+40:07
+we've done is we've trained well not me
+40:08
+but like the people who wrote the paper
+40:10
+then they were they trained a pixel RNN
+40:12
+model on the Seafarer data set that
+40:14
+we've been that we've used on our
+40:15
+homework so far and then and then here
+40:17
+we see generated samples that are kind
+40:20
+of like new c4 images that the model has
+40:22
+invented for itself and on the right we
+40:25
+do the exact same thing except we train
+40:27
+the model on a Down sample image net
+40:29
+images and you can see that it's it's
+40:33
+kind of hard to tell what's going on in
+40:34
+these images so like it clearly there's
+40:36
+some interesting structure like they're
+40:38
+modeling edges they're modeling colors
+40:39
+like if you kind of step back they look
+40:41
+like images but if you kind of like zoom
+40:44
+in then you realize they're like full of
+40:46
+garbage so it looks like they're kind of
+40:48
+learning something some kind of
+40:50
+reasonable high level stuff about images
+40:52
+but they're kind of not really
+40:53
+generating really really high quality
+40:55
+images at this point so this kind of
+40:59
+gives us kind of our our summary of
+41:01
+maybe auto regressive models so one of
+41:03
+the pros of auto regressive models is
+41:05
+that because they're they have this
+41:06
+explicit density function then we can
+41:09
+actually event a test time we can feed
+41:11
+them in a new image and then actually
+41:12
+compute out the value of the density
+41:14
+function for every new image that we
+41:16
+want that we might pass at a test time
+41:18
+and then actually it's these are these
+41:21
+are among the easiest generative models
+41:23
+to evaluate because of this this
+41:25
+property that we can directly evaluate
+41:26
+the density function so then we can
+41:28
+evaluate these these these these Auto
+41:30
+regressive models like we said by just
+41:32
+like training them on some data set and
+41:34
+then evaluating the density function on
+41:37
+unseen test images and then it should do
+41:39
+it and then it should assign high high
+41:41
+probability mass to unseen test images
+41:44
+and that's actually a fairly reasonable
+41:45
+evaluation metric for these auto
+41:47
+regressive models um and actually the
+41:50
+samples are fairly reasonable I I mean I
+41:52
+made fun of them a little bit but these
+41:53
+are actually like pretty reasonable
+41:55
+samples I think from a generative model
+41:56
+because they actually do kind of model
+41:58
+they have a lot of diversity then
+42:00
+they model edges they kind of model both
+42:02
+load like local structure as well as
+42:04
+global structure so it seems like even
+42:06
+though they're not generating like
+42:07
+photorealistic images at this point they
+42:10
+are adding some some really non-trivial
+42:11
+modeling of the underlying images
+42:13
+themselves yeah question yes that's a
+42:16
+great question the question was for
+42:17
+these kind of methods where we're kind
+42:18
+of generating pixels one of the time you
+42:20
+have to generate the first pixel and
+42:22
+that's actually the same problem that we
+42:23
+already had in something like like
+42:25
+generating language so there it's common
+42:27
+to maybe add a special kind of start
+42:29
+pixel token that you feed to the RNN
+42:32
+that kind of you pad the the outside
+42:35
+boundaries with some special tar start
+42:37
+pixel value and sort of feed that at the
+42:39
+very first time step yeah that's true so
+42:42
+this is so this is an unconditional
+42:43
+general generate this is an
+42:45
+unconditional generative model so we
+42:47
+have no control at test time over what
+42:49
+is being generated although there are
+42:51
+conditional variants of a pixel art and
+42:54
+a pixel CNN so for example there's ways
+42:56
+that you can sort of thread in label
+42:58
+information or other type of
+42:59
+conditioning information into these
+43:01
+generative models that we haven't talked
+43:02
+about here so you can do you can train
+43:05
+conditional generative model versions of
+43:07
+these auto regressive models and then
+43:08
+you do get some control over what you
+43:09
+just wait generate a test time ok so
+43:12
+then there's also a lot of things that
+43:14
+you can do to improve these these auto
+43:16
+regressive models so these samples that
+43:18
+I showed you were from a very first
+43:19
+pixel art on paper and there's been a
+43:21
+lot of improvements since then so
+43:23
+there's sort of different architectures
+43:24
+you can use multi scale resolution to a
+43:27
+multi scale generation to make things
+43:28
+more efficient and there's a lot of
+43:30
+training tricks that you can use to
+43:31
+improve the quality of these things so
+43:33
+you can check out some of these
+43:33
+references if you're interested in those
+43:35
+although one thing that is a big
+43:38
+negative about these auto regressive
+43:39
+models is that they tend to be very slow
+43:41
+at test time because we need to sample
+43:42
+the pixels one by one then it's actually
+43:45
+very slow for us to generate these
+43:47
+images at test time yeah it's a good
+43:49
+question the question is can these
+43:51
+models generalize to different image
+43:53
+resolutions than the resolutions on
+43:55
+which they were trained so basically so
+43:57
+this is for this I'm very vanilla a
+43:59
+pixel RNN model I think it probably
+44:01
+cannot generalize to new resolutions
+44:03
+because the RNN kind of expects the rows
+44:05
+to be certain lengths but I think there
+44:08
+are other variants especially these
+44:09
+multi scale pixel are these multi scale
+44:12
+auto regressive
+44:13
+that actually can do better
+44:14
+generalization the test time so I think
+44:16
+the vanilla version that we presented
+44:17
+here cannot but multi-resolution
+44:20
+versions I think could okay so then if
+44:24
+then let's move on to our second
+44:26
+generative model of variational
+44:28
+autoencoders so I think there's a chance
+44:30
+we may not actually get through all this
+44:32
+material in which case some of it will
+44:33
+get a booted into next week next lecture
+44:35
+which is fine because we have two
+44:37
+lectures for generate models anyway so
+44:40
+with very with with pixel RN and pixel
+44:43
+CNN what we did is that what we saw is
+44:45
+that we wrote down some parametric model
+44:47
+that was able to compute the value of
+44:49
+the density function on arbitrary input
+44:51
+images and then what we wanted to do
+44:53
+with these these explicit density models
+44:56
+is then just train the model to maximize
+45:00
+the the density value at all the
+45:02
+training samples and that actually
+45:04
+worked pretty well for this case of
+45:06
+pixel art ends and pixel cnn's
+45:08
+so now with variational auto-encoders
+45:10
+it's going to do something a little bit
+45:12
+different with a variational auto
+45:13
+encoder we actually will not be able to
+45:15
+access or compute the the true value of
+45:18
+the density function in any reasonable
+45:21
+or computationally efficient way but
+45:23
+with a variational auto encoder it turns
+45:26
+out that even though we cannot compute
+45:28
+the exact value of the density function
+45:29
+we can compute some lower bound on the
+45:32
+density function so then what we're
+45:34
+going to do is rather than maximizing
+45:36
+the true density instead what we're
+45:38
+going to do is maximize this lower bound
+45:40
+to the density and then kind of hope
+45:42
+that like if the true density is here
+45:44
+and the lower bound is here that you
+45:46
+know if we maximize lower bound then it
+45:48
+should sort of push up the true density
+45:49
+as well so that's kind of the vague
+45:52
+intuition with these variational
+45:53
+auto-encoders now to understand these
+45:56
+variation auto-encoders there's sort of
+45:58
+two loaded words in this term one is
+46:02
+this term just this the word variational
+46:04
+and the other is this word auto encoder
+46:06
+so I think we need to talk about these
+46:08
+two different words sort of one at a
+46:10
+time to understand this this model so
+46:12
+first let's talk about non variational
+46:14
+auto-encoders sort of normal
+46:16
+auto-encoders as to kind of set us up
+46:18
+for the variational flavor so then with
+46:22
+a with a regular non variational auto
+46:24
+encoder
+46:25
+this is not a probabilistic model
+46:27
+instead of ver a regular auto-encoder is
+46:31
+an unsupervised learning method that
+46:33
+aims to learn feature representations
+46:35
+for images in an unsupervised way so we
+46:38
+want to learn useful latent
+46:39
+representations for images even if we
+46:41
+don't have access to any any any meaning
+46:43
+any any labelled labels Y so here kind
+46:47
+of what we want to do is build a model
+46:49
+that's build some neural network is
+46:50
+going to input the in the the the raw
+46:52
+images X and an output some some useful
+46:55
+features Z that tell us something
+46:58
+interesting about that image and kind of
+47:00
+the hope is that these these these
+47:02
+features that we can learn from this
+47:04
+unsupervised learning method might be
+47:07
+useful for some downstream supervised
+47:09
+learning tasks so kind of the idea with
+47:11
+autoencoders is that we want to train up
+47:13
+this model using a lot of unlabeled data
+47:14
+and then learn this good feature
+47:16
+representation and then use that good
+47:18
+feature representation for kind of
+47:20
+transfer learning approaches to other
+47:21
+downstream tasks so that maybe rather
+47:23
+than pre training on imagenet as a
+47:25
+supervised training task instead we want
+47:27
+to do our pre training on a large
+47:29
+collection of unlabeled images so now
+47:33
+the problem is that we want to learn
+47:35
+this feature transform from raw data and
+47:38
+of course we can never observe these
+47:40
+feature vectors z because if we got the
+47:43
+feature vector Z in the training data
+47:44
+then our problem would have been solved
+47:46
+for us already so somehow we need to
+47:48
+learn a neural network is going to
+47:50
+output this feature vector Z sort of
+47:52
+without any without any help from from
+47:54
+labels so how are we gonna do that and
+47:57
+architectural why is this this neural
+47:59
+network that goes from X to Z is sort of
+48:00
+like any sort of convolutional any kind
+48:02
+of neural network architecture that you
+48:04
+want so original it might have been sort
+48:07
+of a fully connected network with
+48:08
+sigmoid learned nonlinearities sort of a
+48:10
+long time ago but more recent
+48:11
+instantiations would have some kind of
+48:13
+like deep residual network with reloj
+48:15
+and batch norm and all that other good
+48:16
+stuff so the architecture here is sort
+48:18
+of CNN architectures that we've seen
+48:19
+many times already but now so now the
+48:23
+idea with an auto encoder is that what
+48:26
+we're trying going to try to do is force
+48:28
+the model to learn to reconstruct the
+48:30
+original training data so what it's
+48:32
+going to do is have one portion of the
+48:34
+model called the encoder and the encoder
+48:37
+is going to input them
+48:38
+put the raw data and then output the
+48:40
+feature vector and now we're going to
+48:42
+also train a second component of the
+48:44
+model called the decoder and the decoder
+48:46
+is going to input this feed this feature
+48:47
+vector and then try to spit out the try
+48:50
+to reconstruct the the raw data that we
+48:52
+fed to the encoder and the decoder is
+48:55
+sort of again a neural network that
+48:57
+architectural II we've seen many times
+48:59
+before and if it's convolutional maybe
+49:01
+the encoder would kind of have down
+49:03
+sampling where's and the decoder we kind
+49:04
+of have transposed convolutional near
+49:06
+stop sample and now we would train this
+49:09
+thing using where our loss function it
+49:11
+would now be that the output from the
+49:13
+decoder should match the input to the
+49:15
+encoder and this just it should sort of
+49:17
+learn to it should sort of learn the
+49:19
+identity function that it should learn
+49:21
+to just reconstruct whatever we put into
+49:23
+the model so then maybe if we look an
+49:27
+example of an auto encoder on the right
+49:28
+trained on C part n then at the bottom
+49:31
+it's going to input some raw images from
+49:33
+the C part n data set it's going to go
+49:35
+through an encoder that maybe has four
+49:37
+convolutional layers and then a decoder
+49:39
+that goes maybe for our transpose
+49:40
+convolution layers and then it's going
+49:42
+to try to reconstruct the input data now
+49:45
+this seems like kind of a stupid
+49:47
+function to learn right like we actually
+49:49
+don't need to learn the identity
+49:50
+function we know how to compute the
+49:51
+identity function we just like return
+49:54
+the thing that we that we output that we
+49:56
+just return us output the thing that we
+49:57
+presented as input so the point with
+49:59
+these auto-encoders is not that learning
+50:02
+the identity function is a useful thing
+50:04
+instead what we want to do is force this
+50:07
+feature vector Z to be very low
+50:10
+dimensional compared to the raw input
+50:12
+data ax so what this Auto encoders are
+50:15
+really trying to do is somehow compress
+50:18
+the input data so then if we have maybe
+50:20
+a very high resolution input image X but
+50:23
+we can compress it down to some very low
+50:25
+dimensional latent code Z then
+50:27
+reconstruct the original input image
+50:29
+with very high fidelity from this low
+50:32
+dimensional latent code then in that
+50:34
+case we've probably learned something
+50:36
+non-trivial about the data so in this
+50:38
+case it's very important when you train
+50:40
+an auto encoder to have some kind of
+50:41
+bottleneck in the middle between the
+50:43
+encoder and the decoder so often this
+50:45
+bottleneck will be some kind of size
+50:48
+constraint so just like the size of the
+50:50
+layer the number
+50:51
+Asians should be it should be much much
+50:53
+smaller than the number of raw pixels in
+50:55
+the input but you can imagine sort of
+50:58
+but in a variational auto encoder we
+51:01
+will add a different sort of constraint
+51:02
+inside the middle of this in between the
+51:05
+encoder and the decoder and with a
+51:06
+variational auto encoder we'll add a
+51:08
+kind of probabilistic constraint in
+51:10
+between the encoder and the decoder but
+51:13
+then the key is that this just needs to
+51:15
+be very low dimensional or have some
+51:17
+kind of bottleneck to force the network
+51:18
+to learn how to compress the data in a
+51:20
+useful way and then after we train we're
+51:23
+going to throw away the decoder because
+51:24
+we don't care about predicting the
+51:26
+identity function and instead we're
+51:28
+going to use the encoder to initialize
+51:30
+part of some other model than maybe
+51:32
+train it on some other data set so the
+51:34
+whole point of auto-encoders is to learn
+51:36
+some useful representation that we can
+51:38
+use for downstream transfer learning
+51:40
+applications but here of course we can
+51:43
+do this with a lot of unlabeled data
+51:44
+which is a really exciting part about
+51:46
+learning auto-encoders yeah the question
+51:50
+is what's the structure of the encoder
+51:51
+compared with the structure of the
+51:52
+decoder so that's that's a lot of hyper
+51:56
+parameters but um typically the decoder
+51:59
+will be some kind of flipped version of
+52:00
+an encoder so a very common
+52:02
+architectural patterns you'll see for
+52:04
+these things with convolutional models
+52:06
+is this kind of like down sampling and
+52:08
+up sampling type of type of architecture
+52:09
+that we saw for example and semantic
+52:11
+segmentation so you recall that
+52:13
+architectures for semantic segmentation
+52:15
+would often take the input and then kind
+52:17
+of down sample with convolution and then
+52:19
+up sample again using transpose
+52:21
+convolution so then the encoder will
+52:23
+often have sort of striated convolution
+52:25
+or pooling to gonna do down sampling and
+52:27
+then the decoder will kind of have some
+52:29
+kind of up sampling models like the
+52:31
+second half of a semantic signal model
+52:32
+so typically the the encoder and the
+52:35
+decoder kind of mirror each other
+52:37
+architectural II although there's
+52:39
+nothing in the formalism that forces
+52:40
+that to be true yeah so the question is
+52:42
+if you have one encoder but different
+52:44
+decoder then so actually that's another
+52:46
+interesting idea there's actually sort
+52:47
+of variants of auto-encoders where you
+52:48
+train like encoders for different types
+52:51
+of data but they all have to go through
+52:52
+a shared decoder so you kind of learn a
+52:55
+shared latent space which can be
+52:57
+understood or
+52:59
+or or represented or generated by lots
+53:01
+of different encoders on different types
+53:03
+of data but then you kind of need to
+53:04
+train them jointly in a way to encourage
+53:06
+them to learn the same space yeah yeah
+53:09
+so the encoder in the decoder are both
+53:10
+neural networks and the architectures
+53:12
+are just going to be whatever kind of
+53:13
+neural network architecture that you
+53:14
+want so if we're modeling images these
+53:16
+will typically be convolutional networks
+53:18
+that are pretty deep in many cases but a
+53:21
+critical component with these things is
+53:23
+that there's some bottleneck between the
+53:24
+encoder and a decoder ok so then a big
+53:28
+so then these Auto encoders are kind of
+53:30
+a nice formalism that lets us sort of
+53:32
+have the capacity to learn
+53:33
+representations with a lot of data and
+53:35
+then transfer them to downstream tasks
+53:37
+although I should point out that even
+53:39
+though they have this nice made they
+53:41
+seem like an awesome mechanism to learn
+53:43
+from unlabeled data in fact in practice
+53:45
+I think they haven't worked out as much
+53:47
+as people would have liked because I I
+53:49
+can't really there's really no
+53:51
+state-of-the-art systems that rely on
+53:53
+training autoencoders on large
+53:55
+unsupervised data so it's a really
+53:57
+beautiful idea but I think that the
+53:59
+current formulations of it that we have
+54:01
+now just sort of don't seem to actually
+54:03
+live up to the dream of unsupervised
+54:06
+learning so I think they're a really
+54:08
+useful thing to know about but I think
+54:10
+they're actually not right now a very
+54:11
+practical approach to unsupervised
+54:13
+feature learning um so that's a big
+54:15
+caveat that I want to I want to point
+54:16
+out about auto-encoders but now a big
+54:20
+downside of auto-encoders is that they
+54:23
+are not probabilistic right so there are
+54:25
+an unsupervised learning model in that
+54:27
+they can train they can learn this
+54:29
+feature representation without any
+54:30
+labeled samples without any labels for
+54:32
+our data but there's no way that we can
+54:35
+sort of sample new images from a trained
+54:38
+auto encoder um the only thing that they
+54:40
+could do is Jenner is a predict features
+54:42
+for new images a test time there's no
+54:44
+way that we can use them to generate new
+54:46
+images so then that moves that then that
+54:48
+moves us on to this idea of a
+54:50
+variational auto encoder so a
+54:52
+variational auto encoder is going to be
+54:55
+a probabilistic sort of a probabilistic
+54:56
+upgrade to these auto to these non
+54:59
+variational auto-encoders so with
+55:01
+variational encode autoencoders we want
+55:03
+to do two different not be able to do
+55:05
+two different types of things one is to
+55:07
+learn latent features zi from raw data
+55:10
+just as we did in the non
+55:11
+variational flavor so we want to retain
+55:13
+that capacity and but the second thing
+55:15
+we want to be able to do is to samp be
+55:18
+able to sample from the trained model
+55:20
+after training just people to generate
+55:21
+new data so now what we're going to do
+55:25
+is assume that we have maybe some
+55:27
+training data set with a bunch of
+55:28
+unlabeled samples and we're going to
+55:30
+assume that each each of the each of
+55:32
+those samples in the training data set
+55:34
+was generated from some latent vector Z
+55:37
+that we cannot observe so this is kind
+55:39
+of similar to what we saw in the non
+55:40
+variational auto encoder so then kind of
+55:43
+what we want to do at test time after
+55:45
+training our variational auto encoder is
+55:47
+maybe something like this so that we
+55:49
+want to write down some prior
+55:51
+distribution overs over the latent
+55:53
+variable z and then at test time we want
+55:56
+to sample a new latent variable from the
+55:58
+prior distribution and then feed that
+56:01
+latent variable to some decoder model
+56:03
+which will take the latent variable z
+56:05
+and then predict the image x so that
+56:08
+looks kind of like the second the
+56:09
+decoder that we saw from the non
+56:11
+variational auto encoder the difference
+56:13
+is that now it's probabilistic
+56:14
+and we both have a probability
+56:16
+distribution over the late the latent
+56:18
+variables z a prior distribution over Z
+56:20
+and the output from the the decoder is
+56:24
+actually not a single image instead the
+56:26
+output from the model is itself a
+56:28
+distribution over images so then to
+56:32
+handle this then the to handle the prior
+56:34
+will often assume some sort of very
+56:36
+simple prior on the ladie variables so
+56:39
+it's very common to assume that the
+56:40
+latent variables might be a vector of
+56:42
+dimension D then you assume that is very
+56:44
+common to assume that the prior
+56:45
+distribution over Z is just like a
+56:48
+standard unit diagonal Gaussian over in
+56:50
+n dimensional space so we typically
+56:52
+assume a very simple prior over the
+56:54
+latent variable Z something we can
+56:55
+compute with very easily and now what we
+56:59
+want to do is we want to the the second
+57:00
+half who wants to input this this
+57:02
+decoder wants to input a latent variable
+57:03
+and then output of probabilities
+57:06
+distribution over images and this thing
+57:08
+will model with a neural network but now
+57:10
+how the heck are we going to output a
+57:13
+probability to distribution from a
+57:15
+neural network and that's sort of a
+57:17
+tricky thing we've never really seen
+57:18
+before so then here the trick is that
+57:21
+we're going to sort of assume
+57:24
+a parametric form for the probability
+57:26
+distributions over images so in
+57:29
+particular we're going to assume that
+57:31
+like for the probability distribution
+57:33
+over image we're going to have a it's
+57:37
+going to be a Gaussian distribution with
+57:39
+a number of units in with a number of
+57:41
+dimensions in the Gaussian equal to the
+57:43
+number of pixels in the image and now we
+57:44
+can parameterize that Gaussian
+57:46
+distribution using a mean value for each
+57:48
+pixel as well as a standard deviation
+57:51
+value for each pixel so then what this
+57:53
+neural network is going to do is output
+57:56
+a got a high dimensional Gaussian
+57:58
+distribution where where it's going to
+58:00
+output a mean value for each pixel and a
+58:03
+sander deviation or covariance value for
+58:06
+each pixel and then we can combine the
+58:08
+predicted mean the predicted per pixel
+58:10
+means with the predicted per pixel
+58:12
+standard deviations to give us this high
+58:14
+dimensional Gaussian distribution which
+58:16
+is going to be a distribution over
+58:17
+images that is conditioned on a latent
+58:20
+variable Z is this construction clear so
+58:23
+it's yeah yeah so I'm for a kind of a
+58:26
+general Gaussian distribution it would
+58:28
+be a full covariance matrix over all the
+58:30
+over all the dimensions but if you want
+58:32
+to model like five twelve squared pixels
+58:35
+that means our covariance matrix would
+58:37
+be like five twelve squared times 512
+58:39
+squared and now that's a thing that we
+58:41
+need to output from a neural network so
+58:42
+then the weight matrix that predicts
+58:44
+that thing is going to be like size of
+58:46
+the hidden of the previous hidden layer
+58:47
+times 512 times 5/12 squared so then the
+58:50
+width at weight major is going to be
+58:51
+absolutely astronomically large so as a
+58:53
+simplifying assumption we're going to
+58:55
+not use a general Gaussian distribution
+58:57
+we're going to assume it's a diagonal
+58:58
+Gaussian distribution so that assumes
+59:01
+that this that there's no covariance
+59:03
+between the pixels that means that on
+59:05
+the so that there's an underlying
+59:07
+probability in there's an underlying
+59:09
+independence assumption here which is
+59:11
+that conditioned on the latent variable
+59:13
+z the pixels of the generated image are
+59:16
+conditionally independent and that's
+59:18
+kind of the there's that's the
+59:19
+independence assumption that we're
+59:20
+making when we when we get back to the
+59:23
+distribution in this form yeah yeah the
+59:26
+question is is that this seems like a
+59:27
+pretty restrictive assumption to put in
+59:28
+our images that the pixels are
+59:30
+conditionally independent given the
+59:32
+latent variable and I think you'll find
+59:34
+that the generated images we tend to
+59:36
+generate from
+59:36
+auto-encoders tend to be kind of blurry
+59:39
+and I think that's exactly why is that
+59:40
+because that's a very strong assumption
+59:42
+that we're putting on the model so I
+59:45
+think that the kind of caricature of
+59:47
+airing of Chillon Tobin coders is that
+59:49
+the math is very beautiful and they're
+59:50
+very nice they're a very beautiful way
+59:52
+to learn late representations but they
+59:54
+tend not to generate the most beautiful
+59:55
+images although we'll see that we can
+59:57
+actually combine variational
+59:58
+autoencoders with other approaches to
+60:00
+actually get high quality images as well
+60:03
+okay so then now the question is how do
+60:06
+we actually train this variational
+60:08
+autoencoder model well our basic idea is
+60:10
+that we want to maximize the likelihood
+60:12
+of the training data set so then what we
+60:14
+want to do is to try to write if we
+60:17
+could observe a like if for example we
+60:19
+were able to observe the Z for each X
+60:21
+during training then we could train this
+60:23
+thing as a conditional generative model
+60:25
+and then then the training would be
+60:26
+fairly straightforward we could just
+60:28
+sort of directly maximize the
+60:29
+probability of each of each X
+60:31
+conditioned on its observed Z and that
+60:34
+would actually work quite well but the
+60:36
+problem is that we cannot observe Z
+60:38
+right if we could observe Z then the
+60:39
+problem we kind of be already solved
+60:41
+what we want to do is train the model to
+60:42
+discover for itself this latent space Z
+60:45
+and latent latent vector Z so what we
+60:48
+need to do is right then our our
+60:49
+approach is we're going to try to write
+60:50
+down a function write down the
+60:52
+probability density function of X so
+60:55
+what we can do is sort of one thing we
+60:58
+can try to do is like marginalize out
+60:59
+the unobserved Z so then you could sort
+61:03
+of write down a joint distribution over
+61:04
+X and Z and then the distribution over
+61:07
+just X we could to get it to get the
+61:09
+density over just X we could integrate
+61:10
+out that latency but the brand now and
+61:13
+then you could factor that that a joint
+61:15
+distribution inside the integral into
+61:17
+using the chain rule into this this
+61:19
+conditional probability of x given Z
+61:21
+times the prior distribution over Z and
+61:23
+now the things the terms inside the
+61:25
+integral are friendly because this
+61:27
+probability of x given Z is exactly what
+61:29
+we can compute with our decoder and this
+61:32
+prior is something that we've assumed
+61:34
+has a nice functional form like a couch
+61:35
+time but this integral is the part that
+61:37
+kills us right because Z is some like
+61:40
+high dimensional vector space and
+61:42
+there's no tractable way that we can
+61:44
+actually compute this integral in any
+61:45
+kind of finite amount of time so we'll
+61:48
+need to come up with some other approach
+61:49
+so another thing we can try to do is go
+61:52
+back to Bayes rule and then Bayes rule
+61:54
+is a way the Bayes rule gives us another
+61:56
+form to kind of write down the density
+61:59
+over X so then the density over X we can
+62:02
+write as write out as in Bayes rule
+62:04
+using this form and then we can look at
+62:06
+these terms again so then again we see
+62:09
+if we use Bayes rule we again get the
+62:11
+same term pop up probability of x given
+62:13
+Z and this is a friendly term because
+62:16
+this term is exactly what our decoder
+62:17
+network is predicting so this is a term
+62:19
+that we like to see and again we have
+62:22
+another friendly term which is the the
+62:23
+prior distribution over Z which again we
+62:25
+can easily compute because we assumed
+62:27
+that it was had a nice functional form
+62:30
+but now this term of the bottom is like
+62:32
+the one that really kills us because
+62:34
+this term on the bottom we want to
+62:36
+compute the distribution the the
+62:38
+probability of Z conditioned on X so
+62:40
+that's the probability of the latent
+62:42
+variable conditioned on the image so
+62:45
+that's kind of like the opposite of what
+62:47
+our neural network is predicting and
+62:48
+there's like again if we wanted to
+62:50
+compute that thing we'd have to do it
+62:51
+with some kind of infinite integral over
+62:53
+all of ax or all of Z and there's just
+62:54
+like no no tractable way that we can
+62:57
+actually compute that bottom term in
+62:59
+Bayes rule so then what we're gonna do
+63:02
+is cheat a little bit and we're going to
+63:04
+train another neural network that is
+63:06
+going to try to predict that bottom term
+63:09
+for us so then we're going to have
+63:11
+another neural network q that is
+63:13
+parameterize by a different set of
+63:14
+parameters P and now this Q of V this
+63:18
+this is going to be a neural network
+63:19
+that is going to input the image X and
+63:22
+then output a distribution over the
+63:24
+latent variables Z and this is going to
+63:26
+be a completely separate neural network
+63:27
+with its own ways but we want to train
+63:30
+it in such a way that will cause its
+63:32
+output to be approximately equal to this
+63:34
+to this marginal distribution over the
+63:36
+decoder which we cannot track tably
+63:38
+compute so this is the way that we cheat
+63:41
+inside a variational auto encoder is
+63:43
+that there's this term in the in Bayes
+63:45
+rule that we just can't compute so
+63:47
+instead we're going to just introduce
+63:49
+another neural network that is going to
+63:51
+try and compute this incomputable term
+63:53
+for us and then once we have this other
+63:56
+term then we can compute this
+63:58
+approximate density over X where we
+64:01
+replace this intractable
+64:02
+term in the denominator of Bayes rule
+64:04
+with this approximation that is coming
+64:07
+through our auxilary neural network and
+64:08
+this auxilary neural network by the way
+64:10
+what it's doing is it's in putting the
+64:13
+the latent variable Z sorry it's in
+64:15
+putting the image X and it's outputting
+64:18
+a distribution over latent variable Z so
+64:20
+that is an encoder right because it's
+64:22
+inputting the image and it's outputting
+64:24
+the latent variables so that has a
+64:26
+structure very similar to what we saw in
+64:28
+already so then this is going to look
+64:32
+this is going to have the same sort of
+64:33
+structure it's going to be a neural
+64:34
+network that inputs the inputs the image
+64:36
+X and then uses the same sort of
+64:38
+diagonal covariance trick to output a
+64:41
+distribution over Z that is conditioned
+64:43
+on the input image X ok so then what
+64:47
+we're gonna do is that if somehow we
+64:49
+want to jointly train this encoder
+64:51
+network and this decoder network in such
+64:53
+a way that this decoder network that
+64:55
+sorry the encoder network will
+64:57
+approximately equal this this this this
+64:59
+posterior term of the decoder that we
+65:02
+cannot track tably compute so then what
+65:04
+we're gonna do is kind of jointly train
+65:06
+both the encoder and the decoder to make
+65:09
+all of these things happen so then more
+65:11
+concretely we need to do a little bit of
+65:13
+math on this slide so then here we have
+65:15
+Bayes rule so this is the log
+65:17
+probability of our data and then using
+65:19
+youth breaking it up using Bayes rule
+65:21
+and then here what we want to do is just
+65:24
+multiply the top and bottom by this new
+65:27
+term that we introduced so here we're
+65:29
+just multiplying the top and bottom by a
+65:31
+Q Phi of Z given X where Q Phi of Z
+65:34
+connect z given x is the thing that we
+65:36
+can compute with the with the this new
+65:37
+network that we've introduced and now
+65:39
+this is an equality because we're
+65:40
+multiplying top and bottom by the same
+65:42
+thing and now we use the magic
+65:44
+logarithms to break this term up to
+65:46
+break this equation up into three terms
+65:47
+so if you kind of do the math over on
+65:51
+your own you can see that we kind of
+65:52
+match up these different terms from this
+65:55
+from this top and break it up into this
+65:57
+this sum of three different terms okay
+66:00
+so that's kind of step one then we kind
+66:03
+of realize another probabilistic fact
+66:05
+which is that the log probability of X
+66:09
+actually does not depend on Z so
+66:13
+whenever you have a Rand
+66:15
+variable that does not depend on another
+66:17
+random variable then you can kind of
+66:19
+wrap that whole thing in expectation
+66:21
+right that means we're taking an
+66:23
+expectation of a thing which does not
+66:25
+depend on the variable of the
+66:27
+expectation so like that's kind of dumb
+66:29
+but it's a thing that's mathematically
+66:30
+true so in particular what we're going
+66:32
+to do is look at the expectation of the
+66:34
+log probability of X where the the
+66:38
+variable over which we're taking the
+66:39
+expectation is is the distribution is
+66:43
+the expectation over Z using the
+66:45
+distribution which is output from the
+66:47
+new network so this seems like kind of a
+66:49
+strange thing to do but it's
+66:51
+mathematically true because the thing
+66:52
+inside the expectation does not depend
+66:54
+on the variable outside but now we know
+66:57
+that this log probability is actually
+66:59
+equally mad eclis equal to this do these
+67:01
+three terms so then we can actually
+67:03
+apply this expectation over Z directly
+67:05
+to these three terms and then we've just
+67:08
+said that that's what we've done exactly
+67:10
+here we've just applied this expectation
+67:11
+over Z to these three logarithmic terms
+67:15
+and now we can actually simplify it we
+67:18
+can actually put some interpretation on
+67:19
+these three terms so this first term
+67:22
+actually is a type of data
+67:23
+reconstruction term that you'll have to
+67:25
+maybe take my word for at this time and
+67:28
+the second term is actually a KL
+67:30
+divergence between the distribution
+67:33
+which is output from the encoder network
+67:36
+and the prior distribution over the
+67:37
+latent variable Z so this is also
+67:40
+something that we can compute so
+67:42
+actually this first term is something we
+67:43
+can compute this is kind of like a data
+67:45
+reconstruction term so we can compute
+67:46
+this first term this second term we can
+67:48
+compute because this is a sort of a
+67:51
+distance between the distance that is
+67:53
+the distribution that is output from the
+67:55
+encoder Network and the prior
+67:58
+distribution so this one we can compute
+68:00
+and now this last term is something that
+68:03
+we can cannot compute because this last
+68:05
+term involves this this really awful P
+68:08
+theta Z given X so that was that that
+68:11
+posterior of the of the decoder that we
+68:14
+just cannot compute so this last term is
+68:16
+something that we cannot compute but the
+68:17
+first two terms are something that we
+68:19
+can compute and we also know because
+68:21
+this last term is a KL divergence of two
+68:24
+probability distributions then we know
+68:26
+that in fact
+68:28
+this last term has to be greater than
+68:30
+equal to zero because one of the
+68:32
+properties of the KL divergence between
+68:34
+these two distributions is that it's
+68:36
+always greater than or equal to zero so
+68:37
+now when we combine all these facts
+68:40
+together we get this this final equation
+68:43
+here at the bottom so this is the lower
+68:45
+bound on our density that we can now
+68:47
+actually compute so now on the Left we
+68:49
+have the actual true density of the of
+68:52
+the data under the probabilistic model
+68:54
+that we've set up and on the right is a
+68:56
+lower bound to that density that
+68:59
+involves a reconstruction term and a KL
+69:01
+divergence term and both of these two
+69:03
+terms on the right are things that we
+69:05
+can actually compute using our encoder
+69:07
+network and our decoder network so now
+69:10
+the hope is that what we what we want to
+69:11
+do is train our variational auto encoder
+69:14
+we're going to jointly train both the
+69:17
+encoder network and the decoder network
+69:19
+in a way that tries to maximize this
+69:21
+this lower bound so this lower bound is
+69:24
+a very standard probabilistic trick so
+69:27
+this is called a variational lower bound
+69:29
+and this trick are kind of introducing
+69:31
+an auxilary network or an auxilary
+69:33
+function to compute this intractable
+69:36
+posterior distribution is called a
+69:38
+variational inference so that's kind of
+69:40
+a very standard probabilistic trick that
+69:42
+people use a lot in the days of
+69:44
+probabilistic graphical models which was
+69:46
+a really a prevailing machine learning
+69:48
+paradigm that occurred that people used
+69:50
+a lot before a deep learning became
+69:51
+popular so one kind of beautiful thing
+69:54
+about these variations autoencoders is
+69:56
+that they're kind of using this like
+69:57
+very this trick of variational inference
+69:59
+that was very popular for graphical
+70:01
+models but now actually incorporating
+70:03
+that cool mathematical trick into neural
+70:05
+networks so now the idea is that we have
+70:08
+these two neural networks one of the
+70:09
+encoder what is the decoder and we can
+70:11
+compute kids and together they can
+70:12
+compute this lower bound on the
+70:14
+probability so then we can't actually
+70:15
+compute the true probability of the data
+70:17
+we can compute this lower bound and as
+70:19
+we modify the parameter what we're going
+70:21
+to do is maximize the lower bound and
+70:23
+learn them learn the parameters of these
+70:25
+two networks that will that will
+70:27
+maximize the lower bound and then
+70:28
+hopefully in maximizing lower bound that
+70:30
+will also push up the true density of
+70:33
+the data that we observe so I think I
+70:36
+think we are about at time so then let's
+70:40
+leave variational Auto and
+70:41
+here for today and then we'll pick up
+70:43
+with exactly this mechanism exactly how
+70:46
+to train them in the next lecture
+70:48
+so then come back next time for
+70:50
+generative models part two when we'll
+70:52
+talk about some more we'll sort of go
+70:54
+over the rest of variational
+70:56
+autoencoders and then we'll also talk
+70:57
+about a generative adversarial networks
+70:59
+okay thank you
+
+영어 (자동 생성됨)
+
+

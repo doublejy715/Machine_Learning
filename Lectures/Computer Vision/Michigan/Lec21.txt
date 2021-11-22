@@ -1,0 +1,4960 @@
+﻿00:00
+um so today we're up to lecture 21 this
+00:02
+is the second to last
+00:04
+lecture this semester and uh i was kind
+00:06
+of waffling a little bit on what i
+00:07
+wanted to talk about on this lecture
+00:08
+if you looked on the lecture on the
+00:10
+syllabus it kind of swapped between two
+00:12
+topics
+00:12
+computational graphs and reinforcement
+00:14
+learning and i kind of
+00:16
+finally decided yesterday i wanted to
+00:17
+talk about reinforcement learning
+00:18
+instead
+00:19
+of computation stochastic graphs so
+00:21
+that's what we're going to talk about
+00:22
+today
+00:23
+so then so far in this class we've
+00:25
+talked about a couple different major
+00:27
+paradigms of machine learning
+00:29
+uh the first of which is of course
+00:30
+supervised learning and i think we've
+00:32
+been we want to order this a couple
+00:33
+times the last couple of lectures
+00:35
+so in supervised learning of course we
+00:37
+get a big data set of the inputs x as
+00:39
+well as the outputs y
+00:41
+that we want to predict from the inputs
+00:42
+and then we want our goal is to learn
+00:44
+some function that predicts the y's from
+00:45
+the x's
+00:46
+and we've seen many many examples of
+00:48
+supervised learning throughout the class
+00:50
+and supervised learning is very
+00:51
+effective it works very very well for a
+00:53
+lot of different types of problems in
+00:54
+computer vision
+00:56
+and then the last two lectures we
+00:57
+started talking about a different
+00:59
+paradigm of
+01:00
+machine learning which is that of
+01:01
+unsupervised learning so then of course
+01:04
+in unsupervised learning
+01:05
+you get no labels you only get data and
+01:07
+the idea is you want to learn some
+01:09
+underlying hidden structure of the data
+01:11
+to be used for some maybe downstream
+01:12
+task so we saw a bunch of examples of
+01:15
+this the last two lectures
+01:16
+um we thought we've so some example
+01:18
+examples of unsupervised learning are
+01:19
+things like
+01:20
+clustering dimensionality reduction or
+01:22
+any of these different types of
+01:23
+generative models that we talked about
+01:25
+in the last two lectures
+01:27
+so today we're going to talk about a
+01:29
+third major paradigm of machine learning
+01:31
+models
+01:32
+that is really quite different from
+01:33
+either the supervised learning or the
+01:35
+the unsupervised learning paradigms
+01:37
+and that's this notion of reinforcement
+01:39
+learning so
+01:40
+reinforcement learning is about building
+01:42
+agents that can interact with the world
+01:44
+that can interact with some kind of
+01:45
+environment
+01:47
+so rather than just trying to model some
+01:49
+function of inputs to outputs
+01:51
+instead there's going to be an agent
+01:53
+that like a little robot here
+01:54
+that's going to go and make some
+01:55
+interactions with the world he's going
+01:57
+to
+01:57
+observe what he sees in the world based
+01:59
+on what it sees it will perform some
+02:01
+actions
+02:02
+and then based on the actions that it
+02:03
+performs it will get some reward signal
+02:05
+that tell it how well
+02:06
+it's how good its actions were and the
+02:09
+goal
+02:10
+is to um have this agent learn to learn
+02:13
+to perform actions
+02:14
+in such a way that will maximize the
+02:16
+rewards that it that it captures that it
+02:18
+receives during its lifetime so i should
+02:21
+point out that reinforcement learning is
+02:23
+really a quite massive topic
+02:25
+in machine learning and you can and
+02:27
+people do in fact teach entire long
+02:29
+semester-long classes just on
+02:31
+reinforcement learning
+02:32
+so uh this lecture today is not meant to
+02:34
+give you any kind of comprehensive
+02:36
+understanding of the state of the art
+02:37
+and reinforcement learning
+02:39
+it's really meant to just give you sort
+02:40
+of an introduction and a brief taste
+02:43
+of how reinforcement learning works a
+02:45
+couple simple algorithms for
+02:46
+reinforcement learning
+02:47
+and then how it could be integrated into
+02:49
+some of the deep neural network systems
+02:50
+that we've talked about this semester
+02:52
+um so then kind of the overview for
+02:54
+today is that first we're gonna talk
+02:56
+about a little bit of generality of what
+02:58
+is this reinforcement learning problem
+03:00
+um what can it be used for and how is it
+03:02
+different from other types of machine
+03:04
+learning paradigms that we've seen
+03:06
+and then we'll cover two simple
+03:07
+algorithms to actually solve
+03:09
+reinforcement learning tasks
+03:11
+um that will be q learning and policy
+03:12
+gradients um so that i think will give
+03:15
+you a very
+03:15
+brief introduction and give you a taste
+03:18
+of what reinforcement
+03:19
+learning is and what it can do so then
+03:22
+to be a little bit more
+03:23
+formal about the reinforcement learning
+03:25
+problem there's going to be some there's
+03:27
+going to be two major actors in a
+03:29
+reinforcement learning problem
+03:31
+one is going to be some agent which is
+03:33
+like you can think of it as like a robot
+03:34
+that's roaming around in the world and
+03:36
+performing some actions
+03:38
+and the other is the environment which
+03:39
+is the system with which the agent is
+03:41
+interacting
+03:42
+so then what we should think about is
+03:44
+that the agent is the thing that we are
+03:45
+trying to learn
+03:46
+we have control over what the agent is
+03:48
+doing and the environment is something
+03:50
+given to us from the outside
+03:51
+um so we have control over the agent and
+03:54
+the agent just has to interact with the
+03:56
+world which is the environment and we
+03:58
+don't typically have much control or
+04:00
+over what happens
+04:01
+inside the environment and now um these
+04:04
+these uh these this the environment and
+04:06
+the agent will then communicate back and
+04:08
+forth
+04:08
+in a couple of different ways so first
+04:11
+the environment will provide the agent
+04:13
+some state um st where the state
+04:16
+encapsulates what is the current state
+04:18
+of the world
+04:19
+so this could be like if we're if we're
+04:22
+building like a robot
+04:23
+then the state might be uh like the
+04:25
+image of what the robot is currently
+04:26
+seeing
+04:27
+so the state gives the agent some kind
+04:29
+of information
+04:30
+about what is going on in the world at
+04:32
+this at this point in time
+04:34
+and uh this this state might be noisy it
+04:37
+might be incomplete
+04:39
+but it just provides some kind of signal
+04:40
+to the agent about what is happening in
+04:42
+the world at this moment in time
+04:45
+now after the agent receives this state
+04:48
+then it has some understanding of what
+04:49
+it is that it's doing in the world in
+04:51
+this moment or what is around it in the
+04:53
+world at this moment
+04:54
+so then after the agent receives the
+04:56
+state from the environment then the
+04:57
+agent will communicate back to the
+04:59
+environment
+05:00
+by performing an action and now if we
+05:02
+are going with this running example of
+05:04
+like a robot that's
+05:05
+moving around in the world then the
+05:07
+action might be the direction that the
+05:09
+the agent decides to move in at each
+05:11
+point in time
+05:12
+so then the the environment tells the
+05:14
+agent what's going on
+05:16
+the agent decides to do something which
+05:18
+modifies the environment back in some
+05:20
+way
+05:20
+so the agent will then take an action
+05:22
+based on what it sees
+05:24
+and now after the after the environment
+05:26
+gets sends the state
+05:27
+the agent sends the action then the
+05:29
+environment sends back a reward
+05:31
+which tells us how well was that agent
+05:34
+how
+05:34
+how good was that agent doing at this
+05:37
+moment in time
+05:38
+and this reward is really kind of a
+05:40
+general concept right
+05:41
+it might be any number of things so you
+05:44
+might imagine like
+05:45
+if you are uh if you're this little
+05:47
+robot who's delivering things
+05:48
+then the reward might be like how much
+05:50
+money has this robot made
+05:52
+at this point in time that maybe this
+05:53
+robot is going to like roll around the
+05:55
+world
+05:55
+and like maybe deliver copies to people
+05:58
+and then its reward
+05:59
+is some instantaneous measure of how
+06:01
+well that robot is doing at this moment
+06:03
+in time
+06:04
+so then maybe the reward signal is like
+06:06
+the robot gets paid by someone when he
+06:08
+gets delivered a coffee
+06:10
+um so then that's kind of then that's
+06:11
+sort of these three different mechanisms
+06:13
+of communication between the environment
+06:14
+and the agent
+06:15
+um the environment tells the agent
+06:17
+what's going on that's the state the
+06:18
+agent
+06:19
+does something which is the action then
+06:21
+then the agent gets a reward which tells
+06:23
+it how well is it doing
+06:24
+instantaneously at this moment in time
+06:27
+but of course this would be kind of
+06:28
+boring if this all just happened in a
+06:30
+single time step
+06:31
+so really reinforcement learning allows
+06:33
+this whole thing to
+06:34
+unroll over time and this is an
+06:36
+interactive in is the long-term
+06:38
+interaction
+06:39
+between the environment and the agent so
+06:41
+then in particular
+06:42
+after the agent makes its action that
+06:44
+action will actually change the
+06:46
+environment in some way
+06:47
+so then after so then after this first
+06:50
+iteration
+06:50
+then the environment will be changed by
+06:52
+the action of the agent and then
+06:53
+similarly after the agent
+06:55
+observes the state and observes the
+06:56
+reward that gives the agent some kind of
+06:58
+learning signal
+06:59
+to update its internal model of the
+07:01
+world as well as in as well as its
+07:03
+internal model of what it wants to do in
+07:05
+order to maximize its rewards in that
+07:06
+world
+07:07
+so then um after this first round of
+07:09
+state action reward then the environment
+07:11
+updates as a result of the action
+07:12
+and the agent updates as a result of the
+07:14
+learning signal and then this whole
+07:16
+thing repeats
+07:17
+so then now in the second time step then
+07:19
+again the environment sends over a new
+07:21
+state
+07:21
+the agent sends over a new action the
+07:23
+environment sends over a new reward
+07:25
+and then they both transition into some
+07:27
+into some later thing down in time
+07:29
+so then this can continue for maybe some
+07:31
+some very long period of time
+07:33
+where the environment and the agent are
+07:34
+interacting with each other
+07:36
+over some very large number of time
+07:38
+steps um is this sort of formalism
+07:40
+clear on what's going on between the
+07:41
+environment and the agent in this
+07:43
+reinforcement learning problem
+07:47
+okay good so then um here's a couple
+07:49
+examples to kind of maybe formalize this
+07:51
+this intuition
+07:52
+so one kind of classical example of a
+07:55
+problem that people might
+07:56
+solve with reinforcement learning is
+07:58
+called the carpool problem
+08:00
+so here the idea is we've got some
+08:02
+imagine some kind of
+08:03
+cart that can move back and forth on a
+08:05
+one-dimensional track and on top of that
+08:07
+cart is a pole
+08:08
+that can uh pivot back and forth and now
+08:10
+the state
+08:11
+and now the objective is to move the the
+08:14
+cart in such a way that will cause the
+08:15
+pole to balance on top of the cart
+08:17
+so the kind of high level objective of
+08:19
+what the agent is trying to do
+08:21
+is balance the pole on top of this
+08:23
+movable cart but now we need to
+08:25
+formalize this objective
+08:26
+through this uh notions of states
+08:28
+actions and rewards
+08:30
+so the state is going to be something
+08:32
+like uh what
+08:33
+what is the current state of this of
+08:35
+this system so that might be something
+08:36
+like the angle
+08:37
+at the the exact angle of the cart the
+08:39
+exact x position of the cart
+08:40
+the velocities of all those things maybe
+08:42
+giving all the physical variables
+08:43
+telling us the exact physics of the
+08:45
+situation
+08:46
+now the action um that the the agent can
+08:48
+choose to apply at each time
+08:50
+time step is maybe the horizontal force
+08:52
+that it wants to apply to the cart
+08:54
+moving left or right
+08:55
+and now the reward signal that the agent
+08:57
+gets at each time step
+08:58
+is maybe uh maybe a one if the pole is
+09:01
+balanced
+09:02
+and a zero if the pole has fallen down
+09:04
+so then this is sort of you can imagine
+09:06
+that this this is our first example of
+09:07
+maybe formalizing
+09:08
+on an agent interacting with an
+09:10
+environment through this notion of
+09:12
+states actions and rewards
+09:15
+so then another kind of example of a
+09:16
+reinforcement learning problem
+09:18
+would be robot locomotion so then maybe
+09:20
+we've got this robot and he wants to
+09:22
+learn how to walk
+09:23
+through some environment so then the
+09:25
+state again might be
+09:26
+all the physical variables describing
+09:28
+the state of the robot all of the
+09:29
+positions and angles of its joints as
+09:31
+well as the
+09:32
+maybe the velocities of how all the
+09:33
+joints are moving at this point in time
+09:35
+and the action that the agent could
+09:37
+choose to apply
+09:38
+is like applying muscular force to each
+09:40
+of its joints so that might be the
+09:41
+torque that it choose to chooses to
+09:43
+apply
+09:43
+um to to add additional force onto any
+09:46
+of the joints in in the robot's body
+09:48
+and the reward now some now the reward
+09:50
+some somehow it needs to encapsulate
+09:52
+maybe maybe two notions
+09:54
+one is that the agent should not fall
+09:55
+over so maybe it gets zero reward if the
+09:57
+robot falls over
+09:59
+um and one reward if the robot is
+10:00
+standing but then also maybe we want to
+10:02
+give the robot reward
+10:04
+based on how far forward it has learned
+10:06
+to move in this environment
+10:08
+so then sometimes your rewards will
+10:10
+encapsulate multiple notions of success
+10:12
+maybe in this case it would be both not
+10:14
+falling over as well as actually moving
+10:16
+forward in this virtual simulated world
+10:20
+so then maybe another example of um
+10:22
+another example
+10:23
+of a reinforcement learning problem
+10:25
+would be learning to play atari games
+10:27
+so here you want to just learn to play
+10:29
+these video games
+10:30
+these old school video games and the
+10:32
+high level objective is to just get the
+10:34
+highest score in each of the games
+10:36
+and now the state that the agent might
+10:38
+be able to observe at each time step
+10:40
+is the pixels that are on the screen of
+10:42
+the game
+10:43
+and the action that it that the agent
+10:45
+can choose to make is maybe pushing one
+10:47
+of pushing some combination of buttons
+10:49
+on the controller that lets it play the
+10:50
+game
+10:51
+and now the reward is the instantaneous
+10:53
+increase or decrease in score
+10:55
+that the agent receives at every time
+10:57
+step of the game
+10:59
+and now this this example is kind of
+11:01
+interesting because the state is
+11:03
+actually somehow only
+11:04
+partially only giving us partial
+11:06
+information about the environment
+11:08
+right because in many of these atari
+11:10
+games they might depend on some source
+11:11
+of randomness
+11:12
+right like after you blow up a spaceship
+11:14
+then maybe some other spaceships will
+11:15
+fly in
+11:16
+but you don't know exactly what the next
+11:17
+spaceship to appear will be
+11:19
+or you don't know where that next
+11:20
+spaceship spaceship is going to appear
+11:22
+um but the only thing that you can see
+11:24
+is this the the pixels comprising the
+11:26
+current
+11:27
+uh image on the screen and that might
+11:30
+not give you enough
+11:31
+of fully enough information to fully
+11:33
+predict exactly what's going to happen
+11:34
+in the next time step of the game so
+11:36
+that gives so this gives us this notion
+11:38
+that
+11:38
+unlike the previous examples the state
+11:40
+that the agent gets to observe
+11:42
+might actually not might actually be
+11:43
+some kind of incomplete information
+11:45
+and might not allow it to perfectly
+11:47
+predict exactly what's going to happen
+11:49
+in the future
+11:50
+so these are all kind of examples of
+11:52
+maybe single player games
+11:54
+where there's just kind of a an agent
+11:55
+that's interacting against an
+11:57
+environment and it needs to learn to
+11:58
+succeed in this
+11:59
+in this environment now another thing we
+12:02
+can do is actually have interactive
+12:03
+games
+12:04
+where agents are learning to compete
+12:05
+against other agents
+12:07
+and here a very famous example of a
+12:09
+reinforcement learning problem that a
+12:12
+task that has been
+12:12
+solved with reinforcement learning in
+12:14
+this way is learning to play board game
+12:16
+competitive board games like go so here
+12:19
+the objective is to win the game
+12:21
+um the state is now the positions of all
+12:24
+the pieces on the board
+12:25
+um the action at each time step is
+12:27
+whether or not
+12:28
+uh is exactly where the agent wants to
+12:31
+place its next piece
+12:32
+when playing the game of go and now the
+12:35
+reward in this case
+12:36
+may be something very uh long-reaching
+12:38
+right so then
+12:39
+the reward maybe maybe in this example
+12:41
+of playing go
+12:42
+the agent only gets a reward on the very
+12:44
+last time step of the game
+12:46
+where there are all the time steps when
+12:48
+he's placing pieces and interacting with
+12:50
+the with the opponent
+12:51
+then it always gets rewards of zero
+12:52
+maybe during all the intermediate terms
+12:54
+turns of the game
+12:55
+but once the game is over then on the
+12:57
+very final term of the game
+12:59
+then uh the agent gets a reward of one
+13:01
+if they won if they if they won the game
+13:03
+and beat their opponent
+13:04
+and they get a reward of zero on that
+13:05
+last turn if they if they lost their
+13:07
+opponent
+13:08
+so this gives us some sense that the
+13:10
+rewards might actually
+13:12
+uh capture some very non-local
+13:14
+information about how well the agent is
+13:16
+doing
+13:16
+the rewards might be very sparse they
+13:19
+might only and they might
+13:20
+and how what what causes the rewards
+13:22
+that we get
+13:23
+might be affected by actions that have
+13:24
+that happened very very far in the past
+13:27
+um so those are all some interesting um
+13:29
+facets of this particular example of
+13:31
+plane go
+13:33
+okay so then it's kind of interesting to
+13:36
+contrast this notion of reinforcement
+13:39
+learning
+13:39
+with this very familiar notion of
+13:41
+supervised learning that we've seen
+13:43
+throughout the semester
+13:44
+so um we've now seen this kind of
+13:46
+abstract picture of reinforcement
+13:48
+learning
+13:49
+where we've got an environment and an
+13:50
+agent and they communicate back and
+13:52
+forth through states and actions and
+13:53
+rewards and then transition over time
+13:56
+but we can actually we can actually draw
+13:58
+a quite similar picture
+13:59
+about supervised learning too right so
+14:02
+in supervised learning if we kind of
+14:03
+draw
+14:04
+an analogy with supervised learning then
+14:06
+the environment is now a data set
+14:08
+and the agent is now the model that
+14:10
+we're learning and then these things
+14:12
+these these the data set and the model
+14:14
+also kind of interact over time in a
+14:15
+supervised learning setting
+14:17
+so then the data set is first maybe
+14:19
+giving the model some input
+14:21
+x which the model is supposed to make a
+14:22
+prediction for and that's kind of
+14:24
+equivalent to the state in uh in
+14:26
+reinforcement learning
+14:27
+and now the model receives that input
+14:29
+and then makes some prediction
+14:30
+why which is kind of equivalent to the
+14:32
+action that the model is made that the
+14:34
+agent is making in reinforcement
+14:35
+learning
+14:36
+and then the data set um responds to the
+14:38
+model by giving it some loss
+14:41
+which tells it how well was the
+14:42
+prediction that it just made
+14:44
+and that's kind of equivalent to the
+14:45
+reward signal that an agent is getting
+14:47
+in reinforcement learning
+14:48
+and then similarly in supervised
+14:50
+learning these things kind of unroll
+14:52
+over time
+14:52
+so the model will get inputs make
+14:54
+predictions get a loss
+14:56
+and then they will all update that the
+14:58
+model will sort of learn
+14:59
+based on that loss signal in the
+15:00
+previous time step and the data set will
+15:02
+then sort of move on to the next example
+15:04
+in the data set that is that is being
+15:05
+shown
+15:07
+so if you kind of like flip back and
+15:08
+forth between these two pictures
+15:10
+it feels like maybe reinforcement
+15:12
+learning is not that different from
+15:14
+supervised learning
+15:15
+um but that would actually be a very
+15:17
+incorrect uh
+15:18
+assertion to make so there's a couple
+15:20
+really big fundamental reasons
+15:22
+why reinforcement learning is
+15:24
+fundamentally different from
+15:25
+supervised learning and also why it's
+15:27
+fundamentally more challenging than
+15:28
+supervised learning
+15:31
+so i think the first reason is this idea
+15:33
+of stochasticity
+15:35
+so in a reinforcement learning setting
+15:37
+everything might be noisy
+15:38
+so the um the the states that we get
+15:41
+might be might be noisy or incomplete
+15:43
+information about the scene
+15:45
+the rewards that we get might be noisy
+15:47
+or incomplete
+15:48
+and then also the the the transitions
+15:50
+that we get
+15:51
+as the environment moves from one time
+15:53
+step to the next the way in which that
+15:55
+environment transitions
+15:56
+can also be some unknown
+15:58
+non-deterministic function
+16:00
+and what do i mean by the reward signal
+16:02
+being random in reinforcement learning
+16:04
+well if you look back at this supervised
+16:06
+learning situation then
+16:08
+when you make it when you have an input
+16:09
+and you make a prediction then we're
+16:11
+always going to get the same loss
+16:12
+that typically in supervised learning
+16:14
+our loss function is going to be
+16:15
+deterministic
+16:16
+but now in reinforcement learning if
+16:19
+suppose that we receive a state
+16:21
+and then we make an action then we might
+16:23
+get different rewards in different time
+16:25
+steps
+16:25
+um even if we saw the exact same state
+16:28
+and even if we made the exact same
+16:29
+action
+16:30
+and that can be due to just that there's
+16:32
+just some underlying stochasticity or
+16:34
+randomness in this reinforcement
+16:35
+learning problem
+16:36
+so somehow our agent needs to learn to
+16:38
+deal with that
+16:40
+so another big problem in reinforcement
+16:42
+learning is this
+16:43
+notion of credit assignment so
+16:46
+like kind of like we saw in the example
+16:47
+of the go game the rewards that we get
+16:49
+that the that the agent is getting at
+16:51
+each time step
+16:52
+might not reflect exactly the actions
+16:54
+that it that is taken at that moment in
+16:56
+time
+16:56
+that the rewards that it's getting at
+16:58
+time t plus one might be a result of the
+17:00
+actions that it took very very far in
+17:02
+the past
+17:03
+so that's kind of if you kind of like
+17:04
+think back to our example of a robot
+17:06
+delivering coffee
+17:07
+then maybe his um his reward signal was
+17:09
+getting paid when he delivers the coffee
+17:11
+but the reason he got paid was not just
+17:14
+the result of that final action that he
+17:16
+took of like
+17:17
+giving the coffee to the person instead
+17:19
+in order to achieve that reward of
+17:20
+getting paid
+17:21
+he had to first go and find a person and
+17:23
+then take their order and then go to the
+17:25
+coffee shop and then purchase the coffee
+17:27
+and then drive back to the person and
+17:28
+then hand the coffee to the and then
+17:29
+hand the coffee to the person
+17:31
+and somehow the reward signal that he
+17:32
+got of getting paid was a result of all
+17:34
+of those complex interactions and and
+17:36
+and
+17:37
+uh and choices that the agent had made
+17:39
+over a very fairly long period of time
+17:42
+so um the the technical term we
+17:44
+sometimes use to to denote this idea is
+17:46
+credit assignment
+17:47
+that when the agent receives a reward it
+17:50
+doesn't know
+17:51
+what caused the reward that it got it
+17:53
+doesn't know whether it was the action i
+17:55
+just took
+17:56
+or was it the action i took a year ago
+17:57
+that's causing me to receive this reward
+17:59
+right now
+18:00
+so that's a really big uh difference
+18:02
+between reinforcement learning and
+18:04
+supervised learning
+18:05
+right because in supervised learning
+18:07
+after you make a prediction you get a
+18:09
+loss
+18:09
+right away and that loss just tells you
+18:11
+how well how good was this instantaneous
+18:13
+prediction
+18:14
+so in supervised learning there's not as
+18:16
+much a need for this uh this idea of
+18:18
+long-term credit assignment
+18:21
+okay so then another big problem in
+18:23
+reinforcement learning
+18:24
+is the the fact that everything is
+18:26
+non-differentiable right
+18:28
+so ultimately the agent wants to learn
+18:30
+to perform actions that maximize its
+18:32
+reward
+18:33
+and then kind of the normal intuition or
+18:36
+instinct
+18:37
+that you should that you might have as a
+18:38
+deep learning practitioner
+18:40
+is you know we want to maximize the
+18:41
+reward so let's compute the gradient of
+18:43
+the reward with respect to the actions
+18:45
+or
+18:45
+the gradient of the reward with respect
+18:46
+to the model weights and then perform
+18:48
+gradient descent on that kind of uh that
+18:50
+kind of a formulation
+18:52
+but the problem is that we can't back
+18:54
+propagate through the world
+18:56
+because we don't understand we don't
+18:57
+have a model for how
+18:59
+exactly the world behaves so in order to
+19:01
+compute the gradient of the reward with
+19:03
+respect to the model's weights
+19:04
+that would force us to back propagate
+19:06
+through the real world itself
+19:08
+and that's that that's something that we
+19:09
+just fundamentally don't know how to do
+19:11
+um so that's another big challenge when
+19:13
+it comes to reinforcement learning
+19:15
+we need to somehow deal with this uh
+19:16
+with this non-differentiable with this
+19:18
+non-differentiability problem
+19:21
+okay so a third big issue maybe i think
+19:23
+i wrote the four big issues now
+19:25
+so i think the fourth big issue with
+19:26
+reinforcement learning compared to
+19:28
+supervised learning
+19:29
+this one's a little bit subtle and this
+19:31
+is the notion of
+19:32
+non-stationarity so that means that um
+19:35
+in reinforcement learning the states
+19:38
+that the agent sees
+19:39
+kind of depend on the actions that the
+19:41
+agent had made in previous time steps
+19:44
+and then as the agent learns it's going
+19:46
+to learn to
+19:47
+make new actions in the world and as a
+19:50
+result of learning how to make new
+19:51
+actions in the world
+19:52
+the agent will then maybe explore new
+19:55
+parts of the world
+19:56
+and be exposed to novel situations and
+19:58
+novel states
+19:59
+so as a result that means that the the
+20:01
+data on which the inv the agent is
+20:03
+training is a function of how well the
+20:06
+agent is doing at this point in time
+20:08
+right so maybe for example of the the
+20:10
+robot that's learning to deliver coffee
+20:12
+maybe when that robot is just starting
+20:14
+out it only knows how to like
+20:16
+um go to a person and then just give him
+20:18
+a copy that's that's right next to that
+20:19
+person
+20:20
+but as the agent gets better at that
+20:22
+task then maybe people start asking the
+20:24
+robot to now fetch me a coffee from the
+20:26
+room next door
+20:27
+or from the coffee shop across the
+20:28
+street and the reason that the agent is
+20:30
+now
+20:31
+getting these novel states is because
+20:33
+the agent has gotten better
+20:34
+at the task that it's trying to solve
+20:37
+but now now that now it's being it's now
+20:39
+it's being exposed to some new
+20:40
+situations
+20:41
+so somehow the data that it's being
+20:42
+trained on or the data that it's being
+20:44
+exposed to
+20:45
+is a function of how well the agent has
+20:47
+learned to interact so far in the
+20:49
+environment
+20:50
+um so we call that the the
+20:51
+non-stationarity problem
+20:53
+because the distribution of data on
+20:55
+which the the model is training
+20:56
+is not a stationary distribution that
+20:58
+distribution of data is going to change
+21:00
+over time
+21:01
+as the model itself learns to interact
+21:04
+better in the environment
+21:06
+and this does not happen in supervised
+21:07
+learning right because in supervised
+21:09
+learning we typically assume we have a
+21:10
+static data set
+21:11
+and then at every iteration we're going
+21:12
+to try to classify one sample from that
+21:14
+data set
+21:15
+but the underlying data set is not going
+21:17
+to change as the as the model is
+21:19
+training
+21:20
+but actually in the last lecture we saw
+21:22
+an example of another
+21:23
+um deep learning model that also suffers
+21:26
+from this non-stationary problem
+21:27
+does anyone know about what that was
+21:31
+well that was actually the generative
+21:32
+adversarial networks that we saw in the
+21:34
+previous network
+21:35
+in the previous lecture right because in
+21:36
+a general adversarial network
+21:38
+remember we've got a generator we've got
+21:39
+a discriminator the generator is
+21:41
+learning to fool the discriminator
+21:42
+and the discriminator is learning to
+21:44
+classify the data coming out of the
+21:45
+generator
+21:46
+well then from the perspective of the
+21:47
+discriminator is also learning on a
+21:49
+non-stationary distribution
+21:51
+because the data of the discriminator is
+21:52
+learning on is a function of how well
+21:53
+the generator is doing
+21:55
+and similarly the the signal that the
+21:57
+generator is using to learn
+21:58
+um is a function of how well the
+21:59
+discriminator is currently doing
+22:01
+so uh this non-stationary problem also
+22:03
+shows up in generative adversarial
+22:05
+networks
+22:05
+and i think that's one of the reasons
+22:07
+why generative adversarial networks can
+22:08
+be difficult to train
+22:10
+but now it also it also shows up in
+22:12
+reinforcement learning so now
+22:13
+in reinforcement learning we're like in
+22:15
+a really bad situation right because we
+22:17
+have to deal with non-stationarity
+22:18
+we have to deal with
+22:19
+non-differentiability we have to deal
+22:20
+with credit assignment
+22:22
+we have to deal with stochasticity and
+22:23
+these are all like really bad
+22:25
+difficult things for our learning
+22:27
+algorithm to learn to overcome
+22:29
+so as a result um uh reinforcement
+22:31
+learning is a really hard problem
+22:33
+and uh it just it just is fundamentally
+22:36
+much much more challenging than any kind
+22:37
+of supervised learning approach
+22:39
+so in general if you find yourself
+22:42
+confronted with a problem in the world
+22:44
+if you can find a way to not frame it as
+22:46
+reinforcement learning
+22:47
+and instead find a way to frame it as
+22:49
+supervised learning then typically your
+22:50
+life will be much much easier
+22:52
+and the reinforcement learning is uh
+22:54
+much more interesting much more general
+22:56
+but because it's so much harder it just
+22:58
+it's harder to
+22:59
+get things to work really well in
+23:01
+reinforcement learning contexts
+23:04
+okay so kind of now that we've got this
+23:05
+this overview of what is reinforcement
+23:07
+learning
+23:08
+we can talk about maybe a little bit
+23:10
+more of the mathematical formalism that
+23:12
+we use
+23:13
+to talk about reinforcement learning
+23:14
+systems so
+23:16
+the the mathematical formalism that we
+23:18
+use to talk about reinforcement learning
+23:20
+systems
+23:20
+is this uh scary sounding markov
+23:22
+decision process
+23:24
+and this is a mathematical object
+23:25
+consisting of a tuple of these five
+23:27
+things
+23:28
+there's a set s of possible states
+23:30
+there's a set a
+23:31
+of possible actions both of these might
+23:33
+be finite or infinite sets
+23:35
+there's a function r which gives us a
+23:37
+distribution of rewards
+23:39
+that we could possibly be given given
+23:41
+every state in action pair
+23:43
+so this is now a parametrized family of
+23:46
+distributions of rewards in every state
+23:48
+action pair
+23:49
+there's a transition probability that
+23:51
+tells us how likely is the environment
+23:53
+to transition to different states
+23:55
+as a function of what was the current
+23:57
+state and what was the action we took in
+23:58
+that state
+23:59
+and then there's um now this one's kind
+24:01
+of kind of weird there's also a discount
+24:03
+factor gamma
+24:04
+that tells us how should the how should
+24:06
+the agent choose to trade off between
+24:09
+getting rewards right now versus getting
+24:10
+rewards in the future so this trade-off
+24:13
+factor gamma
+24:14
+tells us um how much do we prefer a
+24:16
+reward right now versus a reward
+24:18
+sometime in in the in the far off future
+24:21
+and the formalism uh that we and the
+24:23
+reason this is called a markov decision
+24:24
+process or mdp
+24:26
+is because it is it has this markov
+24:28
+property or this markovian property
+24:31
+and that means that the current state at
+24:32
+the current moment in time as
+24:34
+t um completely characterizes the the
+24:37
+all the stuff that's going to happen in
+24:38
+the system
+24:39
+so um the current state and the action
+24:42
+that we take in that state
+24:43
+is sufficient for determining the
+24:44
+distribution over the reward over over
+24:46
+the
+24:46
+rewards that we get and the distribution
+24:48
+of the net over the next states that the
+24:49
+environment might transition to
+24:51
+um so in particular what state we get to
+24:53
+next does not reply does not depend on
+24:56
+the full history of states that we have
+24:57
+seen up to this point
+24:58
+it only depends on the the immediate
+25:01
+previous state
+25:01
+and that property is called the
+25:02
+markovian property of a markov decision
+25:04
+process
+25:05
+and that kind of makes everything all
+25:06
+the math a lot easier to deal with
+25:09
+okay so then to formalize what the agent
+25:12
+is doing
+25:13
+so we want to learn an agent that can
+25:15
+interact with this environment
+25:16
+and the environment is kind of
+25:17
+formalized by this object called a
+25:19
+markov decision process
+25:21
+and now we formalize the agent by saying
+25:23
+that the agent learns to
+25:25
+learns a policy usually called pi and
+25:28
+the policy pi
+25:29
+is going to give a distribution over
+25:32
+actions
+25:32
+that the agent is going to take that is
+25:34
+conditioned on the states that the agent
+25:36
+is exposed to at each moment in time
+25:39
+and now the goal is to find some really
+25:42
+good policy pi
+25:43
+star that maximizes this cumulative this
+25:46
+uh
+25:46
+cumulative discounted sum of rewards
+25:48
+over all time
+25:49
+so um i told you that the we when we
+25:52
+were speaking kind of more informally
+25:54
+we said that the agent wants to learn to
+25:56
+get high rewards
+25:57
+but um in particular how should the
+25:59
+agent trade off between a reward a time
+26:01
+step zero versus
+26:03
+a reward at time step 100 well the
+26:05
+discount factor gamma tells us exactly
+26:07
+how we should have that trade-off
+26:09
+and that's kind of like an inflation
+26:10
+factor you know like in economics money
+26:12
+now is worth more than money later
+26:14
+well the the get the discount factor
+26:16
+gamma is sort of the inflation factor
+26:17
+for the environment
+26:18
+how much should the how much the
+26:20
+environment um prefer a reward now
+26:22
+versus a reward in the future um right
+26:24
+so like if gamma equals one then our
+26:25
+award now
+26:26
+is equivalent to reward in the future um
+26:28
+if gamma equals zero
+26:30
+then we only care about rewards at the
+26:32
+first time step and we don't care about
+26:33
+any rewards after that
+26:35
+and gamma and again when gamma takes
+26:37
+values between zero and one
+26:38
+then it kind of interpolates between
+26:40
+those two extremes of only caring about
+26:42
+reward right now
+26:43
+versus um caring about the future just
+26:45
+as much as the present
+26:47
+okay so that gives us our formalization
+26:50
+of um of the environment as the mdp
+26:52
+and of the agent as this policy which is
+26:54
+executing in the environment
+26:55
+that is trying to maximize this
+26:57
+discounted sum of rewards
+26:59
+and then to talk about a little bit more
+27:01
+formally about what's going on
+27:03
+when we run the agent in the environment
+27:05
+or as the agent is interacting in the
+27:06
+environment
+27:07
+then what happens is at the very first
+27:09
+time step t equals zero
+27:10
+then the environment is going to sample
+27:12
+some initial state um
+27:14
+s0 from some prior distribution over
+27:16
+initial states
+27:17
+and then we're going to loop from t
+27:20
+equals zero until whenever we're done
+27:22
+and at each time step the agent will
+27:23
+first select an action a sub t
+27:26
+um that is sampled from the policy pi of
+27:29
+a
+27:29
+conditioned on st so then recall that st
+27:32
+is the state of the environment at the
+27:33
+current time step that the environment
+27:35
+is giving to the agent
+27:36
+and now the policy pi is giving us a
+27:38
+distribution over actions
+27:40
+that is conditioned on the state that
+27:42
+the environment has passed the agent
+27:44
+so then the agent is going to sample
+27:45
+from this distribution to give us the
+27:47
+action that the agent performs at this
+27:49
+at this time step
+27:50
+then uh the agent will pass that that
+27:52
+action a t to the environment
+27:54
+the environment will sample a reward for
+27:56
+that time step that is uh
+27:57
+sampled from this reward function uh
+28:00
+capital r
+28:00
+and then the the environment will sample
+28:02
+the next state as t
+28:04
+plus one that will sample from this
+28:05
+transition function where the transition
+28:07
+function is dependent both on
+28:09
+gives us a distribution of our states
+28:10
+which is conditioned both on the current
+28:12
+state
+28:13
+as well as the action that the agent
+28:14
+decided to take um and then after that
+28:16
+the agent will be given the reward
+28:18
+and given the next state as t plus one
+28:20
+and this whole loop will will uh
+28:22
+will go on forever um so then that's
+28:25
+kind of this this this trade this loop
+28:27
+that happens
+28:27
+more formally when we talk about an
+28:29
+agent interacting with an environment
+28:32
+okay so then as a kind of classical
+28:35
+example
+28:36
+of a markov decision process that we can
+28:38
+maybe specify more formally
+28:39
+people often talk about these so-called
+28:41
+grid worlds
+28:43
+so here on the states in the middle we
+28:45
+imagine that there's some spatial grid
+28:47
+over which the environment can can move
+28:50
+um and at each and the states are just
+28:52
+the the agent can be in one of these
+28:54
+positions on the grid so the states so
+28:56
+there's now 12 different states
+28:58
+giving the position of the agent and now
+29:01
+the actions that the agent can take
+29:03
+are moving one direction at a time so
+29:06
+the agent can move left move right move
+29:08
+up or move down
+29:09
+and then that causes a deterministic
+29:12
+state transition
+29:13
+where the agent is then going to move to
+29:14
+a different state based on where it is
+29:16
+right now
+29:17
+as well as the action that it took and
+29:19
+now in this particular grid world
+29:21
+we want the agent to learn to go from
+29:24
+wherever it starts
+29:25
+which is the initial state to go quickly
+29:27
+to one of these uh
+29:28
+special star states so then at every
+29:31
+time step
+29:32
+the agent will get a negative reward if
+29:33
+it's not in one of the goal states
+29:36
+and it might get some zero reward or
+29:38
+positive reward if it does happen to be
+29:40
+in one of these
+29:41
+star states for the goal okay so then a
+29:44
+policy
+29:45
+tells us what actions does the agents
+29:47
+take in every state of the environment
+29:49
+so then on the left we're showing a bad
+29:51
+policy where maybe at every no matter
+29:54
+now for this bad policy on the left the
+29:56
+the agent does not care about which
+29:58
+state is in
+30:00
+and no matter where it is on the
+30:01
+environment the agent is always going to
+30:03
+flip a coin and either go up or down
+30:04
+with 50 50 probability
+30:06
+and you can imagine that this is
+30:08
+probably not a very good policy
+30:09
+because there's many because there's
+30:12
+many cases where the agent will just not
+30:14
+reach any of the goal states very
+30:15
+efficiently
+30:17
+so now on the right we have an example
+30:19
+of what is the optimal policy for this
+30:21
+particular markov decision process
+30:24
+so here it says for every state in the
+30:26
+environment um like
+30:27
+if if the agent is directly underneath
+30:29
+the goal state then it's always going to
+30:31
+move up with probability 100
+30:33
+and that will put it directly into the
+30:34
+goal state and then there are certain
+30:36
+states where it might be
+30:37
+kind of the agent is kind of equidistant
+30:39
+from the two goal states so then the
+30:41
+optimal policy is to flip some coin
+30:43
+and then move in those maybe two or
+30:44
+three different directions with equal
+30:46
+probabilities
+30:47
+so then on the right is this optimal
+30:49
+policy where if an agent executes this
+30:51
+optimal policy in this simple grid world
+30:53
+environment
+30:54
+then it will maximize its expected sum
+30:55
+of rewards and this is the best that the
+30:57
+agent can possibly do
+30:58
+in this particular environment so now
+31:01
+we've seen this idea of an
+31:03
+optimal policy which is the best thing
+31:04
+the agent can possibly do in a system
+31:07
+so that's kind of the goal of the
+31:09
+learning process
+31:11
+throughout in this in this reinforcement
+31:13
+learning setting so what we want to do
+31:14
+is have the agent
+31:15
+find this optimal policy pi star that is
+31:18
+going to maximize this discounted sum of
+31:20
+rewards
+31:22
+but now there's a big problem in trying
+31:24
+to maximize this discounted sum of
+31:25
+rewards which we've kind of talked about
+31:27
+already
+31:28
+which is one there's a lot of there's a
+31:30
+lot of randomness in this situation
+31:32
+right um this policy uh the actions that
+31:35
+we take might be random
+31:36
+and the rewards that we get at each time
+31:38
+step might also be non-deterministic
+31:40
+so then the solution is that we want to
+31:42
+maximize the expected sum of rewards
+31:44
+because the actual result the actual
+31:46
+rewards we're going to get are going to
+31:48
+be somehow random
+31:49
+so the best we can do is maximize the
+31:51
+expected value of the rewards that we
+31:53
+will achieve
+31:54
+if we follow this policy so then um
+31:57
+we kind of we can define this idea of an
+31:59
+optimal policy a little bit more
+32:00
+formally
+32:01
+and we say that the optimal policy pi
+32:03
+star is the policy that maximizes this
+32:06
+expected sum of discounted rewards
+32:08
+so this is an expectation that ranges
+32:11
+over
+32:11
+that just says that if we execute this
+32:14
+policy pie
+32:14
+in the environment then we will make
+32:17
+some actions we will
+32:18
+we will visit some states we will get
+32:20
+some rewards and all of those things
+32:21
+will be random
+32:22
+but all of the all of the states that we
+32:24
+visit and all the actions that we
+32:25
+perform
+32:26
+will all be dependent on the policy that
+32:28
+we're executing so then this expectation
+32:30
+is kind of just the averaging out all of
+32:32
+the randomness
+32:33
+and is just the expected value of this
+32:35
+sum of rewards
+32:37
+if we are up using a particular policy
+32:39
+pi when operating in the environment and
+32:41
+then pi star is just the best possible
+32:43
+policy that we can do
+32:46
+okay so then uh then we need we need to
+32:49
+define a couple more bits of
+32:50
+machinery in order to actually uh
+32:52
+provide algorithms for learning optimal
+32:54
+policies
+32:56
+right so our whole goal in reinforcement
+32:57
+learning is to somehow find this optimal
+32:59
+policy
+33:01
+right so as we said that suppose we've
+33:03
+got some policy
+33:04
+maybe not optimal call it pi and then
+33:06
+executing that policy in environment
+33:09
+is going to give us some kind of
+33:10
+trajectory which is a set of states and
+33:13
+a set of actions that we perform
+33:14
+along the course of executing this
+33:16
+environment this policy in this
+33:17
+environment
+33:19
+and now what we want to do is somehow
+33:21
+measure how good
+33:22
+are we doing in different states um
+33:25
+so one thing that we can one way that we
+33:28
+can quantify this
+33:29
+is with this this this notion called a
+33:31
+value function
+33:32
+um called v of v of pi and the value
+33:36
+function
+33:37
+depends on a policy pi and it takes as
+33:39
+input a state
+33:40
+s and the value function tells us if we
+33:43
+were to
+33:44
+execute the policy pi and start from the
+33:47
+state s
+33:48
+then what is the x the expected reward
+33:50
+that we will get over the rest of future
+33:53
+the rest of time
+33:54
+if we execute policy pi in the
+33:56
+environment starting at state s
+33:58
+so this value function is really telling
+34:00
+us that how good is the state s
+34:02
+um under the policy pi that if the value
+34:05
+of the state is high
+34:06
+that means that on when operating with
+34:08
+policy pi starting from that state we're
+34:10
+going to get a lot of reward
+34:11
+in the future and if the value function
+34:13
+is low then we're going to get very
+34:15
+little reward in the future as we
+34:16
+use policy pi going forward so this is
+34:19
+kind of intuitive
+34:20
+and it seems that this is this is a
+34:22
+reasonable thing that we might want to
+34:23
+measure in the learning process
+34:25
+how good is each is each state in the
+34:27
+environment as a function of the policy
+34:29
+that we're trying to execute
+34:30
+but it turns out that um even though
+34:32
+this this kind of value
+34:34
+function is quite an intuitive construct
+34:36
+we often want to use a slightly
+34:38
+different version of the value function
+34:39
+instead
+34:40
+which ends up being a lot more
+34:41
+mathematically convenient for learning
+34:43
+algorithms
+34:44
+so this um slightly this slightly
+34:46
+modified slightly more general value
+34:47
+function
+34:48
+is now called a q function and the q
+34:50
+function
+34:51
+um takes both depends on a policy pi
+34:54
+as well as a state s and an action a
+34:58
+and the q function tells us if we start
+35:00
+in state s
+35:02
+and then take action a and then after
+35:04
+that operate according to policy pi
+35:06
+then what is the future sum of expected
+35:09
+rewards that we will get over the rest
+35:10
+of time
+35:11
+so this q function is telling us how
+35:14
+good so that the value function is
+35:15
+telling us
+35:16
+how good is a state if we um start in
+35:18
+that state and execute the policy
+35:20
+and the value func and the q function is
+35:22
+telling us um
+35:23
+if we start with a state action pair and
+35:26
+then follow the policy
+35:27
+how good would that initial state action
+35:29
+pair be assuming we follow the policy
+35:31
+for the rest of time
+35:33
+okay are we maybe clear up to this point
+35:35
+i think we i think this is a lot of i
+35:36
+know there's a lot of notation to kind
+35:37
+of uh introduce
+35:39
+all at once any questions on these q
+35:40
+functions these value functions any any
+35:42
+of this stuff up at this point
+35:45
+yeah well the the q so the q function is
+35:48
+a function that tells us
+35:49
+for any state then how much reward will
+35:52
+we get
+35:53
+if we happen to start in that state so
+35:55
+the q function so then
+35:57
+maybe um in the grid world maybe if you
+35:59
+started directly on the goal state
+36:01
+then you might expect the q function to
+36:02
+be very large because we're going to
+36:04
+calculate collect a lot of reward
+36:06
+but if we started maybe farther away
+36:07
+from the goal state then the total
+36:08
+amount of reward we're going to
+36:10
+accumulate
+36:10
+is going to be less oh well the the
+36:12
+environment chooses which state we start
+36:14
+at because if we go back to this um
+36:17
+right if we go back to if we go back to
+36:18
+this
+36:19
+then the environment is choosing the
+36:20
+initial state so we don't get to choose
+36:22
+the initial state the environment
+36:23
+chooses that for us
+36:25
+but the q function is just measuring for
+36:27
+any state that we happen to find
+36:29
+ourselves in
+36:30
+how much reward can we expect to get if
+36:32
+we happen to start in this state
+36:36
+yeah yeah so the question is that these
+36:38
+two functions this
+36:39
+the value function and the q function
+36:40
+seem like they're measuring kind of
+36:41
+similar things
+36:42
+and in fact you can kind of write
+36:43
+recurrence relations that write one in
+36:45
+terms of the other
+36:47
+um and the reason is that uh usually i
+36:49
+think it's more uh
+36:50
+i mean there's there's algorithms that
+36:52
+depend only on value functions
+36:54
+and there's algorithms that depend only
+36:55
+on q functions um i think it's a little
+36:57
+bit more intuitive to start with a value
+36:59
+function
+37:00
+um but in practice we'll find that the
+37:02
+algorithms we use are mo
+37:03
+are more often using q functions than
+37:05
+value functions
+37:06
+but you're right that they're kind of
+37:08
+measuring a quite similar thing that one
+37:10
+is telling us how much reward are we
+37:11
+going to get from a state
+37:12
+and then the other is telling us given a
+37:14
+state and an action then how much reward
+37:16
+are we going to get after that
+37:20
+okay so then once we've got this this
+37:22
+value function and this q function
+37:24
+then um our goal is to define the
+37:27
+optimal q function
+37:28
+right so q star of state in action tells
+37:32
+us
+37:32
+um what is the q function of the optimal
+37:35
+policy
+37:36
+so that's um the cube that's the best if
+37:38
+we found the best possible policy
+37:40
+that achieved the best possible rewards
+37:42
+then what would the q function of that
+37:44
+best possible policy be
+37:47
+so the q stock q star tells us um what
+37:50
+would the what is the
+37:51
+assuming we had the best possible
+37:53
+behavior that it says
+37:55
+assume we start in state s and then we
+37:57
+perform action a in state s
+37:59
+and then after that we do the best
+38:01
+possible thing that we could possibly do
+38:03
+in this environment
+38:04
+then then how much reward are we going
+38:06
+to get for the rest of time
+38:08
+after we take that initial action from
+38:09
+that initial state and then after that
+38:11
+we're going to
+38:12
+act optimally for the rest of time and
+38:14
+that's the that's this optimal q
+38:15
+function q star
+38:18
+and what's interesting is there's
+38:19
+actually a very simple relationship
+38:22
+between q star the optimal q function
+38:25
+and pi star the optimal policy so in
+38:28
+particular
+38:29
+q star actually encodes the optimal
+38:31
+policy pi star
+38:32
+right so pi star is telling us for every
+38:35
+state
+38:35
+what what is the best possible action
+38:37
+that we can take in that state
+38:39
+that will cause us to maximize our
+38:40
+rewards for the rest of time
+38:42
+and that's just equal to the the and the
+38:44
+q function tells us for every state and
+38:46
+every action
+38:47
+then what's the max possible reward if
+38:48
+we took that action in that state
+38:50
+so in fact we can just write down the
+38:52
+optimal policy pi star
+38:54
+by checking all of the actions a prime
+38:57
+from the optimal q function so one
+39:00
+reason that we want to define the q
+39:02
+function
+39:02
+in this way is actually it lets us not
+39:05
+really worry about policy functions
+39:06
+anymore
+39:07
+that by defining the q function to take
+39:09
+both the state and the action
+39:11
+then it's kind of one function that
+39:13
+encompasses both kind of values of how
+39:15
+good are states
+39:16
+as well as how good are actions in
+39:18
+states so then the reason why we want to
+39:20
+use the q function in this way
+39:22
+is that we only need to worry about this
+39:23
+one thing which is the q function
+39:25
+whereas in other formulations you might
+39:27
+want to have two functions that you're
+39:29
+learning both the value function
+39:30
+that depends on states and the policy
+39:32
+function that gives you actions
+39:33
+dependent on
+39:34
+on states so this is kind of why we want
+39:37
+to use q functions and what makes things
+39:38
+very convenient
+39:40
+okay but now there's actually a kind of
+39:43
+amazing recurrence relation
+39:45
+um called the bellman equation on this
+39:47
+optimal q function
+39:49
+um which right so it says that um
+39:52
+if we take our optimal q functions the
+39:55
+optimal q function tells us if we start
+39:56
+in state
+39:57
+s and then take action a and then act
+40:00
+optimally after that
+40:01
+then what's the total reward we're going
+40:03
+to get well the intuition
+40:05
+behind this bellman equation is that if
+40:07
+we start in state s
+40:09
+and then take action a then
+40:12
+then we're going to get some in some
+40:13
+immediate reward r that only depends on
+40:16
+that state
+40:17
+that state s and that action a so we're
+40:19
+going to get some immediate reward r
+40:21
+like at that time step right immediately
+40:23
+but then after that initial time step
+40:26
+then we just the optimal q function
+40:28
+would require us to act
+40:29
+optimally after we took that very first
+40:31
+action in that very first state
+40:33
+and then kind of that means that after
+40:35
+that very first action
+40:36
+we want to behave according to the
+40:39
+optimal policy pi star
+40:40
+but we know that the optimal policy pi
+40:42
+star is just it can be encoded
+40:44
+by the optimal q function q star so that
+40:47
+actually gives us this very nice
+40:49
+recurrence relation
+40:50
+that we can define the optimal q
+40:52
+function q star
+40:53
+in terms of the reward we get at the
+40:55
+very at the very next time step
+40:57
+um and then uh by then recursing over
+41:00
+the cube
+41:01
+then the q function at the next state
+41:03
+that we get
+41:04
+um for the rest of time right so then
+41:06
+this this q function is saying that
+41:08
+right away we get some state
+41:09
+and then after that very first action
+41:10
+we're going to behave optimally but the
+41:12
+q function the q
+41:13
+star function already tells us what we
+41:15
+would get in that next state in that
+41:16
+next action
+41:17
+so then this bellman equation gives us
+41:20
+this this beautiful recurrence relation
+41:21
+that the optimal q function must satisfy
+41:25
+and this kind of lets us take this
+41:27
+infinite sum and actually turn it into
+41:29
+something more tractable that we can
+41:30
+work with
+41:32
+okay so then the idea is that we're
+41:35
+going to
+41:35
+um one way that we can try to solve this
+41:38
+reinforcement learning problem
+41:40
+is to find a q function is to actually
+41:42
+find an optimal q function
+41:44
+and it turns out that if we find any q
+41:47
+function
+41:47
+that satisfies the bellman equation then
+41:50
+it must be the optimal q function
+41:52
+and this is a this is an amazing fact
+41:54
+that we'll have to state without proof
+41:55
+for the purpose of this lecture
+41:57
+but it turns out that if we find any q
+41:59
+function that satisfies the bellman
+42:00
+equation
+42:01
+then we've got the optimal q function
+42:02
+and once we've got the optimal q
+42:04
+function
+42:04
+then we can use it to perform the
+42:06
+optimal policy so what we want to do is
+42:08
+find some function
+42:09
+q that satisfies the bellman equation so
+42:12
+then one thing we can do
+42:13
+is use the bellman equation as an
+42:15
+iterative update rule
+42:17
+so we can start with some random q
+42:18
+function and then at every time step
+42:20
+we're going to use the bellman the
+42:22
+bellman equation to provide some
+42:24
+update rule to update our q function so
+42:27
+then here we start with some random q
+42:28
+function q zero
+42:30
+and then we compute an updated q
+42:31
+function q one by applying sort of one
+42:34
+recursion of the bellman rule
+42:35
+and then we apply some next q function q
+42:38
+two by applying the next recursion step
+42:40
+of the
+42:40
+of the bellman equation to our previous
+42:42
+q function and then we kind of iterate
+42:44
+this process over and over and over
+42:46
+and then another kind of amazing fact
+42:48
+that we need to state without proof
+42:50
+is that under certain assumptions then
+42:52
+this um this iteration of
+42:54
+using the bellman equation to
+42:55
+iteratively update our q function
+42:58
+will actually cause the q function to
+42:59
+converge to the optimal q function
+43:01
+so this is kind of an amazing fact that
+43:03
+we need to state without proof
+43:05
+but the problem with this particular so
+43:07
+this is like this is like a this is like
+43:08
+real algorithm for reinforcement
+43:10
+learning
+43:10
+right like we can write down this random
+43:11
+q function we can perform the spelman
+43:14
+equation to perform iterative updates to
+43:15
+our q
+43:16
+function and then that will just
+43:17
+converge the optimal q function once
+43:18
+we've got the optimal q function
+43:20
+then we're good to go we've got the
+43:21
+optimal policy yeah
+43:23
+well it's it's doesn't need to be
+43:25
+strongly connected because
+43:27
+that's actually the problem here is that
+43:29
+in for every iteration of this value
+43:31
+iteration update
+43:32
+we need to perform an expectation over
+43:34
+all possible rewards and all possible
+43:36
+next states
+43:37
+and then we need to do that expectation
+43:39
+for every possible state
+43:40
+and for every possible action so every
+43:43
+iteration of the spelman equation
+43:45
+causes us to perform a computation for
+43:48
+every state
+43:49
+for every action for every for every
+43:51
+state that we could get to after
+43:52
+performing that action
+43:54
+so there's no notion of strongly we
+43:56
+don't need to a strongly connected thing
+43:58
+because it's already touching all the
+43:59
+states in this in this formulation
+44:02
+but that's actually brings us to the
+44:03
+problem with this with this update rule
+44:05
+is that we need to keep track we need to
+44:07
+perform some explicit computation
+44:09
+for every state and for every action and
+44:11
+then for every state and every action
+44:13
+we need to do something for every state
+44:14
+that we might get to after performing
+44:16
+that action in that state
+44:17
+so this works fine if our states are
+44:20
+small and finite
+44:21
+and the number of actions we can perform
+44:22
+in each state are small and finite
+44:24
+but if the states if the state space is
+44:26
+large if the action space
+44:28
+is large or if either of them are
+44:29
+infinite then we cannot actually perform
+44:31
+this computation in any kind of
+44:32
+tractable way
+44:34
+so then the solution is that now now
+44:37
+finally on slide 44 neural networks
+44:39
+enter onto the scene
+44:40
+so then the idea is that we'll train a
+44:42
+neural network
+44:43
+to approximate this uh this q function
+44:46
+and then we will use the bellman
+44:47
+equation to provide a loss function that
+44:49
+we can use to train this neural network
+44:52
+so then we've got this bellman equation
+44:54
+and now what we want to do is train a
+44:56
+neural network with state with uh with
+44:58
+parameters theta
+44:59
+that will in this neural network will
+45:01
+input a state or some representation of
+45:03
+a state input an action
+45:05
+input the weights of the network and
+45:06
+then tell us what is the value of this q
+45:08
+star for that particular state action
+45:10
+pair
+45:12
+and then we can use the bellman equation
+45:13
+to tell us kind of to give us kind of a
+45:15
+loss function
+45:16
+to train this neural network so from the
+45:18
+bellman equation
+45:19
+we know that we know that if the network
+45:22
+was doing its job properly
+45:24
+then the network outputs should satisfy
+45:26
+the bellman equation
+45:27
+so we can use now we can perform we can
+45:30
+use the bellman equation to give some
+45:32
+approximate target for a particular
+45:34
+state for a particular action
+45:35
+we can then sample a bunch of potential
+45:37
+next states and potential rewards
+45:39
+to give us some target y for what the
+45:41
+network should predict
+45:43
+based on the current state and the
+45:44
+current action and then we can use this
+45:47
+this put this uh this potential
+45:48
+this this target y um to then train the
+45:52
+network
+45:52
+so then we say that the the current the
+45:55
+current network output is q of
+45:56
+s comma a comma theta um and then we
+45:59
+want it to hit
+46:00
+this target output which is y of s
+46:03
+a theta which is computed using this
+46:06
+bellman update
+46:07
+and then the loss function we use to
+46:08
+train the network is then just maybe the
+46:10
+square difference between
+46:11
+the current output of the network and
+46:13
+what the network should be outputting
+46:14
+depending on the bellman equation
+46:16
+and now this is just a loss function
+46:17
+that we could then perform gradient
+46:19
+descent on
+46:20
+and we can use this to train a neural
+46:22
+network that can then approximate this
+46:23
+optimal q function
+46:25
+and hopefully after we train this thing
+46:26
+for a long time the network will
+46:28
+converge to something that approximates
+46:29
+the optimal q function
+46:30
+and then we can perform a policy by just
+46:33
+taking the arg max action over the q
+46:35
+functions that the network is uh
+46:36
+predicting
+46:39
+but now kind of a subtle problem with
+46:41
+this approach is this a non-stationarity
+46:43
+problem right so
+46:44
+the network is supposed to be inputting
+46:46
+the state inputting the action but now
+46:48
+the target that the network is supposed
+46:49
+to predict
+46:50
+actually depends on the current outputs
+46:52
+of the network itself
+46:53
+so that means that as the network learns
+46:56
+then the targets that is
+46:57
+that is it is expected to predict in um
+47:00
+from different state action pairs
+47:01
+is actually going to change over time
+47:03
+and that's this non-stationarity problem
+47:04
+rearing its head again
+47:07
+there's another big problem here which
+47:08
+is how do we actually choose to there's
+47:10
+a lot of sample
+47:10
+choices we need to make in sampling the
+47:12
+the data that we actually use to train
+47:14
+this model
+47:14
+and that's just a problem we do we can't
+47:16
+talk about today that's too complicated
+47:18
+but then there's a lot of decisions you
+47:19
+need to make on exactly which state
+47:20
+action pairs you're going to sample for
+47:22
+training
+47:22
+how do you form mini batches and that's
+47:24
+a lot of a big hairy problem you need to
+47:26
+worry about in practice
+47:28
+so then as kind of a case study for this
+47:30
+uh so this is called by the way deep q
+47:32
+learning
+47:33
+because we're using a d q a deep neural
+47:35
+network to approximate
+47:36
+a q function so that's called deep q
+47:38
+learning there's shallow q learning
+47:40
+where use some simpler function
+47:41
+approximators to learn
+47:42
+these q functions so then one case study
+47:46
+for where deep q learning has been very
+47:47
+effective
+47:48
+is this task of playing atari games so
+47:51
+here um we said the objective was to
+47:53
+observe the game state
+47:54
+and then predict uh what what action
+47:56
+should we take to maximize the score in
+47:58
+the game
+47:59
+and this actually you can use this was
+48:00
+solved using uh this actually
+48:02
+uh you can use dq learning to solve this
+48:04
+problem so here the the
+48:06
+the we're going to have this neural
+48:07
+network which is a convolutional neural
+48:08
+network
+48:09
+the input to the convolutional neural
+48:11
+network is um four images
+48:12
+telling us that the last four images uh
+48:15
+that it that were shown in the game
+48:17
+and then those images will be fed to a
+48:18
+convolutional neural network that have
+48:20
+some convolution have some fully
+48:21
+connected layers
+48:22
+and then at the end it will have um a an
+48:25
+output for every potential action
+48:27
+and those outputs will tell us the q
+48:28
+functions um for all of the
+48:30
+all of the actions that we could have
+48:32
+taken from that particular state that we
+48:34
+pass this input to the network
+48:35
+um so then you can imagine training this
+48:37
+thing up using this bellman equation
+48:39
+loss function that we saw on the
+48:40
+previous slide
+48:42
+and actually this works pretty well so
+48:44
+here's an example of
+48:45
+this was a paper from deepmind a couple
+48:47
+years ago that was fairly successful at
+48:49
+using deep q learning
+48:51
+to learn to play atari games um so
+48:54
+uh here the idea is it's for performing
+48:56
+this exact dp learning algorithm that we
+48:58
+just talked about
+48:59
+and it's learning to play this uh this
+49:00
+breakout game in atari
+49:03
+so uh at first let me know it's at the
+49:06
+beginning it's training
+49:07
+it's not doing so well at the beginning
+49:08
+because we started with a random network
+49:10
+it's kind of hitting the ball sometimes
+49:12
+but it's missing a lot of the time
+49:14
+and it's it's not very smart
+49:23
+so you know when you start off with a
+49:24
+random neural network it performs pretty
+49:26
+garbage at the beginning that's uh but
+49:27
+it's pretty normal
+49:28
+um after we train a bit longer then the
+49:30
+network will have gotten better
+49:33
+and now it can actually like hit the
+49:34
+ball so that's pretty exciting
+49:36
+and this was done of course the network
+49:38
+has sort of no
+49:39
+notion of what is the paddle or what is
+49:42
+the ball or what are the rules of the
+49:43
+game
+49:44
+all it's seeing are these uh these
+49:45
+images from the screen and how much the
+49:48
+score is incrementing
+49:49
+and it needs to kind of figure out for
+49:50
+itself what are the actions that it
+49:52
+needs to take
+49:52
+in order to uh in order to make its uh
+49:54
+make its predictions
+49:56
+and actually the network gets like
+49:57
+really really good at this game so it
+49:59
+actually probably
+50:00
+works better than me for sure so uh
+50:03
+then you know eventually this network
+50:05
+discovers some really pretty interesting
+50:07
+strategies for solving this breakout
+50:08
+game
+50:09
+so so far it hasn't missed and now oh
+50:11
+boy
+50:13
+right so we kind of learned that um it
+50:16
+learned it's able to learn these pretty
+50:17
+complex strategies for solving these
+50:19
+pretty complex environments
+50:21
+even though it has no explicit knowledge
+50:23
+of how the game is working
+50:25
+all it's doing is receiving these states
+50:26
+which are these images receiving these
+50:28
+rewards which are how well it's doing
+50:30
+then we train a deep network using this
+50:31
+q learning formulation
+50:34
+so that actually works pretty well
+50:36
+that's this notion of q learning
+50:38
+so now the the problem is that for some
+50:40
+problems this this q function is telling
+50:42
+us
+50:42
+for the state for the action what's the
+50:44
+total reward we're going to get in the
+50:45
+future
+50:46
+um and for some problems that might make
+50:48
+sense but for some learning problems
+50:50
+that might be a very difficult function
+50:51
+to approximate
+50:52
+um for other for some problems it might
+50:54
+be better to directly learn
+50:55
+a mapping from the states to the actions
+50:58
+so imagine like picking up a bottle
+51:00
+if i want to pick up a bottle i just
+51:02
+want to like move my hand until i touch
+51:04
+the bottle
+51:04
+once i touch the bottle i want to close
+51:06
+it and then once i close it then i want
+51:07
+to pick it up
+51:08
+so that's kind of a simple policy that
+51:10
+is described where my actions are
+51:12
+conditioned upon the states that i'm
+51:14
+observing at every moment in time
+51:16
+and sometimes it might be better to
+51:17
+learn neural networks that kind of
+51:19
+parameterize the policy directly
+51:21
+rather than sort of indirectly through
+51:22
+this q function so that gives us this
+51:25
+second category of algorithms for deep
+51:27
+reinforcement learning
+51:29
+called policy gradient algorithms so in
+51:31
+a policy gradient algorithm
+51:33
+we're going to learn a neural network
+51:34
+which inputs the state
+51:36
+and then outputs a distribution over the
+51:38
+actions that we should take in that
+51:39
+state
+51:40
+so this is kind of directly
+51:42
+parameterizing the optimal policy
+51:45
+and now the objective function is that
+51:46
+we want to train the policy to maximize
+51:49
+the expected sum of future rewards
+51:51
+so then we can write down some objective
+51:53
+function where the objective function
+51:54
+takes as input the weights of the neural
+51:56
+network
+51:57
+and then it just gives us what is the
+51:59
+expected rewards that we would achieve
+52:01
+if we were to execute the policy encoded
+52:03
+that network
+52:04
+in the in the in the environment and
+52:06
+then our lowest function is like let's
+52:08
+just use gradient ascent on this
+52:10
+let's compute gradient of the gradient
+52:12
+of this loss j
+52:13
+with respect to the parameters theta and
+52:15
+then use direct gradient ascent on the
+52:16
+network on the network
+52:18
+weights but of course the problem with
+52:20
+this is this non-differentiability
+52:22
+problem
+52:22
+that in principle we'd like to just
+52:24
+perform gradient ascent on this
+52:26
+objective
+52:26
+where the objective is just maximize the
+52:28
+reward and then we want to just compute
+52:30
+gradient of the reward and then take
+52:31
+gradient steps with respect to that
+52:33
+but we can't actually do that because we
+52:35
+would need to compute gradients through
+52:37
+the environment
+52:37
+so that's a big problem so then to kind
+52:40
+of solve that problem we need to do some
+52:42
+tricky math
+52:43
+so then let's let's take a slight
+52:45
+generalization of this problem
+52:46
+and let's write our x let's write our
+52:48
+our cost function in the following way
+52:51
+so let's write it as an expectation of x
+52:53
+sampled according to some probability
+52:54
+distribution p theta
+52:56
+and inside the expectation is a function
+52:58
+f of x so then you can think of
+53:00
+x as the trajectory of states and
+53:02
+actions and rewards that we would get by
+53:03
+executing the policy
+53:05
+p theta is the in is the implied
+53:06
+distribution over those trajectories
+53:08
+that is implied by the policy
+53:10
+and f of x is the reward function that
+53:11
+we would get after
+53:13
+observing the trajectory x and now what
+53:15
+we want to do is compute
+53:16
+the derivative of j with respect to
+53:18
+theta
+53:20
+okay so now we've got this general
+53:21
+formulation we can expand out the
+53:23
+integral definition of the expectation
+53:25
+so we want to compute derivative of uh
+53:27
+this thing with respect to theta
+53:29
+um so then we can expand out the
+53:30
+expectation into an integral
+53:32
+so that's going to be the integral over
+53:33
+x of p theta of x
+53:35
+times this f of x um then we can
+53:38
+uh push the x then we can push the
+53:40
+derivative inside the integral
+53:42
+assuming all these functions are well
+53:43
+behaved this should work and in
+53:45
+particular f of x
+53:46
+does not depend on theta so we can pull
+53:48
+the f of x out from the derivative
+53:50
+so now we've got this term sitting
+53:52
+inside the integral which is the
+53:53
+derivative of p theta of x with respect
+53:55
+to theta
+53:56
+and that's something that we'd like to
+53:57
+get rid of um by the way uh this because
+54:00
+that p
+54:01
+theta involves the environment and also
+54:03
+this integral involves integrating all
+54:05
+over all possible trajectories so we
+54:06
+can't actually do it in practice
+54:08
+so we'd like to massage this equation
+54:09
+into something that we can actually work
+54:11
+with
+54:12
+so now we can perform a little
+54:13
+computation on the side um and we can
+54:16
+just notice like what if we for some
+54:18
+crazy reason we just decided to take the
+54:19
+derivative with respect to theta
+54:21
+of log of p theta of x and why would we
+54:24
+do that i don't know
+54:25
+but if we do happen to make that
+54:26
+decision then we see that the derivative
+54:29
+of remember derivative of log of
+54:30
+something
+54:31
+is one over the something times
+54:32
+derivative of the something so then that
+54:34
+derivative is one over p theta of x
+54:36
+times derivative with respect to theta
+54:38
+of p theta of x and oh boy there's that
+54:40
+term that we wanted to get rid of in the
+54:41
+previous equation
+54:43
+so then we can reshuffle that and then
+54:45
+write um d d theta of p theta of x
+54:47
+as uh as this other form by just moving
+54:49
+the multiplying that thing over and now
+54:51
+we get uh
+54:52
+we can rewrite this term so then we can
+54:54
+sub out that blue term for the red term
+54:56
+in the previous integral
+54:57
+um and that gives us this this other
+54:59
+this other expression
+55:01
+but now this expression is interesting
+55:03
+right because this is this is
+55:05
+this expression is an integral over x
+55:07
+and then
+55:08
+one of the terms inside the integral is
+55:10
+p theta of x
+55:12
+so that actually means that this
+55:13
+integral is itself an expectation
+55:15
+right so then we can then rewrite that
+55:17
+integral as an expectation
+55:19
+which is now the expectation of x
+55:21
+sampled according to p theta
+55:23
+um of now the rewards that we get times
+55:26
+the
+55:26
+the derivatives of the the log
+55:28
+probabilities of the trajectory
+55:30
+um so now this is good we've managed to
+55:32
+kind of push the derivative
+55:33
+inside the expectation and then rewrite
+55:35
+it again as an expectation
+55:37
+so then this expectation we can
+55:38
+approximate by sampling some finite
+55:40
+number of trajectories from the policy
+55:43
+okay so that's good but we still need to
+55:45
+deal with this dd theta log p theta
+55:47
+term so then um we need to then we can
+55:49
+write out
+55:50
+using the definition using the
+55:51
+definition of the markov decision
+55:53
+process
+55:53
+we can just write out what is the
+55:55
+probability of observing the trajectory
+55:57
+x
+55:58
+then we can look at the log probability
+56:00
+of observing the trajectory x
+56:02
+kind of depends on two terms um one
+56:05
+is a sum of these transition
+56:06
+probabilities and these are
+56:08
+you know things that these are
+56:09
+properties of the environment that we
+56:11
+don't get to observe
+56:12
+so this is bad we can't actually compute
+56:14
+these and the other um this is actually
+56:16
+good
+56:16
+these are the action probabilities of
+56:18
+our that our model is taking
+56:20
+and this is something we can actually
+56:21
+compute because we actually are learning
+56:24
+the model so we can actually compute
+56:25
+this term
+56:26
+and now when we take the derivative of
+56:28
+this thing with respect to theta
+56:30
+then the red term does not depend on
+56:32
+theta so it goes away
+56:34
+so that's good so that means that now
+56:37
+we've got
+56:37
+this derivative of the log probability
+56:39
+of the trajectories only depends on the
+56:41
+action probabilities of our model
+56:43
+and that's good because we can actually
+56:44
+compute this
+56:46
+so now we put that on the side um we
+56:48
+pull up we
+56:49
+we pull our other expression from before
+56:51
+and we put these things together finally
+56:53
+to get an actual expression
+56:54
+um for now the exp the derivative of the
+56:57
+cost function
+56:58
+with respect to the parameters of the
+56:59
+model and now this is a function
+57:01
+where actually we could we can actually
+57:03
+evaluate every term of this function
+57:04
+which is actually finally good so then
+57:07
+this this expectation
+57:08
+means we're taking an expectation over
+57:10
+trajectories x
+57:12
+that are sampled by applying the pot by
+57:14
+uh by following
+57:15
+the policy in the environment so we can
+57:17
+perform these samples by just letting
+57:19
+the policy run in the environment and
+57:20
+collecting the trajectories x
+57:22
+and now this f x is the reward that we
+57:25
+get when uh when observing the
+57:26
+trajectory x
+57:27
+so then as we let the policy play out
+57:29
+and we observe the trajectories we'll
+57:30
+also observe the rewards so this is
+57:32
+something we can compute
+57:34
+and now this term is the the now
+57:36
+remember we're learning a model
+57:38
+a neural network which um predicts the
+57:40
+policy uh the action probabilities of
+57:42
+the states
+57:43
+so now this is actually the model that
+57:45
+we're that this mod this this pi
+57:47
+is the neural network model that we're
+57:48
+learning so this we can also take the
+57:50
+derivative of
+57:51
+right this term is telling us the the
+57:54
+gradient of the predicted scores from
+57:56
+our model
+57:57
+with respect to the weights of the model
+57:58
+so that we can just um compute using
+58:01
+back propagation through the the model
+58:03
+pi
+58:03
+which we're going to represent as a
+58:04
+normal neural network so then that gives
+58:07
+us um
+58:07
+that actually gives us a very concrete
+58:09
+algorithm for using this policy gradient
+58:11
+approach to learning a policy for
+58:13
+reinforcement learning
+58:14
+so what we're going to do is initialize
+58:16
+um the weights of our
+58:18
+our policy network to some random value
+58:20
+theta
+58:21
+and then we're going to run the the
+58:23
+policy pi theta
+58:24
+in the environment for some number of
+58:26
+time steps to collect data which is
+58:28
+trajectories x
+58:29
+and the rewards of those trajectories f
+58:31
+of x um use it
+58:33
+by running the policy pi theta in the
+58:35
+environment and then once we've
+58:36
+collected all that data
+58:38
+we can actually plug all those terms
+58:39
+into this giant expectation
+58:41
+to then compute an approximation to the
+58:43
+derivative of the cost function with
+58:44
+respect to the model weights
+58:46
+and then once we've got that then we can
+58:48
+perform a gradient ascent step
+58:50
+on the model weights and then we can go
+58:52
+back to two and loop and loop and loop
+58:54
+and go over and over again
+58:55
+so now this gives us a very different
+58:57
+approach to actually learning uh
+58:59
+to uh to work in a reinforcement
+59:02
+learning setting
+59:04
+and this um this equation looks kind of
+59:06
+crazy right like how
+59:07
+how are you supposed to interpret this
+59:08
+thing right this is an equation over an
+59:10
+expectation there's like it's kind of
+59:12
+hard to see what's going on
+59:13
+um but i think actually it's it's
+59:15
+actually a bit intuitive when when you
+59:16
+when you think about it
+59:18
+so the interpretation here is that when
+59:20
+we took something so we're going to
+59:21
+sample some trajectories x
+59:23
+and we're going to get some rewards for
+59:24
+those trajectories f of x and
+59:26
+when when we got high rewards when f x
+59:29
+is high
+59:30
+then all of the actions that we took in
+59:32
+that trajectory
+59:33
+should be made more likely um so that's
+59:35
+just saying that when we take a
+59:36
+trajectory and when we get high reward
+59:38
+then everything we did in that
+59:39
+trajectory we're assuming is going to be
+59:41
+good and we should tell the model to do
+59:42
+those things more
+59:44
+and then similarly when we run a
+59:45
+trajectory x and get a low reward
+59:47
+then we're going to assume that
+59:49
+everything the model did in that
+59:50
+trajectory was bad
+59:51
+and all of the actions the model took
+59:53
+along that trajectory should be less
+59:54
+likely
+59:56
+so that's kind of what this policy
+59:58
+gradient method is is kind of doing
+60:00
+and that's the rough intuition the time
+60:02
+behind what this is doing yeah question
+60:04
+how do you prevent the model from taking
+60:05
+the greedy option every time
+60:07
+i don't know it's actually very very
+60:09
+difficult
+60:10
+right because uh right the problem is
+60:12
+like there's a
+60:13
+there's this credit assignment problem
+60:15
+right like if you had a very very long
+60:16
+trajectory
+60:17
+then the model doesn't really know which
+60:18
+action was responsible for which reward
+60:20
+we're just saying that the entire reward
+60:22
+the if the entire trajectory had a high
+60:24
+reward
+60:25
+then all of the actions should be good
+60:26
+or all the action should be bad and
+60:28
+hopefully that'll kind of average out if
+60:29
+we get enough data and see enough
+60:30
+trajectories
+60:32
+um but that's actually kind of a big
+60:33
+downside with these policy gradient
+60:35
+methods
+60:36
+is they tend to require a lot a lot a
+60:37
+lot of data because in order to kind of
+60:40
+tease out which actions were actually
+60:42
+good and which actions were actually bad
+60:44
+we probably would have need to sample
+60:45
+like a lot a lot a lot of trajectories
+60:47
+so that's a big downside of these
+60:49
+methods
+60:51
+so that that gives us like these two
+60:53
+different uh
+60:54
+different formulations for actually uh
+60:56
+learning doing reinforcement learning in
+60:58
+practice
+60:59
+um policy they can definitely be made
+61:01
+better so a common thing in policy
+61:03
+gradients is to add a thing called a
+61:04
+baseline to make it better which we
+61:05
+won't talk about
+61:07
+but these are really just the beginning
+61:08
+so these are kind of like some fairly um
+61:10
+simple straightforward algorithms for
+61:12
+reinforcement learning um but there's a
+61:13
+whole
+61:14
+wide world of more interesting
+61:16
+algorithms that people are doing that
+61:17
+are state of the art today
+61:18
+so we just you if you took a whole
+61:20
+semester long class on this stuff i
+61:21
+think we cover a lot of these but
+61:22
+instead we'll just give a brief flavor
+61:25
+so um another approach is this notion of
+61:28
+actor critic
+61:29
+so here in actor critic we actually
+61:30
+train two networks one
+61:32
+is the actor that is going to predict
+61:34
+the actions that we're going to take
+61:35
+given states
+61:36
+and the other is the critic that's going
+61:37
+to tell how good are those state action
+61:40
+pairs
+61:41
+so this kind of looks like a combination
+61:42
+of the policy gradient method
+61:44
+with um the q learning method because
+61:46
+we've got sort of one network that's
+61:47
+telling us which actions to take
+61:48
+and another network that's telling us
+61:50
+how good our state action pairs
+61:53
+kind of a whole different approach to
+61:54
+reinforcement learning is this idea of
+61:56
+model-based reinforcement learning
+61:58
+so for all of the algorithms we've
+62:00
+talked about so far the model
+62:02
+we've the the network has not explicitly
+62:04
+tried to model the state
+62:06
+transitions of the environment it just
+62:08
+sort of works directly on uh it sort of
+62:10
+just learns
+62:10
+to it's not explicitly modeled how the
+62:12
+environment is going to change in
+62:13
+response to the actions
+62:15
+so another category of reinforcement
+62:17
+learning models
+62:18
+attempts to learn a model of the world
+62:21
+and then based on
+62:22
+our interactions with the world we try
+62:24
+to learn a model that tells us how the
+62:25
+world is going to change in response to
+62:27
+our actions
+62:28
+and then if you've got a really good
+62:30
+differentiable model of the world
+62:32
+then you can perform some kind of
+62:33
+planning using your learned model of the
+62:35
+world
+62:36
+so that's a very different category a
+62:37
+very different flavor of reinforcement
+62:39
+learning algorithms
+62:41
+now another thing is just do supervised
+62:42
+learning so say you want to get an agent
+62:45
+to interact an environment
+62:46
+then collect data of people that are
+62:48
+good interacting
+62:49
+in that environment and then train a
+62:51
+supervised learning model to just do
+62:52
+what those expert people did
+62:54
+so that's this notion of imitation
+62:55
+learning which is another another kind
+62:57
+of kind of idea
+62:58
+there's this idea of inverse
+63:00
+reinforcement learning where now we're
+63:01
+going to collect some data of what
+63:03
+agent what what expert agents did in the
+63:05
+environment and then try to infer
+63:07
+what reward function those experts were
+63:09
+trying to optimize
+63:11
+and then once we try to infer the reward
+63:13
+function that the experts were trying to
+63:14
+optimize then
+63:16
+we optimized our own model based on what
+63:18
+reward function we had thought they were
+63:20
+trying to learn
+63:20
+that's kind of a much more involved idea
+63:22
+called inverse reinforcement learning
+63:25
+you can also use adversarial learning
+63:27
+for reinforcement learning so maybe
+63:29
+we've got some set of trajectories some
+63:30
+set of actions that were done by experts
+63:32
+and then we want to train a
+63:34
+discriminator that tries to say whether
+63:36
+or not trajectories were
+63:37
+generated by our network or generated by
+63:39
+experts and then we need to learn to
+63:41
+fool the discriminator
+63:42
+in order to learn to do good
+63:44
+trajectories in in the environment
+63:46
+so these are these are just giving you a
+63:48
+very brief flavor of the wide
+63:50
+variety of methods that people try to
+63:52
+use to solve reinforcement learning
+63:53
+problems
+63:54
+and now it's kind of a case study of
+63:56
+where this has been really successful
+63:58
+has been this task of learning to
+64:01
+reinforce using reinforcement learning
+64:03
+algorithms to learn to play board games
+64:05
+so this was um a line of work coming out
+64:08
+of folks at
+64:09
+google deep mind where starting back in
+64:11
+january 2016
+64:13
+they built a system called alphago that
+64:15
+combined a lot of these different ideas
+64:17
+from reinforcement learning
+64:18
+and trained on a lot of data and then
+64:21
+actually was able to
+64:22
+build a reinforcement learning system
+64:24
+that learns to play the game of go
+64:26
+better than any human expert so at the
+64:29
+time they beat uh this
+64:30
+very very famous champion in go called
+64:33
+lee sedol
+64:34
+who had one who was like 18 time world
+64:36
+champion of go
+64:38
+and they actually beat him four out of
+64:39
+five in a match using this alphago
+64:41
+algorithm
+64:42
+um so he was not too happy about that
+64:45
+and then uh they followed it up so then
+64:47
+in october 2017 there was a thing called
+64:49
+alphago zero which kind of simplified
+64:51
+things
+64:51
+clean things up even better and now um
+64:54
+they beat who was at the time the number
+64:56
+one ranked
+64:57
+human player in the world um which was
+64:59
+uh could ye
+65:00
+and they actually beat him and that i
+65:02
+assumed he was not very happy
+65:05
+and then um in december 2018 there was
+65:09
+uh they generalized this approach even
+65:11
+further
+65:11
+to beat not just go but also use similar
+65:14
+approach to play other board games like
+65:16
+chess and shoji
+65:17
+so this was a year ago december 2018 and
+65:20
+now
+65:21
+just the just last month in november
+65:23
+2019
+65:24
+there was a new uh new approach called
+65:26
+mu0
+65:27
+that um actually used this idea of
+65:29
+model-based reinforcement learning
+65:31
+so they learned a model of how the state
+65:33
+was going to transition
+65:34
+and then plan through that learned model
+65:36
+in order to do really well at these
+65:37
+board games
+65:38
+and they got it to work uh just as well
+65:41
+so actually um another kind of
+65:42
+interesting piece of news around this
+65:44
+that actually just happened about two
+65:45
+weeks ago
+65:46
+is that lee sedol actually announced his
+65:48
+retirement from professional go
+65:50
+and he said the reason he's retiring is
+65:53
+because ai got too good
+65:55
+um so he said with the debut of ai and
+65:57
+go games i've realized that i'm not at
+65:58
+the top even if i become the number one
+66:00
+through frantic effort
+66:01
+and even if i become the number one
+66:03
+there is an entity that cannot be
+66:05
+defeated
+66:06
+so um this is actually i mean this is
+66:08
+kind of sad in a way right
+66:09
+like i this this guy is like brilliant
+66:11
+and he's worked his whole life to become
+66:13
+very very good at this this task of
+66:15
+playing go
+66:16
+and then it's just like a machine comes
+66:17
+by and these like these like nerds from
+66:19
+deepmind come and just like beat him at
+66:20
+this thing he's trained for his whole
+66:21
+life
+66:22
+like i'd be pretty sad if i were him um
+66:25
+but i think it's kind of an interesting
+66:26
+development
+66:27
+in this uh in this history of using
+66:29
+reinforcement learning to to play to
+66:30
+play games
+66:32
+and then um sort of pushing this forward
+66:34
+um people have started to push this idea
+66:36
+forward to play now even more complex
+66:38
+games
+66:39
+so there's some follow-up work from
+66:41
+deepmind where they learn
+66:43
+they built a system called alpha star
+66:44
+that learns to play starcraft 2
+66:46
+at very very good levels apparently and
+66:50
+open ai has a system called openai5 that
+66:53
+learns to play
+66:54
+dota 2 very very well and open ai
+66:57
+doesn't seem to publish papers anymore
+66:59
+they just write blog posts about what
+67:00
+they do
+67:01
+so there's no paper i can cite for this
+67:03
+for this really cool system
+67:04
+unfortunately okay so then so far we've
+67:07
+talked about
+67:08
+reinforcement learning as a mechanism to
+67:10
+learn systems to interact with the world
+67:13
+but actually i think another really cool
+67:15
+application of reinforcement learning
+67:17
+is actually learning using reinforcement
+67:20
+learning ideas
+67:21
+to build neural network models actually
+67:23
+with non-differentiable model components
+67:26
+and this is this notion of stochastic
+67:28
+computation graphs
+67:29
+um and as kind of a kind of a simple toy
+67:32
+example
+67:33
+imagine what we have i mean this is
+67:34
+actually not a good idea like i don't
+67:36
+think anyone should do this
+67:37
+but imagine that we as kind of an
+67:39
+instructive example what if we wanted to
+67:40
+build a neural network system
+67:42
+that was doing something like image
+67:43
+classification it's not interacting with
+67:45
+an environment it's just doing like a
+67:46
+normal image classification task
+67:48
+and we're actually going to have four
+67:49
+networks involved one is this network in
+67:51
+gray
+67:52
+which is going to input the image and
+67:54
+then tell which of the other networks we
+67:56
+should actually use to get our
+67:58
+classification decision
+67:59
+so then this first network is just
+68:01
+making a classification decision
+68:03
+over all of these other three networks
+68:05
+and then it's
+68:06
+this first network is telling us which
+68:08
+other component which other neural
+68:09
+network should we actually use to to um
+68:11
+classify this image
+68:13
+then we could sample from this
+68:14
+distribution sample maybe the green
+68:15
+network and then feed the image to the
+68:17
+green network
+68:18
+and then we could feed the image to the
+68:20
+green network get a classification loss
+68:22
+and now treat that loss as a reward and
+68:25
+then
+68:25
+use a policy gradient method to then use
+68:28
+the loss of the second network
+68:30
+to actually um use perform a policy
+68:32
+gradient update
+68:33
+on that first neural network that was
+68:35
+doing the routing
+68:37
+so now this is like i said kind of a
+68:38
+stupid toy example that i don't
+68:40
+recommend anyone do in practice
+68:42
+but it gives us this this um freedom to
+68:44
+now build neural network architectures
+68:46
+that
+68:47
+do very wild and very crazy things and
+68:49
+even non-differentiable things
+68:51
+where now you've got kind of like one
+68:52
+part of the neural network system which
+68:54
+is deciding which other part of the
+68:56
+neural network system to use
+68:57
+for other downstream tasks and then you
+69:00
+can use these ideas from reinforcement
+69:02
+learning
+69:02
+to now train these very complicated
+69:04
+neural network models
+69:05
+that are making very complex decisions
+69:07
+about how to process the data
+69:09
+so this was a very simple toy example
+69:11
+but another example
+69:13
+is a more real example of this in
+69:15
+practice
+69:16
+is going all the way back to something
+69:17
+we saw a few lectures ago on attention
+69:20
+so remember when we talked about on the
+69:22
+image captioning with attention
+69:24
+um then we talked about building models
+69:26
+that could learn to
+69:28
+use kind of a soft mixture of different
+69:31
+pieces of information
+69:32
+around different spatial positions in
+69:33
+the image at every time step
+69:35
+so then when generating the caption a
+69:36
+bird flying over a body of water period
+69:39
+then at every time step if the model is
+69:41
+kind of focusing its attention
+69:43
+on different spatial positions of the
+69:45
+image but
+69:46
+it always did this by taking a sort of a
+69:48
+soft average or a weighted sum
+69:49
+of all of the different features across
+69:51
+positions in space but there's another
+69:53
+version called heart attention
+69:55
+where um we're just we want the model to
+69:57
+select exactly one region in space
+70:00
+to actually pull features from at every
+70:02
+moment in time
+70:03
+and now this actually is called heart
+70:05
+attention because we're selecting
+70:06
+exactly one
+70:07
+piece of the image that we want to
+70:09
+process at every moment in time
+70:10
+and this you can actually train using a
+70:12
+reinforcement learning method
+70:14
+because you've got sort of one part of
+70:15
+the neural network which is
+70:17
+outputting this classification decision
+70:19
+over which positions in the image we
+70:21
+want to pull features from
+70:22
+and then that part of the neural network
+70:24
+which is making that classification
+70:25
+decision
+70:26
+you can then train using a policy
+70:27
+gradient approach so this is just a bit
+70:30
+of a taste that you can actually use
+70:31
+reinforcement learning algorithms to do
+70:33
+more than just interacting with
+70:34
+environments
+70:35
+that you can use them to train actually
+70:37
+neural network systems that just
+70:39
+do more complicated types of processing
+70:41
+on their data and i think that's a
+70:42
+really powerful idea that um can be
+70:44
+leveraged to build really interesting
+70:46
+network models so then kind of our
+70:49
+summary for today
+70:50
+is that we had kind of a very fast one
+70:52
+lecture
+70:53
+tour of reinforcement learning um
+70:55
+hopefully we didn't lose everyone
+70:58
+and the overall idea is that you know
+70:59
+reinforcement learning is this
+71:01
+very different paradigm for machine
+71:03
+learning that allows us to build um
+71:05
+agents build systems that learn to
+71:07
+interact with environments over time
+71:09
+and then we saw these um very these two
+71:11
+simple i mean
+71:12
+these two uh these two basic algorithms
+71:14
+that we can use
+71:15
+for actually training practical
+71:16
+reinforcement learning systems of q
+71:18
+learning
+71:18
+and policy gradients so that's all we
+71:21
+have for today
+71:22
+and then uh next time will be our final
+71:24
+lecture of the semester
+71:25
+we'll talk about a recap of what we've
+71:28
+learned this semester
+71:28
+as well as some of my thoughts about
+71:30
+where i think computer vision will be
+71:31
+going in the future in the next couple
+71:33
+of years
+71:44
+you
+
+영어 (자동 생성됨)
+
+

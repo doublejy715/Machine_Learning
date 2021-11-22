@@ -1,0 +1,4008 @@
+﻿00:00
+so welcome back to lecture 16 today
+00:03
+we're gonna talk about some more optical
+00:05
+section and as well as some different
+00:07
+types of segmentation tasks so last
+00:09
+lecture recall that we started to talk
+00:11
+about all these different types of
+00:12
+localization tasks that we can do in
+00:14
+computer vision that go beyond this this
+00:16
+this image classification problem that
+00:18
+assigns single category labels damages
+00:20
+and instead tries to localize objects
+00:23
+within the input images and last time we
+00:25
+really focused on this object detection
+00:27
+task where we have to input this a
+00:30
+single RGB image and then output a set
+00:32
+of bounding boxes for giving all the all
+00:34
+the objects that appear in the image as
+00:36
+well as a category label for each of
+00:37
+those boxes well I think that we went a
+00:40
+bit fast through a lot of the concepts
+00:41
+in object detection in the last lecture
+00:43
+so I wanted to kind of recap a little
+00:45
+bit on some of the important most
+00:46
+important most salient points from last
+00:48
+lecture and one point that actually we
+00:51
+forgot to make last lecture is just how
+00:53
+important deep learning has been to the
+00:55
+task of object detection so this is a
+00:57
+graph that shows the progress on object
+00:59
+detection for about 2007 up to 2015 and
+01:03
+you can see that from about 2007 to 2012
+01:06
+people were using other oh and the
+01:08
+y-axis here is the is the performance on
+01:10
+this object detection data set called
+01:12
+Pascal vo C and the metric here is of
+01:14
+course the mean average precision that
+01:16
+we talked about in the last lecture and
+01:18
+we can see that from about 2007 to 2012
+01:20
+people were using other types of non
+01:23
+deep learning methods for object
+01:24
+detection and there was some pretty
+01:26
+steady progress on this task from about
+01:28
+2007 to about 2010 but from about 2010
+01:31
+to 2012 the progress has sort of
+01:34
+plateaued on this object detection
+01:35
+problem and then starting in 2013 when
+01:38
+people first applied a deep learning to
+01:40
+this object detection task then you can
+01:43
+see there was a huge jump over all of
+01:45
+the previous non deep learning methods
+01:46
+and this jump was not a one-time of fact
+01:49
+that as we moved on to better and better
+01:51
+object detection methods with deep
+01:52
+learning then gains continued to go up
+01:55
+and up and up so by the way these dots
+01:57
+that are in that are the the deep
+01:58
+commnets detection are the the familiar
+02:01
+fast faster and slow are CN n methods
+02:03
+that we've talked about last time and
+02:05
+each one of them just gave huge
+02:07
+improvements over the previous
+02:08
+generation and this led to a period
+02:10
+from about 2013 to 2016 of just massive
+02:14
+massive improvements in object detection
+02:16
+that really overcame this plateau that
+02:18
+the field had had from about 2010 to
+02:20
+about 2012 um you'll notice here that
+02:23
+this plot actually ends at 2016 and the
+02:26
+reason is that after about 2015 people
+02:28
+stopped working on this data set because
+02:31
+this Pascale vo see data set was deemed
+02:33
+too easy at that point so about so
+02:36
+progress in object detection definitely
+02:38
+did not stop in 2015 it's just sort of
+02:40
+difficult to measure continuous progress
+02:42
+in this way because of about that time
+02:44
+people switched over to start working on
+02:45
+more challenging data sets and the
+02:47
+current state of the art on this on this
+02:49
+Pascale vo see benchmark is well over it
+02:52
+is well over 80% I don't actually know
+02:54
+what the current state of the air is
+02:55
+because most methods don't even bother
+02:57
+to test on this data set anymore
+02:58
+since it's deemed to be a fairly easy
+03:00
+for object detection so then last time
+03:04
+we really focused on this our CNN family
+03:06
+of models we saw this slow our CNN that
+03:09
+was sort of this first major jump over
+03:11
+the non deep learning methods that was
+03:13
+fairly slow but give debate but gave
+03:15
+fairly good results compared to
+03:17
+everything else that had come before in
+03:18
+object detection and then we had seen
+03:20
+this fast our CNN version that sort of
+03:22
+swapped the order of convolution and
+03:24
+pooling and late gave some some accuracy
+03:26
+improvements but even more importantly
+03:28
+gave some big speed gains but I actually
+03:31
+wanted to dive in a little bit more
+03:33
+detail today on the training procedure
+03:35
+for these our CNN style networks because
+03:38
+I realized that this is something we
+03:39
+glossed over a little bit at the end of
+03:41
+lecture and then after class a lot of
+03:43
+students came up and asked questions so
+03:44
+I realized that this was just something
+03:46
+that was not clearly discussed in the
+03:48
+last lecture and this would also serve
+03:50
+as a nice recap of how these our CNN
+03:52
+methods work as well so remember in slow
+03:55
+our CNN the way that it works is that
+03:57
+during training time we're going to
+03:59
+receive an RGB input and are a single
+04:02
+RGB input image and during training time
+04:04
+we have access to the ground truth
+04:05
+bounding boxes of this image as well as
+04:08
+the category labels for each of those
+04:09
+bounding boxes now then we'll run some
+04:12
+region proposal method on top of there
+04:15
+our input image that will give us a set
+04:17
+of region proposals on the image that
+04:18
+tell us regions that are likely to
+04:20
+contain objects and again we're just
+04:22
+sort of treating this
+04:23
+region proposal method as a black box
+04:25
+because back in the days people used to
+04:28
+use things like selective search that
+04:29
+were sort of heuristic methods but later
+04:31
+on he's got replaced by neural network
+04:32
+methods as well and this is basically
+04:35
+all we had said last time about how we
+04:37
+handle boxes in our CNN training um but
+04:40
+there's actually another really
+04:40
+important step here which is that during
+04:43
+the training end during each iteration
+04:45
+of training we need to decide whether
+04:47
+each region proposal is either a
+04:49
+positive a negative or a neutral region
+04:52
+proposal and we do this by comparing the
+04:54
+region proposals that we get with the
+04:56
+ground truth boxes here so that then
+04:59
+here and now we've got kind of a lot of
+05:00
+colored boxes going on in this image so
+05:02
+let's talk about them a little bit
+05:03
+explicitly so here the grippe the bright
+05:06
+green boxes are the ground truth
+05:07
+bounding boxes of the three objects that
+05:09
+we want to detect being the two dogs and
+05:11
+the cat and now all of the we've get all
+05:14
+these region proposals here shown in
+05:15
+cyan for all different but all the
+05:17
+different parts of the image so we can
+05:19
+see that some of the region proposals
+05:21
+actually correspond pretty well to some
+05:23
+of the ground truth objects so in
+05:25
+particular we've got some region
+05:26
+proposals that are very close to eat to
+05:29
+each of the two dogs and to the cat but
+05:31
+we also have some region proposals that
+05:33
+we got maybe one region proposal on the
+05:35
+face of the dog that partially
+05:37
+intersects one of the ground troops but
+05:38
+is pretty far from being perfect and we
+05:40
+also got this region proposal in the
+05:41
+background that covers this piece of a
+05:43
+chair which is totally disjoint from all
+05:45
+of positive projects that we wanted to
+05:47
+detect so now based on that done we need
+05:50
+to categorize each of these region
+05:52
+proposals as being a true positive that
+05:55
+is something relatively close to a
+05:57
+ground truth regen SB and that would be
+05:59
+these blue boxes or I guess they're kind
+06:01
+of purplish but these blue boxes that
+06:03
+are on region proposals that are very
+06:05
+close to a grouch earth bounding box and
+06:07
+we and by very close we usually measure
+06:09
+that by with but with some threshold
+06:11
+intersection over Union now some of the
+06:14
+boxes are going to be no so these will
+06:16
+be positive boxes that we want the
+06:18
+network to classify as positive region
+06:20
+proposals that do indeed contain an
+06:21
+object some of the region proposals
+06:24
+however will be negative samples that do
+06:26
+not contain an object so an example here
+06:28
+would be this red bounding box in the
+06:30
+background over the the portion of the
+06:32
+chair because this region proposal does
+06:34
+not cover any ground truth bounding box
+06:36
+at all
+06:37
+and the way that we usually determine
+06:38
+which bounding boxes are negative is
+06:40
+also by setting a threshold on
+06:42
+intersection over Union so here it would
+06:44
+be common to say for example that a
+06:46
+region proposal is considered negative
+06:47
+if it has intersection over Union less
+06:50
+than 0.3 with all the other positive
+06:53
+bounding boxes in the image where that
+06:55
+0.3 would be a hyper parameter you would
+06:57
+need to set via cross-validation
+06:58
+but interestingly some of the region
+07:01
+proposals are kind of in the middle
+07:02
+there neither positive nor negative so
+07:05
+that's that that's an example of that is
+07:07
+this cyan bounding box ayan region
+07:09
+proposal that we get over the face of
+07:11
+the dog so here it partially intersects
+07:13
+a positive bounding box because it
+07:16
+partially intersects the dog so we don't
+07:17
+really want to count it as a negative
+07:19
+but we also don't really want to count
+07:21
+it as a positive because it's quite far
+07:23
+from being a perfect bounding box
+07:25
+so actually we end up with these three
+07:27
+different categories of region proposals
+07:29
+based on matching them up with the
+07:31
+ground truth we get positives that are
+07:32
+that should contain an object negatives
+07:34
+that definitely do not contain an object
+07:36
+and neutral boxes that are kind of
+07:38
+somewhere in the middle and now when we
+07:40
+when we go and what we go ahead and
+07:42
+train this thing we're going to
+07:44
+typically ignore the neutral boxes and
+07:46
+instead we will train the CNN to
+07:48
+classify the positive region proposals
+07:50
+as positive and classify the negative
+07:52
+region proposals as negative because
+07:54
+trying to train the network on the
+07:55
+neutral boxes would likely confuse it
+07:57
+since these are kind of boxes that are
+07:59
+neither positive nor negative so then
+08:02
+when we train this thing we will then
+08:03
+tip will then tend to crop out all of
+08:05
+the region proposals corresponding to
+08:07
+all crop out the pixels corresponding to
+08:10
+all of the positive region proposals and
+08:12
+all of the negative region proposals and
+08:14
+each of these boxes will just crop out
+08:16
+the pixels of the image and then reshape
+08:18
+them to be some fixed size like 2 to 4
+08:20
+by 2 to 4 which is a standard resolution
+08:23
+that we use in our classification
+08:24
+networks and then at this point it
+08:27
+basically looks like kind of an image
+08:29
+classification problem where rather than
+08:31
+working on whole images instead we're
+08:33
+training on these crops that are coming
+08:35
+out of these images but once we've
+08:37
+decided on these crops then it looks
+08:38
+basically like an image classification
+08:40
+problem with so then each of these
+08:42
+region proposals we pass into our
+08:44
+convolutional neural network of course
+08:46
+we share the weights among all of these
+08:48
+and for each of the
+08:49
+regions we want to predict two things
+08:51
+one is a category label and the other is
+08:54
+a bounding box regression transform that
+08:56
+transforms from the region proposal to
+08:59
+the but to the object bounding box that
+09:01
+we should have predicted so for the
+09:03
+positive bounding boxes that for the
+09:05
+positive region proposals that did match
+09:07
+up with some ground truth box we know
+09:09
+that they have a cat a target category
+09:11
+label which is equal to the category
+09:13
+label of the ground truth box that they
+09:14
+matched with so that would be for
+09:16
+example the dog the two dogs and the cat
+09:18
+and for the negative bounding box that
+09:20
+did not the negative region proposal
+09:22
+that did not match with any ground truth
+09:23
+box its we should classify it as a
+09:25
+background region and remember we add
+09:27
+this extra background region to our set
+09:29
+of categories when we're doing project
+09:30
+detection and now the other wrinkle is
+09:32
+on predicting the bounding box because
+09:35
+we see that these region proposals that
+09:36
+are coming out of our region proposal
+09:38
+method do not perfectly line up with the
+09:40
+boxes of the objects that we wanted to
+09:41
+predict so then last time we talked
+09:44
+about how we can parameterize this
+09:45
+bounding box regression that transforms
+09:47
+the raw bounding box coordinates into
+09:49
+some target output bounding box that we
+09:51
+actually will omit from the detector
+09:53
+yeah question the question is since
+09:55
+we're using a black box region proposal
+09:57
+method how do we give the label to those
+09:59
+proposals
+09:59
+yeah the positive negative label well
+10:01
+that really comes from this matching
+10:03
+step because you imagine you kind of
+10:05
+mean you kind of like set up a by talk
+10:06
+about bipartite matching where you've
+10:08
+got like all your region proposals over
+10:10
+here and then all of your ground truth
+10:12
+objects over here and you need to kind
+10:13
+of pair them up based on the inert based
+10:15
+on intersection over union between the
+10:17
+reaching proposals and the ground truth
+10:19
+boxes so you know the label comes for
+10:22
+treet because each region from H
+10:24
+positive region proposal ends up getting
+10:26
+paired with the ground truth bounding
+10:28
+box that it has the highest overlap with
+10:30
+so then we assign the category label to
+10:32
+the region proposal based on the
+10:34
+category label of the ground truth
+10:36
+bounding box that it has the best match
+10:38
+with and that's that's the part that we
+10:40
+could completely glossed over in in last
+10:42
+times lecture is that a little bit more
+10:44
+clear so that gives us the label for the
+10:48
+for the category label for each of these
+10:49
+bounding boxes but then there's also the
+10:51
+trick of what should our regression
+10:53
+label be and now for each of these
+10:55
+bounding boxes because each positive
+10:57
+bounding box each positive region
+10:59
+proposal had been paired with a ground
+11:01
+truth
+11:02
+this lets us say what bounding box
+11:05
+should we have predicted from this
+11:07
+region proposal so then we can use use
+11:10
+our box transfer the box transform
+11:12
+target for the positive boxes will be
+11:15
+will be the Box transform that would
+11:17
+have transformed from the coordinates of
+11:19
+the raw region proposal into the
+11:21
+coordinates of the bounding box that
+11:22
+that region proposal had been matched
+11:24
+with in the input image so that's a
+11:28
+little bit subtle here because it
+11:30
+because then it's kind of weird right
+11:32
+because the the targets for each of
+11:33
+these boxes depend on the ground truth
+11:35
+box that we had matched the region
+11:37
+proposals to yeah it was another okay
+11:41
+yeah yeah so then we need to do this
+11:42
+this pairing up before training is is
+11:45
+one thing that you could something that
+11:47
+you have to do although one thing that
+11:50
+can get kind of tricky so if you're
+11:51
+doing this before training then what we
+11:53
+would typically do is run your region
+11:55
+proposal method offline on your entire
+11:57
+training set and then do this matching
+11:59
+up a procedure offline so because this
+12:02
+this matching is maybe kind of
+12:03
+complicated and if you have external
+12:04
+region proposals then you can actually
+12:06
+do that offline and dump all these
+12:08
+labels to disk before you start training
+12:09
+so that's how that's one way that you
+12:12
+might implement this kind of method now
+12:14
+where it gets tricky is something like
+12:15
+in faster are CNN where we are now
+12:18
+learning the region proposals jointly
+12:19
+with the rest of the system so then you
+12:21
+need to do some of this matching online
+12:23
+between the region proposals and the
+12:25
+ground truth boxes but that's only the
+12:27
+case for something like faster our CNN
+12:29
+where we actually learning the region
+12:31
+proposals online during training and
+12:33
+then the other bit of wrinkle here is
+12:35
+that for boxes that are negative then
+12:38
+those it doesn't make sense to have any
+12:40
+regression target because a box that
+12:43
+should have been classified as
+12:44
+background does it does not was not
+12:46
+paired to any ground truth bounding box
+12:48
+so for negative boxes we do not have any
+12:51
+regression loss the regression loss is
+12:54
+only applied to the the region proposals
+12:57
+that were marked as positive during this
+12:59
+this pairing up phase of the region
+13:01
+proposals and the boxes so that makes
+13:03
+something if that makes calculating your
+13:05
+losses now a little bit more complicated
+13:07
+than they have been in other in other
+13:09
+applications because now we have a
+13:11
+classification loss for everything but
+13:14
+we have a regression loss only for some
+13:15
+of the the inputs to the network and
+13:18
+maybe the fraction of positives and
+13:19
+negatives is something that you use per
+13:22
+mini-batches now maybe another type of
+13:23
+parameter that you often need to set and
+13:25
+tune when working with object detection
+13:27
+methods so this is hopefully gives us a
+13:29
+little bit more clear detail on exactly
+13:32
+what the training time operations are
+13:34
+when you're training one of these are
+13:36
+CNN style networks yeah question yeah
+13:39
+that's the idea so then to kind of
+13:41
+repeat that for is that we're kind of
+13:44
+making this assumption that our CNN is
+13:46
+not inventing bounding boxes from
+13:47
+scratch are the way that our CNN
+13:49
+generates bounding boxes is by refining
+13:52
+or perturbing the input region proposal
+13:54
+boxes a little bit so then during
+13:56
+training we snap we kind of compute this
+13:58
+this what was what was look what
+14:01
+transform what do we need to do to snap
+14:03
+the input bounding box the input region
+14:04
+proposal to a ground truth region but to
+14:06
+a ground truth object boundary box and
+14:08
+that a snapping transform becomes the
+14:10
+target for the regression loss in our
+14:12
+CNN and now during test time we also
+14:14
+assume that we have region proposals
+14:16
+that look similar as they did during
+14:18
+training time so in our final so we get
+14:20
+our final output box as a test time we
+14:22
+run the same region proposal method on
+14:24
+the image and then apply these same
+14:25
+regression transforms that are predicted
+14:28
+per region proposal of course this this
+14:30
+points to one obvious failure case of
+14:32
+one of these systems is what if the
+14:34
+types of region proposals you use a test
+14:36
+time are very different from the types
+14:37
+of region proposals that you use during
+14:39
+training time well then you would expect
+14:41
+of course expect the system to fail
+14:42
+because you know one of the central
+14:44
+assumptions of machine learning models
+14:46
+is that the type of data we get as input
+14:48
+at test time is similar to the type of
+14:50
+data we get as input at training time
+14:51
+and for one of these our CNN style
+14:54
+methods that rely on external region
+14:55
+proposals the region proposals are
+14:57
+really part is really part of the input
+14:59
+to the machine learning method they're
+15:01
+not part of the output so then it
+15:02
+becomes very important that the
+15:03
+statistics of the region proposals the
+15:05
+test time are very similar to they were
+15:07
+at what they were at training time yeah
+15:10
+yeah I think the question is that how do
+15:12
+you actually validate this and that's
+15:13
+that's this that's why we use this
+15:14
+metric of mean average precision that we
+15:16
+talked about last time to evaluate
+15:17
+object detection and the problem is that
+15:20
+like one way that you might imagine
+15:21
+evaluating these things is like some
+15:23
+accuracy style metric where I have some
+15:25
+heuristic about maybe
+15:27
+I extract a faxed set of boxes from each
+15:29
+image and then see whether or not they
+15:31
+match with the ground truth but the
+15:32
+reason why that's a difficult and
+15:34
+annoyed bad way to evaluate for object
+15:36
+detection is exactly as you said due to
+15:38
+the large number of background boxes
+15:39
+what so the reason that we use this mean
+15:42
+average precision metric instead is that
+15:44
+it helps us to factor out the effect of
+15:47
+these large numbers of background boxes
+15:49
+in a more of us for in a more robust way
+15:50
+so that's why we need this more
+15:52
+complicated mean average precision
+15:53
+metric when we evaluate objects detected
+15:56
+object detection methods okay so then
+16:01
+the story here for fast our CNN training
+16:03
+is basically exactly the same so as you
+16:05
+remember fast the only main difference
+16:07
+between slow our CNN and fast our CNN is
+16:10
+that we swapped the order of feature
+16:12
+extraction and cropping so with slow our
+16:15
+CNN we were cropping independently the
+16:17
+pixels from each region proposal where
+16:19
+is in fast our CNN we're going to run
+16:21
+the entire input image through this
+16:23
+backbone CNN and get these whole
+16:25
+high-resolution image features and then
+16:27
+we will crop out the features
+16:29
+corresponding to each of the region
+16:31
+proposals from these image features and
+16:34
+but other other than this and other than
+16:35
+that we still have the same procedure of
+16:38
+pairing up the positives and the
+16:39
+negatives and although although all the
+16:41
+training targets for fast our CNN are
+16:43
+going to be exactly the same as they
+16:44
+were in slow our CNN and now for faster
+16:48
+our CNN remember that it's a two-stage
+16:50
+method that first we have this region
+16:52
+proposal network that's going to work on
+16:55
+the backbone features and predict our
+16:56
+region proposals and then from there we
+16:59
+have this second stage it's going to
+17:00
+crop the features from the region
+17:02
+proposals and then make these final
+17:04
+classification decisions so with faster
+17:06
+our CNN one way that you can think about
+17:08
+it is that we have two stages of
+17:10
+transforming the boxes in the first
+17:12
+stage we have these input anchors and
+17:15
+recall that the anchors are just these
+17:17
+fixed set of boxes of fixed sizes and
+17:19
+aspect ratios that are spread over the
+17:22
+entire input image and now in the first
+17:24
+stage what the region proposal network
+17:26
+is doing is transforming this fixed set
+17:29
+of anchor boxes into a set of region
+17:31
+proposals and now in the second stage we
+17:33
+want to transform the region proposals
+17:35
+into our final output object boxes and
+17:38
+now the losses that we use that
+17:40
+each of these two stages and faster are
+17:42
+CNN are is basically the exact same
+17:44
+types of losses that we had used in slow
+17:47
+and fast our CNN that in order to write
+17:50
+that in order to transform anchors into
+17:51
+region proposals we have we need to do a
+17:53
+similar type of pairing up effect so in
+17:56
+order to train the RPN and faster our
+17:58
+CNN this is where we're doing the
+18:00
+transform from this fixed set of anchor
+18:02
+boxes into this these region proposals
+18:04
+and now again we need to the exact same
+18:07
+pairing up where for each anchor box we
+18:09
+need to say whether or not it should be
+18:11
+a positive or should be a negative or
+18:13
+should be a neutral the difference the
+18:15
+only difference here is that rather than
+18:16
+working on region proposals coming out
+18:19
+of selective search instead we're
+18:21
+working on this fixed set of anchor
+18:22
+boxes that we had specified as hyper
+18:24
+parameters to the network and the other
+18:26
+difference here is that now in the
+18:28
+region proposal network we are only
+18:29
+making a two-way classification for each
+18:32
+region proposal or rather for each
+18:34
+anchor box we need to say whether or not
+18:36
+it is positive or negative and so then
+18:39
+we don't need to give a category label
+18:41
+at this in this in the region proposal
+18:43
+network we just want to say whether each
+18:45
+positive each each anchor box should be
+18:47
+classified as a positive region proposal
+18:49
+or a negative region proposal but other
+18:51
+than that we use the exact same logic
+18:53
+for pairing off anchor boxes to ground
+18:55
+with regions and the exact same logic
+18:57
+for determining the classification
+18:59
+labels and the regression targets in the
+19:01
+region proposal network of Bastyr our
+19:03
+CNN and then for the second stage in
+19:06
+faster our CNN it's exactly the same
+19:07
+procedure again where now we need to do
+19:09
+a pairing up between the region
+19:11
+proposals coming out of the RPM and the
+19:13
+ground truth boxes in the image and as
+19:16
+we point as we discussed a little bit
+19:18
+earlier now this part you actually need
+19:20
+to do online because the region
+19:21
+proposals that come out for each image
+19:23
+will change over the course of training
+19:25
+because we're jointly training the
+19:27
+region proposal network with the second
+19:29
+stage of this with the second stage so
+19:31
+that actually becomes kind of a tricky
+19:32
+implementation detail as we move from
+19:34
+fast to faster our CNN is that now this
+19:37
+pairing up between region proposals and
+19:39
+and ground truth boxes actually needs to
+19:42
+happen online but other than that the
+19:44
+logic is still the same that we pair up
+19:46
+our region proposals with our ground
+19:47
+truth boxes and this and after we pair
+19:50
+them up that gives us our classification
+19:51
+targets and our regression target
+19:53
+for the second stage in faster our CNN
+19:56
+so I'm hopefully this this clears up cut
+19:59
+hopefully this this by walking through
+20:00
+this a little bit more explicitly this
+20:02
+helps clear up a bit of the confusion
+20:03
+from last time about exactly how these
+20:05
+different networks are trained are there
+20:07
+any more sort of lingering questions on
+20:08
+these are CNN style methods okay I'm
+20:11
+sure more will come up later okay
+20:14
+so then there's another remember the the
+20:16
+kind of one of the important new
+20:18
+operators that we introduced as we moved
+20:19
+from slow to fast our CNN was this
+20:22
+feature cropping right because in fast
+20:24
+our CNN we had swapped the order of
+20:26
+convolution and cropping and last time
+20:29
+we and and right the goal of feature
+20:31
+cropping is that we need to do this
+20:33
+cropping of the read these cropping of
+20:35
+the image features into region based
+20:37
+features in a way that is differentiable
+20:39
+so we can back propagate through this
+20:41
+whole procedure and last lecture we had
+20:43
+talked about this ROI pool operation as
+20:46
+one mechanism for cropping the feature
+20:48
+vector for cropping these for cropping
+20:49
+the features corresponding to regions
+20:51
+and recall it the way that ROI pool
+20:53
+worked is that we take our region
+20:55
+proposal from the image we project the
+20:58
+region proposal from the image onto the
+21:00
+feature map and then from there we snap
+21:02
+the region proposal onto the grid cells
+21:04
+of the feature map because the feature
+21:06
+map is probably going to be at a lower
+21:08
+spatial resolution than the raw input
+21:10
+image and now another of these key goals
+21:13
+of these these these cropping operations
+21:16
+is that the output of the cropping
+21:18
+operation needs to be a feature map of a
+21:20
+fixed size so that we can feed the
+21:23
+output of the cropping operation to our
+21:25
+second stage Network downstream so then
+21:27
+say in this in this example we want the
+21:30
+output to have a fixed spatial size of
+21:31
+two by two so then in order to make the
+21:34
+output of a fixed spatial size of two by
+21:36
+two we're in the ROI pool operation
+21:38
+we're going to divide up the the snapped
+21:40
+region proposal into into roughly equal
+21:43
+sized regions but they won't be exactly
+21:46
+equal size because we're going to snap
+21:47
+we're going to we divided up we're also
+21:50
+going to snap to the grid cells of the
+21:52
+of the image features and then within
+21:55
+each so then within each of these sub
+21:57
+regions these two by two sub regions
+21:59
+we're going to do a max pool operation
+22:00
+so this this recall is this ROI pool
+22:04
+operation that we talked
+22:05
+but last time so that lets us do this
+22:07
+feature cropping in a way in that lets
+22:10
+us swap the order of cropping and
+22:11
+feature computation but there's actually
+22:15
+a couple problems with the ROI pool
+22:17
+operator one is that these features are
+22:20
+actually misaligned due to all the
+22:21
+snapping so there's actually two part
+22:24
+two ways in which we're snapping the
+22:27
+region we're snapping onto the grid
+22:28
+cells in our eye pool one is that we
+22:31
+take the whole region proposal and snap
+22:33
+it onto grid cells and then the other is
+22:35
+that we divide up the region proposal
+22:36
+and then snap the subdivided regions
+22:38
+also onto grid cells and because of
+22:40
+these two bits of snapping we actually
+22:42
+end up with some misalignment in the
+22:44
+features that are computed by this ROI
+22:46
+pool operation so now here we've kind of
+22:48
+done a double projection right so here
+22:50
+what's going on in the visualization is
+22:51
+that the green the green box shows the
+22:54
+original region proposal in the input
+22:56
+image and then we projected the original
+22:58
+region proposal over onto the feature
+22:59
+map and then snapped the wreath and then
+23:01
+in the feature map we snapped it to this
+23:03
+blue box and these blue in these
+23:05
+different-colored sub regions and now
+23:07
+we're projecting the sub regions back
+23:09
+into the original input image and now
+23:12
+this and now kind of the position the
+23:14
+average position at which each of the
+23:16
+features for the sub regions is computed
+23:18
+is going to be kind of the the middle
+23:20
+the midpoint of these some of these
+23:22
+different colored sub regions so now we
+23:24
+can see that due to the effects of these
+23:25
+snapping on the Centers of the sub
+23:27
+regions in the input image and up pretty
+23:30
+misaligned with the actual input
+23:32
+bounding box that we that we originally
+23:34
+wanted to work with and this this so
+23:37
+this this misalignment is one big
+23:39
+potential problem when we're working
+23:41
+with when if we were going to use this
+23:43
+ROI pool operation and now there's
+23:46
+another kind of subtle problem that
+23:48
+seems a little bit weird with this ROI
+23:50
+pool operation if it is also related to
+23:51
+the snapping one one so one way to look
+23:55
+at what this cropping operation is doing
+23:57
+is that it's a function that takes two
+23:59
+inputs and produces one output the two
+24:02
+inputs are the the feature map for the
+24:04
+entire image and the coordinates of the
+24:06
+bounding box at which we want to crop
+24:08
+and the output are the features for the
+24:10
+bounding before that bounding box but
+24:13
+now because of the snapping we cannot
+24:15
+back propagate to the coordinates
+24:17
+of the bounding box right because the
+24:20
+coordinates of the bounding box were
+24:21
+always snapped onto the grid cells of
+24:23
+the feature map
+24:24
+so in this roi pool operation we can we
+24:27
+can back propagate to the from the
+24:29
+region features back to the image
+24:31
+features but there's no way for us to
+24:33
+back propagate from the region features
+24:35
+back to the coordinates of the bounding
+24:37
+box at which we were doing this this
+24:39
+computation so that also gives us a hint
+24:41
+that maybe something is a little bit
+24:43
+weird inside this are this roi pool
+24:45
+operation because normally we like to
+24:48
+use operations that are fully
+24:49
+differentiable and can properly pass
+24:51
+gradients between all of the inputs and
+24:52
+all the outputs and that's not the case
+24:54
+with this ROI pool operation so the the
+24:58
+fix for this is this ROI aligned
+25:00
+operation that we did not have time last
+25:01
+time to talk about in detail but I
+25:03
+wanted to go over it today because you
+25:05
+actually will be implementing it on your
+25:06
+homework and assignments I've so it
+25:09
+actually seems like something we should
+25:10
+actually talk about in lecture so the
+25:13
+idea with ROI aline is that we want to
+25:16
+over we want to fix these problems that
+25:18
+are result we want basically want to
+25:20
+remove all the snapping that's happening
+25:22
+inside roi pool so the way that we're
+25:24
+going to do this is make everything
+25:26
+continuous have no snapping anywhere
+25:28
+inside of the operation so just as
+25:31
+before we're gonna take our original
+25:32
+input region proposal and project it
+25:34
+onto the onto the grid of features and
+25:37
+now rather than rather than doing any
+25:39
+snapping instead we're going to sample a
+25:41
+fixed number of positions inside we're
+25:44
+going to divide this the the projected
+25:46
+region proposal into equal sized regions
+25:49
+and then within each of those equal
+25:50
+sized regions we're going to have some
+25:53
+equal sized samples within each of those
+25:55
+equal sized regions and these samples
+25:58
+are the places at which we want to
+26:00
+sample the image feature map but the
+26:03
+problem is that because we didn't have
+26:05
+any snapping the positions at which we
+26:07
+want to sample these features probably
+26:10
+do not align to grid cells or probably
+26:12
+do not align to the grid of the actual
+26:15
+image features right so that's a problem
+26:17
+how great the way that we normally think
+26:20
+about doing this this this sampling is
+26:22
+that you just want to pull out the
+26:23
+features at one position in this grid of
+26:27
+features but now we kind of want to
+26:29
+sample that feature map at
+26:31
+arbitrary real-valued positions in
+26:33
+arbitrary real-valued spatial positions
+26:35
+in that feature map so now the way that
+26:38
+we can do that is actually using
+26:39
+bilinear interpolation to interpolate in
+26:42
+between the cells of the grid of our
+26:44
+image feature map so kind of - to zoom
+26:48
+in on what that looks like for one
+26:50
+sample point in the in in so for one of
+26:54
+these points we want to sample in this
+26:56
+very lower right hand so in the bottom
+26:58
+right hand region we wanted to sample
+26:59
+four different points and then we're
+27:01
+going to zoom in at the bottom-right
+27:03
+hand point in the bottom right hand
+27:04
+region to see what's going on there so
+27:07
+basically we want to sample a feature
+27:09
+vector from the image features at this
+27:12
+real valued position six point five
+27:14
+comma five point eight but of course
+27:16
+it's a discrete grid so there's no we
+27:18
+can't just pull out a feature vector at
+27:20
+that point but instead what we can do is
+27:22
+approximate is do a locally linear
+27:24
+approximation to the feature grid and
+27:27
+instead sort of compute a feature vector
+27:30
+at this real valued position as a linear
+27:32
+combination of the nearest neighbor
+27:34
+features that actually do appear in the
+27:37
+spatial grid and do it and the
+27:40
+particular way that we do this is by
+27:41
+linear interpolation which means that in
+27:44
+the x-direction we're going to look at
+27:46
+the two nearest neighbor features in the
+27:47
+x-direction and have a linear blend that
+27:50
+the a blend weight that scales linearly
+27:52
+with the distance between the two
+27:53
+nearest neighbor feature vectors in the
+27:55
+X direction and then similarly in the Y
+27:57
+direction we're going to look at the two
+27:59
+nearest neighbor feature vectors and
+28:00
+blend linearly according to the distance
+28:03
+between those so to kind of walk through
+28:05
+this a little bit more explicitly in
+28:07
+order to compute this this feature
+28:09
+vector at this real valued position six
+28:11
+point five comma five point eight it's
+28:13
+going to be a some linear combination of
+28:15
+these four nearest neighbor feature
+28:17
+vectors that actually do fall onto
+28:19
+integer valued positions of the of the
+28:21
+grid so then the way and the way that we
+28:24
+compute the linear weighting the linear
+28:28
+weights on these four nearest neighbor
+28:29
+feature vectors depends on the x and y
+28:32
+distances between the point at which we
+28:34
+want to sample and the actual positions
+28:35
+in the grid so now the weight for this
+28:40
+feature vector at integer grid cell six
+28:42
+comma five
+28:43
+we'll the axe weight is going to be 0.5
+28:45
+because the point at the position of if
+28:47
+we want to sample is exactly in between
+28:49
+two integer grid cells and the weight
+28:52
+for the the vertical feature is going to
+28:54
+be and the vertical weight is going to
+28:57
+be zero point eight because we're very
+28:58
+close to this six point this this uh
+29:00
+this this grid cell and then this we
+29:04
+kind of repeat this for each of these
+29:06
+four nearest neighbor grid four nearest
+29:08
+neighbor features in the spatial grid
+29:09
+where the the linear weight for each of
+29:12
+these four features depends on the
+29:14
+distance between the actual position of
+29:17
+the grid cell and the put in the green
+29:19
+position at which we want to sample so
+29:22
+then what we can see is that one is that
+29:24
+this is a differentiable operation so we
+29:26
+cannot we can back propagate both into
+29:29
+the now we can back propagate both from
+29:32
+the upstream both from the right because
+29:35
+they're now doing back propagation what
+29:36
+we're going to do is we're going to get
+29:37
+a feature upstream gradient for this
+29:40
+sample point this sampled real-valued
+29:42
+point in the in the grid and now we can
+29:44
+back propagate that upstream gradient
+29:46
+both to the actual feature vectors in
+29:49
+the grid as well as the actual position
+29:52
+of the bounding box because now the
+29:54
+actual position of the actual real
+29:56
+valued position of the bounding box was
+29:58
+used to determine the the spatial
+30:00
+position at which we were going to
+30:02
+sample so we can actually back propagate
+30:04
+all the way into the coordinates of the
+30:05
+bounding box that we received as input
+30:07
+to this our y align operation so this is
+30:11
+now this differential operation that we
+30:14
+can back propagate through very nicely
+30:16
+and now they now basically we repeat
+30:19
+this procedure so within our region
+30:21
+proposal we're going to divide it up in
+30:22
+equal sized regions and then within each
+30:24
+of those equal size sub regions we're
+30:26
+going to sample and equals equally
+30:27
+spaced no or appoints within each
+30:29
+sub-region so and then within and then
+30:32
+once we've computed a feature vector for
+30:34
+each of these green sample points this
+30:36
+gives us now an equal number of feature
+30:38
+vectors for each of our sub regions so
+30:40
+now we can do max pooling on the sampled
+30:43
+green points within each sub region to
+30:45
+give the final feature vector for Egypt
+30:47
+to get one final feature vector for each
+30:49
+of these sub regions but then we can
+30:52
+propagate forward into the rest of the
+30:53
+network and now this now this I know
+30:56
+this R
+30:57
+alliant operation was a little bit
+30:58
+complicated but it basically solves the
+31:01
+two problems that we had with the ROI
+31:02
+pool operation now because we have no
+31:05
+snapping anywhere in this sampling
+31:07
+procedure because we're using
+31:09
+real-valued sampling and bilinear
+31:10
+interpolation now it means that all of
+31:12
+our sample features are going to be
+31:14
+perfectly aligned to the positions in
+31:17
+the input image so it's going to solve
+31:18
+this alignment problem that we have an
+31:20
+ROI pool and it's also going to solve
+31:22
+this differentiability problem with ROI
+31:24
+pool that we can now back propagate
+31:26
+upstream gradients both into the down
+31:28
+both into the image feature map as well
+31:30
+as into the positions of the bounding
+31:32
+boxes that we that we had computed and
+31:36
+you guys will get a chance to implement
+31:38
+this for yourself on assignment five so
+31:39
+hopefully it will become clear by then
+31:42
+so that gives us kind of an overview of
+31:44
+some of these object attack but actually
+31:46
+I wanted to pause here so maybe let this
+31:48
+sink in it was there any questions on
+31:50
+this this ry aligned operation okay
+31:55
+they'll probably be pep questions on
+31:56
+Piazza once we get to assignment five ok
+32:00
+so then that then that then this returns
+32:03
+us to the set of object detection
+32:04
+methods that we had talked about last
+32:06
+time so remember we talked about this
+32:08
+slower CNN and fast our CNN and now
+32:11
+faster and single stage methods that you
+32:13
+don't do not no longer rely on external
+32:15
+region proposals but one kind of
+32:18
+interesting question about faster and
+32:20
+single stage rejection methods is that
+32:23
+both of them still rely on some notion
+32:25
+of anchor boxes right because in faster
+32:29
+our CNN we had this fixed set of anchor
+32:31
+boxes that we use inside the research
+32:32
+proposal Network and in single stage
+32:34
+detectors we were just going to make it
+32:36
+we're still going to use anchor boxes
+32:38
+and we just make a class a
+32:39
+classification decision directly for
+32:41
+each of the input boxes so now there's a
+32:44
+question there's kind of an interesting
+32:45
+maybe thought exercise is there any way
+32:47
+that we can design an object detection
+32:49
+system that does not rely on anchor
+32:51
+boxes at all and just kind of more
+32:54
+directly predicts bounding boxes in a
+32:56
+nice natural way and there's actually a
+32:59
+very cool paper that does that that did
+33:01
+this that was done right here at
+33:03
+University of Michigan by Professor
+33:06
+professor John's group last year and
+33:09
+their really cool idea was the
+33:10
+a corner nets architecture for object
+33:12
+detection that is very different from
+33:14
+all of the approaches to object
+33:16
+detection that we've seen so far I don't
+33:18
+want to go too much into the details of
+33:20
+this I just want to give you a brief
+33:21
+flavor of kind of what this does and how
+33:23
+it's very different from the object
+33:25
+detection methods that we've done
+33:26
+previously and this one will not be on
+33:28
+the homework so it's fine if you don't
+33:29
+understand all the details but the idea
+33:32
+with this corner net architecture is
+33:34
+that we're going to change the way we
+33:35
+parameterize bounding boxes and we're
+33:38
+going to now represent bounding boxes by
+33:40
+the upper left-hand corner and the lower
+33:42
+right-hand corner and now in order to
+33:44
+detect a bounding box we need to just
+33:46
+simply have each pixel of the image
+33:49
+decide what is the probability that I am
+33:51
+the upper left-hand corner of each
+33:53
+object category and what is the
+33:54
+probability that I am the lower
+33:56
+right-hand corner of each object
+33:57
+category so then we're going to run the
+34:00
+image through some backbone CNN to get
+34:01
+image level features and then from these
+34:03
+image level features we're going to
+34:05
+predict an upper left corner heat map
+34:07
+for each object category that we want to
+34:10
+predict so now this upper left corner
+34:12
+heat map is going to say for every
+34:14
+position in the feature map for every
+34:17
+category that I wish to detect what is
+34:19
+the probability that this location in
+34:20
+space is the upper left-hand corner of
+34:23
+some bounding box at this put at this
+34:25
+point in space and this you can sort of
+34:27
+train with a per pixel cross-entropy
+34:29
+loss and now similarly we have the
+34:31
+second branch that is a lit predicts for
+34:33
+each position in space for each for each
+34:37
+category wanted attacked what is the
+34:39
+probability that this position in space
+34:40
+is the lower right-hand corner of some
+34:43
+bounding box and this you can also train
+34:45
+with the cross-entropy loss and now you
+34:48
+can imagine training though you can
+34:49
+imagine training this thing right that I
+34:51
+just say for every position in the Met
+34:52
+and in the feature map which should it
+34:54
+predict either should what it just you
+34:56
+have targets for whether every position
+34:58
+in space should be an upper left-hand
+35:00
+corner and should be a lower right-hand
+35:01
+corner but now there's another problem
+35:03
+which is that at test time how do we
+35:05
+actually need to pair up the upper each
+35:07
+upper left-hand corner with some lower
+35:09
+right-hand corner and actually in to
+35:11
+actually emit a bounding box and the way
+35:13
+that we overcome that problem is
+35:14
+actually predicting also an embedding
+35:16
+vector for every position in space so
+35:19
+for every position in space we predict
+35:21
+an upper left-hand corner embedding back
+35:23
+and then in the right corner detection
+35:25
+branch we also emit a lower right corner
+35:27
+embedding vector and here the idea is
+35:29
+that for each bounding box the embedding
+35:32
+vector predicted at its upper left-hand
+35:34
+corner should be very similar to the
+35:36
+embedding vector predicted and its lower
+35:37
+right-hand corner so then at test time
+35:40
+we can sort of use the hand waving this
+35:42
+part a little bit but we can then use
+35:44
+distances between these embedding
+35:46
+vectors - now pair up each upper
+35:48
+left-hand corner with some lower
+35:50
+right-hand corner and now emit actually
+35:52
+a set of bounding box outputs so I
+35:54
+thought this was a very clever a very
+35:56
+clever and very cool approach to object
+35:58
+detection that was very different from
+36:00
+many of these other approaches that
+36:01
+we've seen so far and of course it was
+36:04
+happened right here so I got to talk
+36:05
+about it so that's I just wanted to give
+36:07
+you a brief sense of this very different
+36:09
+flavor to object detection and I'd also
+36:11
+like to point out this was very recent
+36:13
+this was just published last year so I
+36:15
+think it's remains to be seen whether
+36:17
+this will become an important paradigm
+36:19
+in object detection moving forward but
+36:22
+it's so different that maybe it could be
+36:23
+who knows so that gives us some more
+36:27
+details on object detection and now
+36:30
+we've got a couple other computer vision
+36:31
+tasks that we need to talk about so one
+36:34
+is this task of Simmons so next up is
+36:36
+this task of semantic segmentation so to
+36:39
+define the task one problem what
+36:43
+basically in semantic segmentation what
+36:44
+we want to do is label every pixel in
+36:46
+the input image with a category label so
+36:49
+one interest of the for one of these
+36:51
+input images of like this adorable
+36:52
+kitten while walking around on the on
+36:54
+the grass we want to label every pixel
+36:56
+of that image as either kitten or grass
+36:57
+or trees or sky or whatever given some
+37:01
+fixed set of object categories that our
+37:02
+system is aware of and one important
+37:06
+points to make about this semantic
+37:07
+segmentation task is that it does not
+37:09
+it's not aware of different object
+37:12
+instances the only the only thing it
+37:14
+does is label all the pixels in the
+37:16
+image so what that means is that if
+37:18
+we've got two objects of the same
+37:19
+category next to each other in the image
+37:21
+like these two cows in this example on
+37:24
+the right then semantic segmentation
+37:26
+does not distinguish the two instances
+37:28
+of the category
+37:29
+it simply labels all the pixels so the
+37:32
+output of semantic segmentation gives us
+37:33
+this kind of like mutant brown blob cow
+37:35
+blob in the middle of the end
+37:37
+but it doesn't tell us which pixels
+37:39
+belong to which cow or even how many car
+37:41
+cows there are so we'll overcome that
+37:44
+with some later different tasks but for
+37:46
+now this is the semantic segment this is
+37:48
+the definition of a semantic
+37:49
+segmentation task and now one way one
+37:53
+kind of maybe silly way you could
+37:55
+imagine solving this semantic
+37:57
+segmentation task is again using this
+37:59
+idea of sliding windows that you can
+38:01
+imagine for every pet for every pixel in
+38:04
+the image we could extract a small patch
+38:06
+around that pixel and then and then feed
+38:09
+that patch to a to a CNN and now that
+38:12
+CNN could just predict a category label
+38:14
+and we could imagine extracting patches
+38:16
+around every pixel in the image and
+38:18
+repeating this over and over and over
+38:19
+again and this would be like very very
+38:21
+slow very very inefficient this would be
+38:23
+kind of the equivalent of slower CNN but
+38:26
+for semantic segmentation so of course
+38:29
+we definitely don't actually use this
+38:30
+method in practice but it's kind of
+38:32
+instructive to think that this in
+38:34
+principle should work pretty well given
+38:36
+infinite amounts of computation so
+38:39
+instead what we do what's very commonly
+38:41
+used in semantic segmentation is instead
+38:43
+to use a CNN architecture called a fully
+38:46
+convolutional network and this is a
+38:48
+convolutional network that does not have
+38:50
+any fully connected layers or any kind
+38:53
+of global pooling layers it's just a big
+38:55
+stack of convolution layers and all
+38:58
+convolutional stuff so then the input to
+39:00
+the image is as an image is an image of
+39:03
+some fixed spatial size and the final
+39:05
+output of the image is a set of class
+39:08
+scores for every pixel so as an example
+39:10
+you can imagine running this if you can
+39:13
+imagine stacking a whole bunch of three
+39:15
+by three stride one pad one convolutions
+39:17
+and then the output would have the same
+39:19
+spatial size as the input and now we
+39:22
+want the final convolution in the net
+39:24
+with the final convolution layer in the
+39:26
+network to have a number of output
+39:27
+channels equal to the number of
+39:29
+categories that we want to detect and
+39:31
+then we can interpret the output of this
+39:34
+final convolutional layer as a score per
+39:38
+for each pixel in the image for each
+39:40
+category that we want to detect and then
+39:42
+you can imagine doing a soft max over
+39:44
+each of the scores at each pixel to give
+39:46
+us a probability distribution over the
+39:48
+we're labels at each pixel in the image
+39:50
+and then we can train this thing using a
+39:53
+cross entropy loss per pixel yeah yeah
+39:58
+the question is how do we know how many
+39:59
+categories we have in the image so here
+40:02
+whenever you're training a system for
+40:03
+semantic segmentation it's just like
+40:05
+image classification in that we select a
+40:07
+set of categories beforehand and that's
+40:09
+there's going to be some fixed set of
+40:11
+categories that our system is going to
+40:12
+be aware of so I so then that would be
+40:17
+determined by the data set on which you
+40:18
+train there'll be some set of categories
+40:20
+that it that the data set has labels for
+40:22
+and then and then unlike bounding ball a
+40:26
+cop to detection we don't have any kind
+40:28
+of variable size output problem because
+40:30
+we know a fixed number of ajik object--
+40:32
+categories that the system is aware of
+40:33
+and we simply want to make a prediction
+40:35
+for every object category for every
+40:36
+pixel so then the output is the size of
+40:39
+the output is fully determined by the
+40:40
+size of the input and we want to work on
+40:42
+this variable output problem like we did
+40:43
+it in detection so then we can imagine
+40:47
+training this thing with a cross entropy
+40:49
+loss function per pixel and then that
+40:50
+should go quite nicely but there's a bit
+40:53
+a couple problems with this sort of
+40:55
+cilium with this with this architecture
+40:56
+I've actually drawn on the screen one is
+40:59
+that we act in order to make good
+41:02
+cyclomatic segmentation decisions we
+41:04
+actually might want to make decisions
+41:05
+based on relatively large regions in the
+41:08
+input image so if we if we imagined this
+41:11
+stack if we mention stacking up a whole
+41:13
+bunch of 3x3 convolutions with stride
+41:15
+one pad one then the number of effective
+41:18
+receptive field size is going to grow
+41:20
+linearly with the number of convolution
+41:21
+layers remember that if we stack two 3x3
+41:24
+convolutions on top of each other then
+41:26
+the output of those second through by
+41:28
+through convolution is effectively
+41:29
+looking at a 5x5 region in the input and
+41:31
+if we stack three three of my through
+41:33
+convolutions on top of each other then
+41:34
+the output is effectively looking at a
+41:36
+seven by seven region in the input so if
+41:38
+you kind of generalize that argument
+41:39
+then you see the stacking of stacking a
+41:41
+stack of l3 Lurkey convolutions on top
+41:43
+of each other will give us an effective
+41:45
+receptive field size of one plus two owl
+41:48
+and that means we've actually need a
+41:50
+very large number of layers in order to
+41:51
+get a very big receptive field size and
+41:54
+the other problem here is with
+41:57
+computation so in
+41:59
+segmentation we'd often want to work on
+42:01
+relatively high resolution images and
+42:04
+like people would sometimes apply this
+42:06
+not just to like internet images but
+42:08
+also to like maybe satellite images that
+42:09
+are like megapixels in alter in all in
+42:11
+all directions so it's important to it
+42:14
+that this be relatively computationally
+42:15
+efficient and doing all of this
+42:17
+convolution at the original image
+42:19
+resolution will be very problematic and
+42:22
+very expensive computationally so as a
+42:24
+result nobody actually uses
+42:26
+architectures that look like this for
+42:27
+semantic segmentation instead you'll
+42:29
+often see architectures that have more
+42:31
+of this flavor that use some kind of
+42:34
+down sampling and then some kind of up
+42:35
+sampling and the advantage you the
+42:37
+advantages here are twofold one is that
+42:41
+/ down sampling in the beginning of a
+42:44
+network we get a lot of computational
+42:45
+gains just as we did in the image
+42:47
+classification setting and then
+42:49
+similarly by down sampling it also
+42:51
+allows our effective receptive field
+42:53
+size to grow much more quickly as a
+42:55
+result of this of these down sampling
+42:56
+operations and now down sampling we're
+43:00
+very familiar with from convolutional
+43:02
+neural networks for classification we
+43:04
+know that we can use something like
+43:05
+pooling even at either average or max
+43:07
+pooling or straight at convolution to
+43:09
+deal with down sampling inside a neural
+43:11
+network model but up sampling is
+43:14
+something we really haven't talked about
+43:15
+so much and we don't really have any
+43:16
+tools in our neural network bag of
+43:18
+tricks that allow us to perform up
+43:20
+sampling inside of a neural network so
+43:22
+then let's talk about a couple options
+43:24
+that we can use for actually performing
+43:26
+op sampling inside of a neural network
+43:28
+so one relative so because because that
+43:32
+down sampling is often called pooling
+43:34
+then up sampling should clearly be
+43:36
+uncool because it's like the opposite of
+43:38
+pooling right so one option for unpolite
+43:42
+is this so-called bed of nails on
+43:44
+pooling so here given an input of
+43:47
+spatial sighs let me see is the number
+43:49
+of channels and spatial signs two by two
+43:51
+we want to produce an output which is
+43:53
+twice as large spatially with the same
+43:55
+number of channels at each position and
+43:56
+now what we're going now this is called
+43:58
+a bed of nails up on pooling is because
+44:01
+we're going to have the output be filled
+44:02
+with all zeros and then copy the feature
+44:05
+vector for each region in the input for
+44:08
+each position in the input into the
+44:09
+upper left hand corner of
+44:11
+each correspondent region the output so
+44:13
+that looks kind of like one of these
+44:14
+like bed of nails that people lay on
+44:15
+sometimes that it's like zero everywhere
+44:17
+and then we've got these feature vectors
+44:18
+sticking up in kind of a grid-like
+44:19
+pattern this is actually not such a
+44:23
+great idea probably there probably is
+44:25
+too bad aliasing problems so people
+44:26
+don't actually use this too much in
+44:27
+practice anymore one upset another up
+44:31
+sampling method or unpooled method that
+44:32
+people use more commonly is nearest
+44:35
+neighbor own pooling so here we're just
+44:36
+going to duplicate so then each each
+44:39
+feature vector in the input becomes some
+44:43
+is copied a fixed number of times to
+44:45
+produce some larger output so then this
+44:47
+two by two inputs becomes a four by four
+44:49
+output and each position in the two by
+44:52
+two input gets copied four times to give
+44:54
+rise to a two by two region in the
+44:55
+output now there's actually remember we
+44:59
+went through all this song and dance
+45:00
+about bilinear interpolation inside ROI
+45:03
+inside the ROI align operation and it
+45:06
+turns out that we can also use bilinear
+45:07
+interpolation for up sampling as well so
+45:10
+here what we can do is we've got our
+45:12
+input is now a fix is now C channels and
+45:15
+2x2 in space and we could imagine
+45:18
+putting dropping a four by four grid of
+45:20
+equally spaced sampling points in the
+45:23
+input feature grid and then for each of
+45:25
+those points in the four in the in the
+45:27
+four by four sampling grid we can
+45:28
+compute use by linear interpolation that
+45:31
+again to compute these output features
+45:33
+and this is going to give maybe a more
+45:35
+smooth version of up sampling compared
+45:37
+to nearest neighbor up sampling and if
+45:40
+you're familiar with image processing
+45:42
+you know that another thing we can
+45:44
+actually do is by cubic interpolation so
+45:46
+one way to think about bilinear
+45:48
+interpolation is that we're using the
+45:51
+the the the nearest the one nearest
+45:53
+neighbor in the the one nearest neighbor
+45:55
+is in a little two-by-two region to
+45:56
+compute a locally linear approximation
+45:58
+to the input and now with by with by
+46:01
+cubic instead what we're going to do is
+46:05
+come is use a larger region in the input
+46:09
+region in the in the input feature map
+46:10
+to compute a locally cubic approximation
+46:12
+to the inputs and then use that and then
+46:15
+sort of sample according to this cubic
+46:16
+approximation rather than a linear
+46:18
+approximation and I don't want to go
+46:20
+into the details here but this is
+46:22
+basically the stand if you basically
+46:23
+whatever you resize an image and your
+46:24
+browser or an image editing program it's
+46:27
+usually using you it's usually using by
+46:29
+cubic interpolation by default and if
+46:31
+it's good enough for resizing JPEG
+46:33
+images to put on the web then it's maybe
+46:34
+a reasonable thing to try for resampling
+46:37
+or resizing feature Maps inside of your
+46:39
+neural network so these are all on
+46:41
+fairly simple approaches to up sampling
+46:44
+and they're all kind of implemented in
+46:45
+standard frameworks like pi towards your
+46:47
+tensor flow another slightly more exotic
+46:49
+version of upsampling
+46:50
+is kind of the opposite of max pooling
+46:52
+and this is of course that's because the
+46:55
+opposite is called max on pooling and
+46:56
+the idea here is that now the unbeli
+46:59
+operation is actually no longer going to
+47:01
+be an independent operator in the
+47:03
+network instead each unpooled or up
+47:06
+sampling operation will be tied to a
+47:08
+corresponding down sampling operation
+47:10
+that took place earlier in the network
+47:11
+so that gives and then then when we do a
+47:15
+max pooling operation to down sample
+47:17
+we're going to remember the position in
+47:19
+each inside the grid that where the max
+47:21
+value occurred and then when we do
+47:24
+uncool we're going to do kind of like a
+47:26
+bed of nails I'm pulling except rather
+47:28
+than placing each feature vector into
+47:30
+the upper left hand corner of the region
+47:31
+instead we're going to place it into the
+47:33
+position where we found the max value in
+47:36
+the corresponding downsampling max
+47:38
+pooling region that happen earlier on in
+47:40
+the network and the reason that this
+47:42
+might be kind of a good idea is that if
+47:45
+you're training a network with max
+47:46
+pooling then in the forward pass of max
+47:48
+pooling you get this kind of like weird
+47:50
+a misalignment due to the max pooling
+47:53
+selecting different points in the
+47:54
+pooling region and then if we unpooled
+47:57
+in the same way that that matched the
+48:00
+match the positions that we took the
+48:02
+maxes from in the in the corresponding
+48:04
+pooling operation then we'll hopefully
+48:05
+end up with better alignment between the
+48:07
+feature vectors compared to something
+48:09
+like bed of nails or bilinear so kind of
+48:12
+the rule of thumb here is that if you if
+48:14
+if in the down sampling portion used
+48:17
+something like average pooling then for
+48:19
+up sampling you should probably consider
+48:20
+like nearest neighbor or bilinear or by
+48:22
+cubic but if you on the other hand if
+48:25
+you're down sampling operation was max
+48:27
+pooling then you should probably
+48:28
+consider max unpooled as your up
+48:30
+sampling operation so then which up
+48:32
+sampling operator you choose kind of
+48:34
+depends on your choice of which down
+48:36
+sampling operator you had chosen in the
+48:38
+other
+48:38
+of your of your network so these are all
+48:42
+options for up sampling that do not have
+48:45
+any learn about parameters these are all
+48:46
+just fixed functions there's no
+48:48
+parameters that we need to learn for any
+48:49
+of these up sampling operations on the
+48:53
+contrast there's another up sampling
+48:54
+operator that people use sometimes that
+48:56
+is some that is somehow a learn about
+48:58
+form of up sampling and that is called
+49:00
+transposed convolution and to see and
+49:03
+we'll see in a couple slides why it has
+49:04
+this this funny kind of name but to kind
+49:06
+of motivate transpose convolution let's
+49:09
+kind of remember how normal convolution
+49:11
+works so here let's consider a 3x3
+49:13
+convolution with stride 1 and pad 1 so
+49:16
+then we know that each position in the
+49:19
+output is the result of a dot product
+49:20
+between the filter and some spatial
+49:22
+region in the input and then there's a
+49:24
+because its stride one we're going to
+49:26
+move one position in the input for each
+49:28
+position that we move in the output ok
+49:31
+this should be very familiar at this
+49:32
+point but it's just kind of walking
+49:33
+through very very clearly
+49:34
+now let's changes to a stride to
+49:36
+convolution then with stripe to
+49:38
+convolution it's exactly the same except
+49:40
+we have a except because it's tried to
+49:42
+we're going to move two pixels in the
+49:44
+input for every one pixel that we move
+49:46
+in the output and now the stride kind of
+49:48
+gives us a ratio between number of
+49:51
+pixels that we move in the input and
+49:53
+number of pixels that we move in the
+49:54
+output so then basically in in your
+49:59
+normal convolution when we set the
+50:01
+stride greater than one we're going to
+50:03
+end up down sampling the input feature
+50:05
+map because of this ratio between the
+50:07
+strides but then is there some way that
+50:09
+we could set the stride less than one
+50:11
+and somehow stride multiple multiple
+50:14
+points in the output for every one point
+50:16
+in the input and if we could figure out
+50:18
+a way to do that that would be kind of
+50:20
+like a learner Belov sampling operation
+50:22
+that we could learn with a convolution
+50:24
+and that operation is transposed
+50:27
+convolution and the way that it works is
+50:29
+that now our input is going to be a low
+50:31
+resolution thing of maybe two by two
+50:32
+spatial size and our output is going to
+50:35
+be a higher resolution thing here of
+50:37
+maybe four by four spatial size and then
+50:40
+here the OP the way that if the input
+50:42
+interacts with the filter is going to be
+50:44
+a little bit different so here we're
+50:47
+going to take our three by three filter
+50:48
+and we're going to multiply the 3 by 3
+50:50
+filter
+50:51
+the input element in the input tensor
+50:54
+and then and that's going to be a scalar
+50:56
+tensor product between the scalar value
+50:59
+in the input and the filter value in
+51:01
+that we place in the output and then we
+51:03
+copy and then we copy this weighted
+51:06
+version of the filter into that position
+51:08
+in the output and then for the event
+51:12
+we're going to move to put two positions
+51:14
+in the output as we move one position in
+51:16
+the input so now for this second
+51:19
+position what we're going to do is again
+51:21
+take the filter value and now weight it
+51:23
+by the second blue pixel in the input
+51:26
+and then multiply that pixel the input
+51:29
+by the filter value and then copy the
+51:31
+weighted filter into this move into this
+51:34
+moved position in the output and then in
+51:38
+these two regions where we have the
+51:39
+outputs from two different filter values
+51:41
+we're going to sum where they overlap
+51:44
+and now if now if we kind of repeat this
+51:47
+procedure over each of the over each of
+51:49
+the two by two regions in the input then
+51:52
+we see that it gives rise to this kind
+51:54
+of native 5x5 output where that is like
+51:57
+this overlapping sum of these three four
+51:59
+different 3x3 regions and now we can
+52:01
+actually get a 4x4 output by just like
+52:03
+trimming two of the two the one of the
+52:05
+rows and one two columns and this
+52:07
+trimming operation is kind of akin to
+52:09
+padding in this transpose copied
+52:11
+convolution operation and now let's make
+52:13
+this a little bit more concrete we can
+52:15
+look at a concrete example in one
+52:18
+dimension so then here we're looking at
+52:20
+transpose convolution in one dimension
+52:22
+so the input is a vector of length two
+52:24
+the filter is going to be a filter of
+52:27
+length three and then you can see that
+52:29
+we are going to need to compute the
+52:31
+output but we're going to do is take the
+52:34
+filter XYZ multiply it by the first
+52:37
+position that the first value a in the
+52:39
+input and then copy it into these these
+52:41
+three positions in the output and then
+52:43
+we're going to move two positions in the
+52:45
+output for every one position of the
+52:46
+move in the input and now in the second
+52:48
+position will again take the filter
+52:49
+value weighed it by the value of the
+52:51
+input and copy it into this position
+52:53
+this moved position in the output and
+52:55
+then at this overlapping region we will
+52:57
+sum where these two things overlapped is
+53:00
+this operation and clear what's what's
+53:02
+going on with transpose convolution okay
+53:04
+now actually if you read different
+53:06
+papers you'll find that this this
+53:07
+operation goes by different authors call
+53:09
+it different things sometimes people
+53:12
+call it deconvolution which is like a
+53:13
+really technically wrong name in my
+53:16
+opinion but you'll see that used in
+53:17
+papers sometimes people sometimes call
+53:20
+it up convolution which is kind of
+53:21
+catchy people sometimes call it
+53:23
+fractionally strided convolution because
+53:25
+it's kind of like a convolution with a
+53:27
+fractional stride which is kind of nice
+53:28
+people sometimes call it backward stride
+53:31
+of convolution and this is because
+53:33
+actually it turns out that this
+53:34
+operation of transpose convolution
+53:36
+forward paths is actually the same as a
+53:39
+stride as the backward pass of a stride
+53:42
+at convolution so that's actually a deal
+53:44
+arias a reasonable name but the name
+53:46
+that I think is that I like the best and
+53:48
+I think the community has converged on
+53:50
+is transposed convolution now why the
+53:53
+heck would we call this thing a
+53:54
+transpose convolution well it turns out
+53:56
+that because we can actually write we
+53:59
+can actually express convolution the
+54:01
+convolution operator as a matrix
+54:02
+multiply so here here we're showing an
+54:06
+example in one dimension so here we're
+54:08
+showing the convolution between a 3 a 3
+54:10
+length vector X X Y Z and which is y a
+54:16
+should be X Y Z naught X Y X as it is on
+54:18
+the slide I think I've had this typo on
+54:20
+there for like two years ok but on where
+54:23
+this should be a vector X Y Z that is a
+54:25
+three length vector X and convolving
+54:28
+with this filter a ABCD and you can see
+54:31
+that the output here is going to be the
+54:33
+normal convolution operator that we're
+54:35
+familiar with with zero padding but what
+54:37
+we can see is we can if we can perform
+54:39
+this whole this whole convolution
+54:41
+operation as a matrix multiply where we
+54:44
+need to duplicate the the vector along
+54:47
+the diagonal of the matrix on the left
+54:49
+and then we can do a matrix more a
+54:51
+matrix vector multiply between this this
+54:53
+matrix or copy portions of the input and
+54:56
+this vector which is the the filter that
+54:58
+we want to multiply with and this lets
+55:00
+us do convolution all in one matrix
+55:02
+vector multiply and now transpose
+55:05
+convolution means we're going to do the
+55:07
+exact same thing except we're going to
+55:09
+transpose our X matrix before we perform
+55:11
+the matrix multiply operation and if you
+55:14
+look at the the form of this of this
+55:16
+matrix multiply you can see that
+55:18
+reduce convolution stride 1 and vs.
+55:22
+transpose convolution with stride 1
+55:25
+transpose convolution with stride 1
+55:27
+actually corresponds to a different sort
+55:30
+of normal stride 1 convolution and the
+55:33
+way that we can see that is because the
+55:34
+transposed data matrix X has the same
+55:37
+kind of sparsity pattern in the
+55:39
+transpose forum as it did in the
+55:41
+untransformed and what that means is
+55:43
+that for stride one that convolution and
+55:47
+transpose convolution are basically the
+55:48
+exact same thing modulo maybe a slightly
+55:51
+different rules for how padding works
+55:52
+but mathematically they're basically
+55:54
+identical or equivalent but now things
+55:56
+get interesting when we consider stride
+55:58
+greater than one so here we're showing
+56:00
+an example of stride 2 convolution on
+56:03
+the left being expressed as a matrix
+56:04
+multiply and now on the right if we do a
+56:07
+transpose convolution of the same
+56:10
+operator we can see that now the the
+56:12
+sparsity pattern in the trans post
+56:14
+stride 2 data matrix does is very
+56:16
+different from we there's no way we
+56:18
+could get this kind of sparsity pattern
+56:19
+with any kind of striding pattern of
+56:21
+normal convolution so then this shows us
+56:24
+that transposed convolution with stride
+56:26
+greater than 1 actually corresponds to
+56:28
+some new novel operator that we cannot
+56:30
+express with normal convolution and by
+56:33
+the way the fact that by looking at
+56:34
+convolution in this way it's kind of
+56:36
+another easy way to maybe derive the
+56:38
+backward pass for convolution and in
+56:40
+particularly looking at convolution this
+56:41
+way makes it really easy to see that the
+56:44
+forward pass of transpose convolution is
+56:46
+the same as the backward pass as normal
+56:48
+convolution so it's kind of a nice
+56:50
+another nice symmetry between these two
+56:51
+operators so that's basically it for a
+56:55
+semantic segmentation right we know that
+56:57
+we we can build a network that involves
+56:59
+some kind of down sampling and some kind
+57:01
+of up sampling and we talked about many
+57:03
+different choices for up sampling and
+57:05
+then we use our loss function as our per
+57:07
+pixel across entropy but of course
+57:10
+semantic segmentation is not really the
+57:12
+end of it so so far we're talking about
+57:13
+object detection that's going to detect
+57:15
+individual object instances and draw
+57:17
+bounding boxes around them and we talked
+57:19
+about semantic segmentation that's going
+57:21
+to give per pixel labels but it's not
+57:23
+aware of different object instances so
+57:26
+you might wonder if there's some way
+57:27
+that we can overcome this problem and
+57:28
+kind of get these of these fine object
+57:30
+boundaries as
+57:31
+semantic segmentation while also keeping
+57:33
+the the object identities as we have
+57:36
+from object detection well let's talk
+57:38
+about that there's actually another bit
+57:39
+of technical wrinkle here which is that
+57:42
+computer vision
+57:43
+people often categorize object
+57:45
+categories into two different types of
+57:47
+object categories one are thing object
+57:52
+categories so things are things that can
+57:54
+be that actually makes sense to talk
+57:56
+about instances so like coffee cups or
+57:58
+cans or dogs or cats or people kind of
+58:02
+awkward terminology but I guess people
+58:03
+are things in the mind of a computer
+58:05
+vision researcher but what that means is
+58:07
+that a thing object category is one that
+58:09
+it makes sense to talk about discrete
+58:10
+object instances and on the other hand a
+58:13
+stuff object category are more amorphous
+58:15
+and it doesn't make sense to talk about
+58:17
+individual instances so on stuff would
+58:19
+be objects like sky or grass or water or
+58:23
+trees where it doesn't make sense to
+58:24
+talk about individual object instances
+58:26
+and instead there's kind of like an
+58:28
+amorphous blob of stuff in the image so
+58:30
+computer vision researchers often
+58:32
+distinguish between these two types of
+58:34
+object categories and now one of the
+58:37
+this brings us to another distinction
+58:39
+between object detection and spandex
+58:41
+segmentation which is that object
+58:42
+detection only handles feign categories
+58:45
+because it needs to distinguish
+58:46
+individual object instances on the other
+58:49
+hand semantic segmentation handles both
+58:51
+things and stuff but it doesn't care
+58:53
+because it throws away the notion of
+58:55
+object instances so then kind of a
+58:58
+hybrid task is that of instance
+59:00
+segmentation which is kind of like a
+59:02
+joint object what we're going to jointly
+59:04
+detect objects and then for each object
+59:06
+that we detect we're going to output a
+59:08
+segmentation mask for the detected
+59:10
+object and this will this up this
+59:13
+instance segmentation task will only
+59:15
+apply to feign categories because it
+59:18
+only makes sense for types of objects
+59:20
+that we can talk about individual
+59:21
+instances so for example running instant
+59:24
+segmentation on these images of the two
+59:26
+cows we would get two cow tection to
+59:28
+detected cows and for each detected cow
+59:30
+it would tell us which pixels of the
+59:32
+image belong to each of two cows and
+59:35
+kind of the approach here is going to be
+59:37
+fairly straightforward what we're going
+59:38
+to do is do object detection and then
+59:40
+for each opt for each attack
+59:42
+object we're going to do semantic
+59:43
+segmentation to determine which pixels
+59:46
+of the detected object correspond to the
+59:48
+object versus the background so then to
+59:50
+do this we're going to build on our
+59:51
+favorite our favorite object detector
+59:53
+faster our CMN so remember that up
+59:55
+faster are CNN I think you should be
+59:57
+familiar with by now and now to move
+59:59
+from object detection to instant
+60:01
+segmentation it's going to get a new
+60:03
+name it's going to go from faster our
+60:04
+CNN now it's gonna be called mask our
+60:06
+CNN but the main difference in the
+60:08
+method is that we're just going to
+60:09
+attach an extra branch or an extra head
+60:12
+that works on the the the features of
+60:15
+each region that's going to now predict
+60:17
+a segment a foreground background
+60:18
+segmentation mask for each of the
+60:20
+objects that we detect and other than
+60:22
+that everything is going to be the same
+60:23
+as object detection with faster arcing
+60:25
+on so then the way that this works is
+60:28
+that well will still take our input
+60:29
+image we'll run it through the backbone
+60:31
+to get our image level features we'll
+60:33
+run our region proposal network to get
+60:35
+our region proposals and then we'll use
+60:36
+our align to get these feature maps for
+60:40
+each region proposal and now once now
+60:43
+for each region proposal will basically
+60:44
+run a little tiny semantic segmentation
+60:47
+network that will predict a segmentation
+60:49
+mask for for each of our detected
+60:53
+objects and now you can imagine training
+60:55
+this thing using sort of just it's
+60:57
+photos now it's just sort of like
+60:58
+jointly training object detection and
+61:00
+semantic segmentation where we're just
+61:02
+doing a semantic segmentation for each
+61:03
+object that we detect so what this means
+61:06
+is that now the training targets for
+61:09
+these for these segmentation masks are
+61:12
+going to be aligned to the bounding
+61:13
+boxes of the region proposals so then
+61:16
+for example if our region proposal was
+61:18
+this with red box in the image and the
+61:20
+category were trying to detect was chair
+61:22
+then the segmentation mask that we would
+61:24
+that would be our target for mask our
+61:26
+CNN would be this foreground background
+61:28
+segmentation mask that was warped to fit
+61:31
+within the chair bounding box and you
+61:34
+know had our region proposal been
+61:36
+different than our target segmentation
+61:39
+mask for for instance segmentation would
+61:41
+have been different as well and then
+61:43
+similarly if we were to try to detect a
+61:45
+maybe a couch then the segmentation mask
+61:48
+is going the segmentation mask that we
+61:50
+asked it to predict is going to depend
+61:51
+on the category of the object so the
+61:54
+sight the target segmentation mask for
+61:55
+for this this red bounding box for the
+61:57
+class couch would be the pixels of the
+62:00
+the pixels within the box that
+62:01
+correspond to the couch class and
+62:03
+similarly if we were detecting the
+62:05
+person then the target segmentation mask
+62:07
+would be the pixels of a person within
+62:09
+the bounding box so that's basically it
+62:13
+for masks are CNN like you thought this
+62:14
+is going to be challenging but I mean
+62:16
+turns out there's actually are a lot of
+62:17
+small details in the paper that mattered
+62:19
+a lot but the big picture is that we're
+62:21
+just basically attaching an extra head
+62:23
+on top of our favorite mask our scene
+62:25
+insists on top of faster our CNN to now
+62:27
+predict an extra thing per per region
+62:29
+and this actually gives like really good
+62:31
+results when you train it up so these
+62:33
+are some actual predicted instance
+62:35
+segmentation outputs from NASCAR CNN so
+62:38
+you can see that it's both jointly
+62:40
+detecting bounding boxes using all the
+62:42
+object detection machinery and then for
+62:44
+each bounding box it's actually
+62:45
+outputting this segmentation mask to say
+62:48
+which pixels of the bounding box
+62:49
+actually correspond to the detected
+62:51
+object so this this works really well
+62:54
+and it's like a pretty good
+62:55
+state-of-the-art fairly close to
+62:56
+state-of-the-art baseline for instant
+62:58
+segmentation and object detection these
+62:59
+days okay now there's this other thing
+63:03
+you know into the segmentation we said
+63:05
+only works on things and semantic
+63:07
+segmentation does things and stuff yeah
+63:09
+question oh yeah so the question is can
+63:12
+we do instance a sort of single stage
+63:14
+instant segmentation and that turns out
+63:16
+there are yes there are a couple methods
+63:19
+that work for that but that's like very
+63:21
+very recent so that's something that
+63:23
+actually I think the first like really
+63:25
+successful single stage instance
+63:27
+segmentation method was just published
+63:28
+like a month ago so that's something
+63:32
+that people are like right now actively
+63:33
+trying to figure out so actually
+63:35
+remember like a couple weeks ago when
+63:37
+you had guest lectures for a week I was
+63:39
+away at a conference and actually there
+63:41
+was like one of the first may really
+63:43
+successful on single stage incident
+63:45
+segmentation methods was presented at
+63:46
+that conference
+63:47
+so this is like super hot off the
+63:49
+presses stuff so I didn't I wasn't quite
+63:51
+comfortable yet to put it on slides so
+63:53
+yes people are working on it but I think
+63:55
+it doesn't quite work super robustly yet
+63:58
+so then there's kind of a hybrid task
+64:01
+that people work on sometimes called
+64:02
+Penn optic segmentation which kind of
+64:04
+blends semantic segmentation and instant
+64:06
+segmentation so the idea here is we want
+64:08
+to label every pic
+64:09
+in the image but for the thing
+64:11
+categories we actually want to
+64:12
+distinguish the object instances so I
+64:14
+don't want to go into any details of how
+64:16
+these methods work I just want to give
+64:18
+you this reference to let you know that
+64:19
+this is a task that people sometimes
+64:21
+work on and I again don't want to tell
+64:24
+you how it works but some of these
+64:25
+methods for Panoptix segmentation
+64:27
+actually work like really really well so
+64:29
+these are now predicted outputs from a
+64:31
+pretty high performance method for
+64:34
+Panoptix segmentation so you can see
+64:36
+that it's labeling all the pixels in the
+64:37
+image and for the thing categories like
+64:39
+the people and the zebra it's actually
+64:41
+disentangling the different instances
+64:43
+but for the stuff categories like the
+64:45
+grass or the trees or the road then it's
+64:47
+just giving us this amorphous blobs so
+64:51
+again I don't want to go into details on
+64:52
+this just to have you a point give you a
+64:54
+pointer to let you know that this is a
+64:55
+thing that exists so then another kind
+64:58
+of cool task that people work on
+64:59
+sometimes is key point destination so
+65:03
+you saw here that we were able to output
+65:04
+these these segmentation masks for
+65:06
+people but for people sometimes people
+65:09
+want people want to have more
+65:10
+interesting or fine-grained detail about
+65:13
+the exact pose of people in images so
+65:16
+one way that we can frame this is as a
+65:18
+key point estimation problem so in
+65:20
+addition to detecting all the people in
+65:21
+the image in addition to saying which
+65:23
+pixels belong to each person in the
+65:24
+image we might want to say like what is
+65:26
+their pose and where are their arms and
+65:28
+legs and how is their body situated in
+65:30
+the image and one way that we can
+65:32
+formulate that is by detect is by
+65:34
+defining a set of key points like the
+65:36
+ears and the nose and the eyes and all
+65:37
+of the joints and then we want to
+65:39
+predict where it were the locations of
+65:41
+each person's joint in each of these
+65:43
+joints for each person in the image and
+65:46
+we can it turns out we can actually do
+65:47
+this with masks our CNN as well so
+65:50
+basically to move from instance
+65:51
+segmentation to key point estimation
+65:53
+we're just going to again attach an
+65:55
+additional head on top of mask our CNN
+65:57
+that is going to predict these key
+65:58
+points for each of our detected people
+66:00
+in the image so then the way that that
+66:03
+works is that we have this same sort of
+66:05
+formalism for mask our CNN except rather
+66:07
+than predicting these semantic
+66:09
+segmentation masks instead we're going
+66:11
+to predict a key point mask for each of
+66:13
+the fixed number proof for each of the K
+66:15
+key points so remember there's like
+66:17
+seventeen key points for the different
+66:18
+body parts so for each of those body
+66:20
+parts we're going to predict a segment
+66:22
+keypoint segmentation masks and then we
+66:24
+can train these things up with with a
+66:26
+cross-entropy boss and this actually and
+66:29
+so I'm sort of intently going fast over
+66:31
+some of these later examples so these
+66:32
+are things that I don't really expect
+66:33
+you to know in detail just to let you
+66:35
+know what's out there
+66:37
+so then this so then then if we use this
+66:39
+this idea of key point estimation now we
+66:42
+can do joint object detection and key
+66:45
+point estimation and instant
+66:46
+segmentation
+66:47
+all with a single mask our Siena network
+66:49
+and these can give like really pretty
+66:51
+amazing results so it can detect all
+66:53
+these people sitting in a classroom and
+66:54
+it tells us how many instances there are
+66:57
+and for each of those people what is
+66:58
+their exact pose in the image and that
+67:01
+actually works pretty well so this is
+67:04
+now this is kind of like a general idea
+67:05
+right is that anytime you want to have a
+67:07
+computer vision task where you want to
+67:09
+make sort of novel types of predictions
+67:11
+for different regions in the input image
+67:13
+you can kind of frame it as an object
+67:15
+detection task where you now attach an
+67:17
+additional head onto an object detector
+67:19
+that is going to make additional new
+67:21
+types of outputs per per region in the
+67:24
+input image so another cool example from
+67:27
+Johnson at all is this idea of dense
+67:30
+captioning so here we actually want to
+67:32
+merge object detection and image
+67:34
+captioning and then actually want to
+67:36
+output a natural language to script
+67:38
+description for lots of different
+67:39
+regions in the input image so this is a
+67:42
+thing you can do by just following this
+67:44
+paradigm of attaching now an LS TM or
+67:47
+other kind of Argan and captioning model
+67:48
+on top of each region that is being
+67:50
+processed by an object detector and we
+67:53
+don't have time to watch the video but
+67:54
+maybe you so then I kind of wrote this
+67:57
+web demo that would like run the thing
+67:58
+real time on a laptop and then stream it
+68:00
+to a server then we could like watch
+68:01
+Walker on the lab and like watch in real
+68:04
+time what kind of op what kind of
+68:05
+sentences were being described so then
+68:08
+you can see it's making it's having a
+68:10
+lot to say about my lab base this is
+68:12
+actually Andre carpathia who was my
+68:13
+co-author on this on his paper so you
+68:16
+can see that it's detecting him as like
+68:17
+man with beard man in a blue shirt it's
+68:19
+talking about the black monitor screen
+68:21
+so it like is doing joint optic
+68:23
+detection and then for each detected
+68:24
+region it's now making a natural
+68:26
+language description so that that's
+68:28
+pretty cool so then kind of another
+68:31
+recent example I mean here I'm just like
+68:33
+shamelessly promoting my own work
+68:35
+you don't live we don't mind that too
+68:36
+much but but kind of another kind of
+68:39
+recent example from a tall comma Johnson
+68:42
+is a 3d shape prediction so here we want
+68:45
+to do joint optic detection and a for
+68:47
+each predicted object we actually want
+68:49
+to predict a full 3d shape so we can do
+68:52
+this kind of following the exact same
+68:53
+paradigm of doing an object section
+68:55
+system and then attaching this new
+68:57
+additional head on top that works on top
+69:00
+of each region and now it predicts a 3d
+69:02
+shape and we'll talk in more details
+69:04
+about different I will talk about more
+69:06
+details about how to handle 3d shapes in
+69:08
+next next times lecture so then our
+69:11
+summary from today is that we had kind
+69:14
+of a whirlwind tour of a whole bunch of
+69:17
+different computer vision tasks of these
+69:19
+I think object detection is the one that
+69:21
+you'll be expected to know most the most
+69:24
+uh be most familiar with for the
+69:25
+homework but I think being aware of all
+69:27
+these different computer vision tasks
+69:28
+and just having a brief flavor of the
+69:30
+fact that they exist and very briefly
+69:32
+how they're done is kind of useful
+69:34
+education if when you consider applying
+69:35
+at different types of computer vision
+69:37
+models in practice so that was our
+69:40
+whirlwind tour of a lot of different
+69:41
+localization tasks and computer vision
+69:43
+and then next time we'll talk more about
+69:45
+how we can process 3d data with deep
+69:48
+throat networks that it will also see
+69:49
+for example how to predict meshes with
+69:51
+neural networks so then come back on
+69:53
+Wednesday and we can talk about those
+
+영어 (자동 생성됨)
+
+

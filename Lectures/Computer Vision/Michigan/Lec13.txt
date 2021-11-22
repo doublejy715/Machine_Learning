@@ -1,0 +1,4878 @@
+﻿00:00
+okay it seems like a microphone is not
+00:01
+working today so i'll just have to
+00:03
+shout loud is that okay anyone can hear
+00:05
+me in the back
+00:07
+okay good so today we're back at lecture
+00:10
+13.
+00:11
+uh today we're going to talk about
+00:12
+attention and i'll try to avoid making
+00:14
+bad jokes about
+00:14
+paying attention so last time before the
+00:17
+midterm we left off by talking about
+00:19
+recurrent neural networks
+00:20
+and remember that we saw recurrent
+00:22
+neural networks with this really
+00:23
+powerful new
+00:24
+type of structure that we could insert
+00:26
+into our neural network models
+00:27
+that would let us process different the
+00:29
+processed sequences of vectors
+00:31
+for different types of tasks um and we
+00:33
+saw that by moving from these feed
+00:35
+forward neural networks
+00:36
+to recurrent neural networks that could
+00:37
+process sequences this allowed us to
+00:39
+build neural networks to solve all kinds
+00:41
+of new types of tasks
+00:42
+um so we saw examples of maybe machine
+00:45
+translation
+00:46
+where you want to transfer transform one
+00:48
+sequence into another sequence
+00:49
+um or we saw examples like image
+00:51
+captioning where you want to predict a
+00:53
+sequence of words
+00:54
+to write a natural language caption
+00:56
+about input images
+00:58
+and today we're going to pick off pretty
+00:59
+much where we left off at the end of the
+01:01
+recurrent neural networks lecture last
+01:03
+time
+01:04
+because that will lead very naturally
+01:05
+into the discussion of attention
+01:08
+so to recap let's think back to this
+01:10
+problem of sequence to sequence
+01:12
+prediction with recurrent neural
+01:13
+networks
+01:14
+so here remember that the task is that
+01:16
+we receive
+01:18
+some sequence of input this is x1
+01:21
+through xt
+01:22
+and this might be and then we want to
+01:24
+produce some output sequence
+01:26
+y y y t where here maybe x the x's are
+01:29
+the words of a sentence in english
+01:31
+and the y's are maybe the words of the
+01:33
+corresponding sentence in spanish
+01:35
+and we want to do some translation that
+01:37
+converts the word that converts
+01:39
+a sentence in one language into sentence
+01:41
+in another language
+01:42
+and of course because different
+01:44
+languages use different words for
+01:45
+different concepts then of course the
+01:46
+two sequences might be of different
+01:48
+length
+01:49
+so we represent that here by saying that
+01:50
+the input sequence is like
+01:52
+x as length of capital t and the output
+01:54
+sequence y has length
+01:55
+of t capital t prime um so then remember
+01:58
+last
+01:59
+last lecture we talked about a sequence
+02:01
+of sequence recurrent neural network
+02:02
+architecture
+02:03
+that could be used for this kind of a
+02:05
+sequences sequence translation problem
+02:07
+um so
+02:08
+recall the way that work is that we use
+02:10
+um one
+02:11
+one neural network called one recurrent
+02:13
+neural network called the encoder
+02:15
+which would receive the the x vectors
+02:18
+one at a time
+02:18
+and produce this sequence of hidden
+02:20
+states h1 through ht
+02:23
+um and then at every time step we would
+02:25
+use this for current neural network
+02:26
+formulation fw
+02:27
+that would receive the previous hidden
+02:29
+state and the current input vector x
+02:31
+x i and then produce the next hidden
+02:33
+state
+02:34
+so then we could apply this one
+02:35
+recurrent neural network to process this
+02:37
+whole sequence of input vectors
+02:39
+um and now here's uh going a little bit
+02:41
+more into detail on how this works
+02:44
+so then once we process the input vector
+02:46
+then we want to somehow uh
+02:48
+summarize the entire the entire uh
+02:50
+content of that input
+02:52
+sentence um with two uh vectors here
+02:55
+so one we need to produce because
+02:57
+remember we're going to use another
+02:58
+recurrent neural network as a decoder
+03:00
+that's going to be used to generate the
+03:01
+output sentence one word at a time
+03:03
+so now we need to summarize the input
+03:05
+sentence in two vectors
+03:06
+um one we need to compute this uh this
+03:09
+initial hidden state
+03:11
+of the decoder network which is shown
+03:13
+here as s0
+03:14
+and we also would like to compute some
+03:16
+context vector c
+03:18
+shown here in purple um that will be
+03:20
+passed
+03:21
+to every time step of the decoder and
+03:23
+now here
+03:24
+it's often one common implementation
+03:27
+here would just be to set the context
+03:28
+vector
+03:29
+equal to the final hidden state and
+03:31
+another common thing would be to set the
+03:33
+initial hidden state s0
+03:34
+um to be predicted with some kind of
+03:36
+feed forward layer or like a fully
+03:38
+connected layer or two
+03:40
+and now in our decoder what we're going
+03:42
+to do is we're going to start off by
+03:43
+receiving some input start token
+03:45
+to say that we want to kick off the
+03:46
+generation of this output sequence
+03:48
+and then at the first time step of our
+03:51
+output recurrent neural network
+03:52
+of the decoder is going to receive both
+03:55
+the initial hidden state s0
+03:57
+as well as this context vector c as well
+03:59
+as this
+04:00
+start token y0 and then it will generate
+04:02
+the first word of the output sentence
+04:05
+so then this would repeat over time and
+04:07
+now at the second time step of the
+04:08
+decoder remember it's going to again
+04:10
+input the hidden state at the previous
+04:12
+timestep s1 uh the
+04:14
+the the the word the first word of the
+04:16
+sentence and again we'll receive again
+04:18
+this context vector c
+04:20
+um so then we can run this for multiple
+04:21
+time steps and then you can see that
+04:23
+we've
+04:24
+been able to translate this input
+04:25
+sentence we are eating bread into its
+04:27
+corresponding
+04:28
+spanish translation which i'm hoping
+04:31
+getting right because i haven't taken
+04:32
+spanish in a while
+04:33
+um but then one one thing to point out
+04:36
+about this architecture
+04:37
+is that we're using this context vector
+04:40
+here in purple
+04:41
+serves this very special purpose of
+04:43
+transferring information between the
+04:44
+encoded sequence
+04:46
+and the decoded sequence so now this
+04:48
+context vector is supposed to somehow
+04:50
+summarize all of the information that
+04:51
+the decoder needs to generate its
+04:53
+sentence
+04:54
+and then this context vector fed in at
+04:56
+every time step of the decoder
+04:58
+um so this this is kind of this is a
+05:01
+fairly reasonable architecture
+05:03
+that we left off on for last time but
+05:05
+there's a problem here
+05:07
+is that maybe this this kind of makes
+05:08
+sense and we can imagine this
+05:10
+this working out if these sequences are
+05:12
+going to be fairly short
+05:13
+um so for these these simple example any
+05:15
+kind of example that fits on a slide is
+05:17
+only going to be sequences that are a
+05:18
+couple elements long
+05:20
+but in practice we might want to use the
+05:21
+type of sequence of sequence
+05:23
+architectures
+05:24
+to process very very long sentences or
+05:26
+very very long documents
+05:28
+so for example what if we were
+05:29
+translating not a short simple sentence
+05:31
+but trying to translate an entire
+05:33
+paragraph or an entire book of text
+05:35
+then this architecture becomes a problem
+05:38
+because
+05:38
+now what happens is that the entire uh
+05:41
+information about that input sentence or
+05:43
+input document
+05:44
+is all being bottlenecked through this
+05:46
+single context vector c shown in purple
+05:49
+and while it might while using a single
+05:51
+vector to represent the entire
+05:53
+sentence might make sense for a single
+05:55
+short sentence um it feels kind of
+05:57
+unreasonable
+05:58
+to expect the model to pack an entire
+06:00
+paragraph or entire book worth of
+06:02
+content
+06:03
+into just a single context vector c
+06:06
+um so that that seems like so in order
+06:08
+to overcome this shortcoming
+06:10
+we want to have some mechanism to not
+06:12
+force the model to bottleneck all of its
+06:14
+information into a single factor
+06:16
+c so there's a simple workaround that we
+06:20
+might imagine
+06:20
+well what if rather than using a single
+06:22
+context vector c
+06:24
+what if instead we compute a new context
+06:26
+vector
+06:27
+at every time step of the decoder
+06:29
+network and then we can sort of
+06:31
+allow the decoder the ability to choose
+06:33
+or reconstruct a new context factor
+06:35
+that focuses on different parts of the
+06:37
+input sequence at every time step of the
+06:39
+decoder
+06:40
+well that's that seems like a pretty
+06:42
+cool idea um so the way that we
+06:44
+formalize this
+06:45
+intuition is with a mechanism called
+06:47
+attention
+06:48
+um so here we're going to um still use a
+06:51
+sequence to sequence recurrent neural
+06:52
+network we're going to have a recurrent
+06:53
+neural network
+06:54
+as the encoder that will encode our
+06:56
+input sequence as a sequence of hidden
+06:58
+states
+06:59
+and that we're again going to use a
+07:00
+decoder network that is again a
+07:02
+recurrent neural network that
+07:04
+produces the output one at a time but
+07:06
+now the difference is we're going to add
+07:07
+some additional mechanism into this
+07:09
+network
+07:09
+called an attention mechanism which will
+07:11
+allow it to recompute
+07:12
+a new context vector at every time step
+07:14
+of the decoder
+07:16
+so to see how that works the encoder
+07:18
+looks exactly the same
+07:19
+we still are going to produce the
+07:21
+sequence of hidden states of the input
+07:23
+sequence
+07:23
+and then predict this initial hidden
+07:25
+state for the decoder sequence
+07:27
+but now here's what here's where things
+07:29
+get different and here's where things
+07:30
+diverge
+07:31
+from the the previous sequence of
+07:32
+sequence architecture that we've seen
+07:34
+so now what we're going to do is we're
+07:36
+going to write down
+07:37
+some alignment function um here shown in
+07:40
+the upper right hand corner
+07:42
+f sub att and now this alignment
+07:44
+function
+07:45
+will maybe parametrize as a fully
+07:47
+connected neural network so you should
+07:48
+think of this alignment function
+07:50
+as a little tiny fully connected network
+07:52
+that's going to input two vectors
+07:53
+um one is the current hidden the current
+07:56
+hidden state of the decoder
+07:58
+and the other is one of the hidden
+07:59
+states of the encoder
+08:01
+and now this alignment function will
+08:02
+then output a score to say
+08:04
+how much should we attend to each hidden
+08:07
+state of the
+08:08
+encoder given the current hidden state
+08:10
+of the decoder
+08:11
+so for example when we're pro when we're
+08:13
+about to and then we'll use this
+08:15
+information to somehow construct a new
+08:16
+context vector
+08:17
+at every time step of the decoder um so
+08:20
+concretely the way that this looks at
+08:22
+the first
+08:22
+the very first time step of the decoder
+08:25
+is that we've got our initial hidden
+08:26
+state our initial decoder hidden state s
+08:28
+sub zero here
+08:30
+and now we'll we'll use this f sub ett
+08:32
+function
+08:33
+to compare s0 with h1
+08:36
+and that will give us so this alignment
+08:37
+score e11
+08:39
+and that is basically how much does the
+08:40
+model think that um
+08:42
+the hidden state h1 will be necessary
+08:45
+for predicting the word that comes after
+08:47
+uh output hidden state s0 um this will
+08:50
+output a single sc
+08:51
+and this this this alignment function
+08:52
+will output scalars um so then this will
+08:55
+output a scalar e11
+08:56
+um a scalar e1 e12 that's again going to
+08:59
+say how much
+09:00
+does do we want to use the second hidden
+09:02
+state of the encoder when we're
+09:04
+trying to produce the word at the first
+09:05
+hidden state of the decoder
+09:07
+and then we'll just run this function
+09:08
+for every hidden state of the encoder
+09:11
+i'm passing it in that hidden state of
+09:12
+the decoder
+09:14
+so now each now we've got now we've got
+09:16
+an alignment score for each hidden state
+09:18
+in the encoded in the encoded sequence
+09:20
+but these alignment scores are just
+09:21
+arbitrary real numbers because they're
+09:23
+they're getting spit out from this feed
+09:24
+forward neural network f sub att
+09:27
+so then the next step is that we'll
+09:28
+apply a soft max operation
+09:30
+to convert that um those set of
+09:32
+alignment scores
+09:34
+into a probability distribution um
+09:37
+right so remember the softmap this is
+09:38
+the exact same softmax function that
+09:40
+we've seen in the image classification
+09:42
+setup
+09:42
+um that's going to in input a vector of
+09:44
+arbitrary scores
+09:45
+and then output a probability
+09:47
+distribution with the intuition so that
+09:49
+means that higher scores will give
+09:50
+higher probabilities
+09:51
+um each of the outputs will be real
+09:53
+numbers between zero and one
+09:54
+and all of the output probabilities will
+09:56
+sum to one
+09:57
+so basically now we've converted we
+09:59
+predicted this um
+10:00
+this probability distribution that says
+10:02
+for the first hidden state of the
+10:04
+decoder
+10:05
+how much do we want to use how much
+10:06
+weight do we want to put on each hidden
+10:08
+state of the encoder
+10:10
+so now that we've got these attention
+10:12
+and these uh these this color
+10:13
+distribution is called attention weights
+10:15
+because this is how much we want to
+10:16
+weight each of these hidden states
+10:19
+so now the next step looks a little bit
+10:20
+scary but it's basically
+10:22
+we're going to take a weighted sum of
+10:24
+each of the hidden states of the encoded
+10:26
+sequence
+10:27
+and we'll sum them up according to these
+10:29
+predicted probability scores
+10:31
+and this will produce our context vector
+10:33
+c1 that we're going to use
+10:34
+um for the first time stuff of the
+10:36
+decoder network
+10:38
+um and what this basically means is that
+10:39
+we've used this
+10:41
+the network has sort of predicted for
+10:42
+itself how much weight do we want to put
+10:45
+on each of the each of the hidden states
+10:48
+on the input sequence
+10:49
+and we can dynamically shift that weight
+10:51
+around for every time step of the
+10:52
+decoder network
+10:53
+that will allow us to predict a
+10:54
+different context vector for each
+10:56
+decoder time step
+10:59
+and now we're and now um our d now we
+11:00
+can finally run the first
+11:02
+time step of our decoder or current
+11:04
+neural network so this decoder network
+11:06
+will input the context vector that we
+11:08
+just computed it will input the first
+11:10
+word which is the start token that i
+11:11
+forgot to put on the slide
+11:13
+and then it will output this first
+11:15
+predicted word of the sentence
+11:17
+and now the intuition here is that when
+11:20
+we're trying to generate
+11:21
+these output words of the output
+11:22
+sentence then each word of the output
+11:25
+sentence
+11:26
+probably corresponds to one or multiple
+11:28
+words in the input sentence
+11:30
+um so then we can we're trying to
+11:32
+dynamically generate
+11:34
+this context vector that causes the
+11:36
+output uh the output the decoder network
+11:38
+to allow it to focus on different parts
+11:40
+of the input of the encoder network
+11:42
+for each time step um so maybe the kind
+11:45
+of concrete intuition here
+11:46
+is that when we're trying to translate
+11:48
+this particular sentence um we are
+11:49
+eating bread
+11:50
+then the first word we need to generate
+11:52
+is estamos
+11:53
+which means uh we which is sort of like
+11:56
+we are
+11:57
+doing something in spanish um so then
+11:59
+the intuition is that
+12:00
+maybe we want to place some relatively
+12:02
+high weights on these first two words
+12:04
+of the of the english sentence and
+12:06
+relatively low weights on the latter two
+12:08
+words of the english sentence
+12:10
+and that will allow the decoder network
+12:11
+to focus on the important parts of the
+12:13
+in
+12:13
+the input sequence that are needed for
+12:15
+producing this particular word of the
+12:17
+output sequence
+12:19
+and the other point is that these are
+12:21
+all differentiable operations
+12:22
+we are not telling the neural network
+12:24
+which things it is supposed to pay
+12:26
+attention to at every time step of the
+12:28
+decoder sequence
+12:29
+instead we're just letting the network
+12:31
+decide for itself which parts it wants
+12:33
+to look at
+12:35
+and because all of the operations that
+12:37
+are involved in this computational graph
+12:39
+here all of these operations are
+12:40
+differentiable which means that we don't
+12:42
+need to supervise or tell the network
+12:44
+which parts it's supposed to look at
+12:46
+instead we can just write down this
+12:48
+whole big
+12:49
+mess of operations as one big
+12:50
+computational graph
+12:52
+and then back propagate through each of
+12:53
+these operations to allow
+12:55
+all parts of this network to be uh
+12:57
+jointly optimized
+12:58
+and it will decide for itself which
+13:00
+parts of the sequence it wants to to
+13:01
+focus on
+13:03
+so now at the next so then at the next
+13:05
+time step we'll kind of repeat this a
+13:07
+very similar procedure
+13:09
+so then we'll take so now we've got a
+13:10
+new hidden state of the decoder network
+13:12
+s1 we'll again take that s1 hidden state
+13:16
+of the decoder
+13:16
+compare it to each hidden state of the
+13:18
+input sequence this will produce a new
+13:21
+sequence of alignment scores e21
+13:23
+e22 etc and then we'll again run the
+13:27
+softmax to get
+13:28
+a new probability distribution over the
+13:30
+input sequence
+13:31
+that now tells us what while generating
+13:34
+the
+13:34
+second word of the alpha sequence which
+13:36
+words of the input sequence we want to
+13:38
+focus on
+13:39
+and then we'll again use these predicted
+13:41
+probabilities to produce a new context
+13:43
+vector
+13:44
+which is again a weighted sum of the
+13:46
+hidden states of the input sequence
+13:48
+that are weighted by this new
+13:49
+probability distribution that our model
+13:51
+has predicted
+13:51
+at the second time step of the decoder
+13:55
+and then we can kind of repeat this
+13:56
+process over and over and then again
+13:58
+we'll run the next forward pass or the
+14:00
+next time step of the decoder rnn
+14:02
+that will receive the nuke the second
+14:03
+context vector receive the first input
+14:05
+word and then produce
+14:06
+the second output word and then again
+14:09
+the intuition here is that maybe when
+14:11
+we're generating the second word
+14:12
+comiendo means something like eating or
+14:15
+we are or are eating
+14:16
+so then when generating the second word
+14:18
+then maybe the model might prefer to put
+14:20
+some more attention weight on the time
+14:22
+steps of our eating
+14:24
+and then it might choose to ignore the
+14:25
+parts of wee and bread
+14:27
+which are not relevant for producing
+14:29
+this particular word of the output
+14:30
+sequence
+14:31
+but again this is all sort of trained
+14:33
+end-to-end differentiably
+14:34
+we're not telling the model which parts
+14:36
+it's supposed to focus on
+14:38
+but the intuition is that this gives the
+14:40
+model the capacity
+14:41
+to choose to focus on different parts of
+14:43
+the sequence when generating the output
+14:44
+sequence
+14:46
+um so then again we can then we can kind
+14:48
+of unroll this for multiple time steps
+14:50
+and then we've got in this example of
+14:52
+sequence to sequence
+14:53
+uh translate a sequence to sequence
+14:55
+learning with attention
+14:58
+um so now again this this this basically
+15:00
+overcomes this problem of bottlenecking
+15:02
+that we saw with this vanilla sequence
+15:04
+the sequence model because now
+15:06
+rather than trying to stuff all of the
+15:08
+information about the input sequence
+15:09
+into just one single vector and then
+15:11
+using that one vector at every time step
+15:13
+with the decoder
+15:14
+we're giving the decoder this
+15:15
+flexibility to generate its own
+15:17
+new sequence of context vectors that are
+15:19
+going to vary with each
+15:21
+time step of the decoder network so now
+15:23
+again the intuition
+15:24
+is that if we're working on very very
+15:26
+long sequences then this will allow the
+15:28
+model to sort of
+15:28
+shift and shift its attention around and
+15:31
+focus on different parts of the input
+15:32
+for each different part of the output
+15:36
+so then uh one very cool thing that you
+15:39
+can
+15:39
+do is have my slide completely messed up
+15:43
+okay so this is the image that
+15:44
+powerpoint refused to display for me
+15:48
+um but basically what we're doing here
+15:50
+is we've trained a sequence of sequence
+15:52
+for current neural network
+15:53
+that's going to input a sequence of
+15:55
+words in english
+15:57
+and then output a sequence of words in
+15:59
+french um
+16:00
+or maybe maybe it was the reverse i
+16:01
+can't actually remember um because this
+16:03
+figure is not clear
+16:04
+but we're doing some translation tasks
+16:06
+between words in english and words in
+16:08
+french
+16:08
+um so then one way one thing and then
+16:10
+again this model has been trained with
+16:12
+this
+16:12
+sequence sequence attention so at each
+16:14
+time step of the decoder network
+16:16
+it's generating this probability vector
+16:18
+over all of the words of the input
+16:20
+sequence
+16:21
+that allow it to focus its attention on
+16:22
+different words of the input sequence
+16:24
+while generating the output sequence and
+16:26
+we can actually use these attention
+16:28
+weights
+16:28
+to gain some interpretability into what
+16:31
+the model is doing
+16:32
+or how the model is making its decisions
+16:34
+when doing this translation task
+16:37
+so you can see we've got this english
+16:38
+sentence at the top
+16:40
+uh the agreement on the european
+16:41
+economic area was signed in august 1992
+16:44
+period end and then down the the bottom
+16:47
+here we've got a corresponding sentence
+16:49
+in french
+16:50
+which i will not attempt to pronounce
+16:51
+because i will horribly butcher it
+16:53
+um but what's very interesting and now
+16:55
+this um this uh
+16:57
+this diagram here is then showing us for
+16:59
+every time step of the output
+17:01
+what what are these attention weights
+17:03
+that the model is choosing to produce
+17:05
+so there's a lot of interpretable
+17:07
+structure in this figure that we can see
+17:09
+so the first thing is that up here in
+17:12
+the upper left corner of the
+17:13
+of the of the thing we see this diagonal
+17:16
+pattern of the attention weights
+17:17
+that means that when generating the word
+17:19
+the the uh
+17:20
+the model put most of its attention on
+17:22
+the the french token
+17:25
+or apostrophe and when generating the
+17:27
+english word agreement
+17:28
+then it put most of its attention on the
+17:31
+french word
+17:32
+accord which i guess means agreement um
+17:34
+hopefully
+17:35
+right so that what this means is that
+17:37
+this this gives us this interpretability
+17:39
+that while generating these first four
+17:40
+words of the output sequence
+17:42
+those correspond in a one-to-one manner
+17:44
+um to the first four tokens of the
+17:46
+french sequence
+17:48
+and again this correspondence was
+17:49
+discovered by the model for itself
+17:51
+we're not telling the model which parts
+17:53
+of sentences align to which other parts
+17:55
+but now the really interesting thing
+17:56
+happens with this
+17:58
+zone economic europe sorry
+18:02
+the english is european economic area
+18:04
+but the corresponding part of the french
+18:06
+sentence
+18:06
+has the three same words but they're in
+18:08
+a different order so now i'm guessing
+18:10
+zone in french corresponds to area in
+18:12
+english and you can see
+18:14
+that economic economic in english
+18:16
+corresponds to economic and french
+18:18
+and european as this corresponding
+18:19
+structure as well so now
+18:21
+the model is sort of figured out that
+18:23
+these three words correspond with the
+18:24
+order flips in the sentence
+18:26
+and this this sort of trend continues
+18:28
+throughout the entire sentence
+18:29
+so what's really cool about these
+18:31
+attention mechanisms is that now we've
+18:33
+actually got some interpretability
+18:35
+into what the until we have some insight
+18:37
+into how the model is choosing to make
+18:39
+its decisions
+18:39
+which is something that we haven't
+18:41
+really gotten much we haven't really
+18:42
+been able to do before
+18:43
+with other types of neural network
+18:44
+architectures so now we've got this
+18:47
+pretty cool setup right that we've got
+18:48
+this attention mechanism that lets the
+18:50
+model generate sequences
+18:51
+and then at each time step of generation
+18:53
+choose to look at different parts of the
+18:55
+input sequence
+18:56
+but there's actually something that we
+18:57
+can notice about the mathematical
+18:59
+structure of this model
+19:01
+which is that this attention mechanism
+19:03
+that we built
+19:04
+does not actually care about the fact
+19:06
+that the input is a sequence
+19:08
+right it just so happens in this in this
+19:10
+task of machine translation
+19:12
+that we're having our input is a
+19:14
+sequence and our output is a sequence
+19:17
+but for the purpose of this attention
+19:18
+mechanism it didn't actually use the
+19:20
+fact that the input vectors were a
+19:22
+sequence
+19:24
+right so in principle we can actually
+19:26
+use the exact same
+19:28
+flavor of attention mechanism to build
+19:30
+models that attend
+19:31
+to other types of data which are not
+19:33
+sequences right so here on the left
+19:35
+we're supposed to input this image of a
+19:38
+bird and then we run it through a
+19:39
+convolutional neural network
+19:40
+and you should imagine that remember
+19:41
+that a convolutional neural network
+19:43
+um if we take the outputs of the final
+19:45
+convolutional layer
+19:46
+we can interpret that as a grid of
+19:48
+feature vectors so the second image you
+19:50
+should imagine as a grid of feature
+19:51
+vectors
+19:52
+that correspond to a different feature
+19:54
+vectors corresponding to each
+19:55
+uh spatial position of this invisible
+19:57
+image of a bird
+19:59
+and now we're going to do is we're going
+20:00
+to use this exact same attention
+20:02
+mechanism
+20:03
+that we did with with the sequence model
+20:05
+that is going to input
+20:07
+the hidden the this so then we're going
+20:08
+to use that sequence of uh
+20:10
+that grid of vectors to predict this
+20:12
+initial hidden state for a decoder rna
+20:15
+and now this decoder rnn will use that
+20:17
+initial hidden state as 0
+20:19
+to then predict um to then uh use our
+20:21
+comparison function f sub att
+20:24
+to compute a pairwise alignment score
+20:26
+between every uh
+20:27
+position in the grid of features and our
+20:30
+initial hidden state as zero
+20:32
+and that and again each of those outputs
+20:34
+will be a scalar that is high
+20:35
+when we want to put high weight on that
+20:37
+part of the vector and we'll be low when
+20:39
+we want to give low weight to that part
+20:40
+of the vector
+20:41
+and that will give us this grid of
+20:42
+alignment scores so then above the grid
+20:45
+of features you should imagine a second
+20:46
+grid of alignment scores
+20:48
+where each element in that grid again
+20:49
+contains a scalar that is produced from
+20:51
+this f att mechanism
+20:54
+and now we have another image that we
+20:56
+need to imagine is that we have that
+20:57
+grid of attention scores that will then
+21:00
+pass through a
+21:01
+max operation that will again normalize
+21:03
+all of those scores to some probability
+21:04
+distribution that sums to one
+21:06
+and again this will basically be a print
+21:08
+of the model predicting
+21:10
+a probability distribution over all
+21:12
+positions in the input image
+21:14
+that it will choose to attend to when
+21:16
+generating the first word of the output
+21:18
+caption
+21:19
+um so then again we'll take a weighted
+21:21
+combination of those uh
+21:22
+hidden vectors um that are uh we'll take
+21:25
+the
+21:25
+this grid of vectors and we'll have a
+21:26
+linear combination of them that are all
+21:28
+weighted by these predictive
+21:29
+attention probability scores and this
+21:31
+will produce this first context vector
+21:33
+c1
+21:34
+that we will use when generating the
+21:35
+first token of the output sequence
+21:38
+um and then we can pass that through the
+21:42
+the first layer of the rna decoder and
+21:44
+generate the first word sql
+21:45
+so now you should imagine a sequel here
+21:47
+um and then we can repeat this process
+21:49
+again
+21:49
+so then again we can use uh the next
+21:51
+hidden state to compare the hidden state
+21:53
+s1
+21:54
+with every position in the grid of
+21:56
+features to produce another grid of
+21:57
+alignment scores
+21:59
+again normalized through a softmax to
+22:00
+give a new distribution
+22:02
+over all positions in the image and then
+22:04
+give a new context vector
+22:06
+the second time step of the decoder that
+22:07
+we'll use to generate the word over
+22:09
+so now you're clarifying this picture in
+22:11
+your mind
+22:12
+and then continue forward and eventually
+22:14
+generate this caption
+22:15
+seagull over water stop and you can see
+22:18
+that this this structure of the model
+22:20
+is now very very similar to that which
+22:22
+we've done in the the sequence of
+22:24
+sequence translation case
+22:25
+that we're generating this output
+22:27
+sequence which is a caption we generate
+22:29
+one word at a time
+22:30
+and now at every time step of generating
+22:32
+this output sequence
+22:33
+we're allowing the model the ability to
+22:35
+generate its own
+22:36
+new context vector by having a weighted
+22:39
+recombination
+22:40
+of the grid of features of the input
+22:42
+image
+22:44
+then we can get up so this was the bird
+22:45
+image you were supposed to be imagining
+22:46
+for
+22:47
+um and what you can imagine here is that
+22:49
+now when generating this up so that the
+22:51
+model is receding this input bird image
+22:54
+that you can now finally see
+22:55
+and then we're generating this output
+22:57
+sequence of words one word at a time
+22:59
+a bird is flying over a body of water
+23:01
+period and now at every time step of
+23:03
+generating this output sequence
+23:05
+the model is predicting these attention
+23:07
+weights they give a probability
+23:08
+distribution
+23:09
+over the positions of the the grid of
+23:12
+features
+23:12
+that are predicted by the convolutional
+23:14
+network which is processing the input
+23:16
+image
+23:16
+so you can see that when when producing
+23:20
+when predicting the words bird flying
+23:22
+over then the model tends to give
+23:23
+attention to these positions in the
+23:26
+input image that correspond to the bird
+23:28
+and then maybe when it predicts the word
+23:30
+water then the predicted attention
+23:32
+weight
+23:33
+is sort of no but now ignoring a bird
+23:35
+instead looking at the parts of the
+23:37
+image
+23:37
+that have the water around them instead
+23:40
+yeah the question yeah so um the picture
+23:43
+the second row is something we were not
+23:44
+supposed to talk about today
+23:45
+and it was actually not on the
+23:46
+powerpoint slide but since you asked
+23:49
+the idea is that in this method in this
+23:51
+version of attention that we've seen so
+23:53
+far
+23:53
+the model is actually using this
+23:55
+weighted recombination
+23:57
+of features at every point in the input
+23:59
+image but what if instead
+24:01
+rather than having a weighted
+24:02
+recombination what if we wanted the
+24:04
+model to just select
+24:05
+exactly one position in the in the input
+24:08
+grid of features
+24:09
+and then rather than using a weighted
+24:10
+recombination instead just use the
+24:12
+features from
+24:13
+exactly one position in the input and it
+24:15
+turns out that that's what the second
+24:17
+row is doing
+24:18
+but the but training the model to do
+24:20
+such a thing
+24:21
+requires some additional techniques that
+24:23
+we'll cover in a later lecture
+24:25
+um so that part was actually cropped out
+24:26
+in the image on the slide
+24:29
+now the next slide was supposed to be
+24:31
+this figure which gives us a couple more
+24:32
+qualitative examples
+24:34
+of this model um using its attention
+24:36
+mechanism to focus
+24:37
+its attention on different parts of the
+24:39
+input image when generating uh text of
+24:41
+the output
+24:42
+so for example here when the model is
+24:44
+looking at this image of these people
+24:46
+playing frisbees
+24:47
+then when generally it generates the
+24:48
+caption a woman is throwing a frisbee in
+24:50
+the park
+24:51
+and then when generating the word
+24:52
+frisbee you can see that the model
+24:54
+chooses to put its attention
+24:56
+on the on the portion of the image that
+24:58
+actually corresponds to the fritz speech
+25:01
+uh was there some question over here so
+25:03
+here um you would have
+25:04
+seen if you were not if you were using
+25:05
+your imagination strong enough but but
+25:07
+here um we actually would have a grid of
+25:09
+input
+25:09
+of features being predicted by the
+25:11
+convolutional network where um
+25:13
+h i j is the i j feature and the grid of
+25:15
+features
+25:16
+predicted by the network so it would be
+25:18
+one position in the feature map
+25:20
+um so actually this was supposed to be a
+25:22
+three by three grid that was uh h11 h12
+25:24
+h23
+25:25
+h21 h2823 then the idea is that we
+25:28
+predicted this
+25:29
+probability distribution which gives us
+25:31
+a probability distribution
+25:32
+over all the positions in that in that
+25:34
+grid um so then where the probability is
+25:37
+high that means we want
+25:38
+to put a lot of a lot of attention or
+25:40
+emphasis on the
+25:42
+on the features from that position and
+25:44
+where the attention weights are low
+25:45
+is going to have very little emphasis on
+25:47
+the features at that position
+25:49
+uh so ct is a vector um
+25:53
+ct is a vector h-h-i-j is a vector
+25:56
+um e i e t i j is a scalar
+26:00
+which tells us how much do we want to
+26:02
+emphasize the vector h i j
+26:05
+um at time step t and now a t
+26:08
+i j is a scalar telling us how much do
+26:11
+we want
+26:11
+is a normalized scalar telling us how
+26:13
+much we want to emphasize vector h
+26:14
+i j at time step t and then c
+26:18
+t is a vector where we're summing over
+26:20
+all positions in the image i
+26:21
+j um and then we have uh and now uh
+26:24
+a t i j is a scalar so we multiply by
+26:27
+the vector h
+26:28
+i j so then this is a sum of vectors
+26:30
+then c t will be affected
+26:32
+one uh one intuition around why we might
+26:35
+want to do this image captioning
+26:36
+is it actually has a biological
+26:38
+motivation as well
+26:39
+so if you imagine on the left here a
+26:42
+diagram
+26:43
+of the human eye then you know the human
+26:45
+eye is a sphere
+26:46
+and then you've got a lens at one side
+26:48
+light comes in through the lens
+26:50
+and then at the back of your eye there's
+26:51
+a there's a region of the eye called the
+26:53
+retina
+26:54
+um and then the light comes in through
+26:55
+the lens is projected onto the retina
+26:57
+and the retina contains photosensitive
+26:59
+cells
+27:00
+that actually detect the light and those
+27:02
+uh those signals from those
+27:03
+photosensitive cells get sent back to
+27:04
+your brain and get interpreted as
+27:06
+the stuff that we see um now it turns
+27:08
+out
+27:09
+that uh the retina is not create not all
+27:12
+all parts of the retina are not created
+27:14
+equally and there's actually one
+27:16
+particular
+27:17
+region of your retina in the very center
+27:19
+of the retina called the phobia
+27:20
+which is much more sensitive than all
+27:22
+other parts of the retina
+27:24
+um and what that means is that the graph
+27:26
+on the right
+27:27
+is supposed to be a graph of visual
+27:28
+acuity um on the y-axis
+27:30
+and the x-axis is supposed to be the
+27:33
+position in the retina
+27:34
+and what this means is that at the very
+27:36
+far parts of the retina you have very
+27:37
+low visual acuity
+27:38
+as you move towards the phobia the
+27:39
+visual acuity goes up and up and up and
+27:41
+up and up
+27:42
+and then right in the phobia you've got
+27:43
+this very very high visual acuity
+27:45
+and then moving down from the phobia it
+27:47
+moves down down down down towards the
+27:49
+edge of the retina on the other side
+27:50
+where you have very low visual acuity
+27:52
+and what this means is that there's only
+27:54
+a very small
+27:55
+region in your eye that can actually see
+27:57
+the world with high definition
+27:59
+um and you kind of have an intuitive
+28:01
+sense here you kind of put something
+28:02
+right in front of you you can see it
+28:03
+with good detail
+28:04
+as you move your hand to the side you
+28:06
+can kind of tell that there's something
+28:07
+here
+28:07
+but you can't really see it you can't
+28:09
+really maybe it's hard to count how many
+28:11
+fingers are way over here
+28:12
+and that's because different parts of
+28:13
+your retina actually have different
+28:15
+amounts of sensitivity
+28:17
+now actually to account for this problem
+28:20
+or this this design of the human retina
+28:23
+your eyes actually do are actually
+28:25
+constantly moving around
+28:26
+very very rapidly in time periods of
+28:29
+something like tens of milliseconds
+28:30
+your eyes are constantly moving even
+28:33
+when you feel like you're looking at
+28:34
+something
+28:35
+um something stationary your eyes are
+28:37
+actually constantly moving around
+28:39
+um taking in different parts of the
+28:40
+visual scene and those very very rapid
+28:43
+eye emotions are called psychotics
+28:44
+and they are not they're not something
+28:46
+that you have physically the digi that
+28:47
+you have conscious control over
+28:49
+um but basically the those cicadas
+28:51
+mechanisms that your eyes do
+28:53
+are a way that the human body tries to
+28:55
+overcome this design problem
+28:57
+of only having very high sensitivity in
+28:59
+a very small
+29:00
+portion of the of the retina of the eye
+29:03
+and now what this means
+29:05
+and now image captioning with rnns um
+29:07
+actually is sort of
+29:08
+very loosely inspired somehow by these
+29:11
+maybe cicada emotions that the human eye
+29:13
+makes
+29:14
+so that you know when you look at
+29:15
+something um your eye sort of constantly
+29:17
+looks around different parts of the
+29:19
+scene at every moment in time
+29:20
+and similarly when we're using an image
+29:22
+captioning model
+29:23
+with attention then at every time step
+29:26
+then the model is also kind of looking
+29:28
+around at different positions in space
+29:30
+very rapidly it's sort of very loosely
+29:32
+like the psychotic motions that your
+29:34
+human eyes can make
+29:35
+so then the first paper that introduced
+29:37
+that this idea
+29:39
+was called show attend and tell right
+29:41
+because you're going to show
+29:43
+the model some input image it's going to
+29:45
+attend to different parts of the image
+29:47
+and then it will tell you what it saw by
+29:49
+generating words one at a time
+29:51
+now this was such a catchy title that a
+29:53
+lot of other people started using titles
+29:55
+like this
+29:56
+when building models that use attention
+29:58
+of different flavors
+29:59
+so then we had ask attendant answer also
+30:02
+show ask attendant answer
+30:05
+that you can kind of guess what these
+30:06
+are doing right these are models that
+30:08
+look at an image
+30:09
+they're presented with the text of a
+30:10
+question about that image they attend to
+30:12
+different parts of the image or
+30:14
+different parts of the question
+30:15
+and they answer the question we've got
+30:17
+listen attend and spell
+30:19
+this is going to process the raw audio
+30:22
+waveform of some piece of sound
+30:24
+then it's going to generate letters to
+30:26
+spell out what words were spoken in that
+30:28
+piece of sound
+30:29
+and it's going to attend at every and
+30:31
+when generating the words of the output
+30:33
+one at a time
+30:34
+it's going to attend to different
+30:35
+spatial position different temporal
+30:37
+positions
+30:37
+in the input audio file um we had a
+30:40
+listen attendant walk
+30:42
+that was a processing text and then
+30:43
+outputting decisions about where a robot
+30:45
+is supposed to walk in some interactive
+30:47
+environment
+30:48
+um we have show attend and interact um
+30:50
+that's also
+30:51
+supposed to uh output some robot
+30:53
+commands uh show attendant read so you
+30:55
+know
+30:56
+these these paper titles got to be very
+30:57
+trendy after a while um but basically
+30:59
+this is to say that this this mechanism
+31:01
+of attention
+31:02
+that we've seen so far is actually very
+31:04
+very general um and we've seen it used
+31:06
+for this
+31:07
+this machine translation problem where
+31:09
+we want to input a sequence into another
+31:10
+sequence
+31:11
+and it can also be used for all these
+31:13
+other all these other tasks
+31:15
+so basically anytime you want to convert
+31:17
+one type of data
+31:18
+into another type of data and you want
+31:20
+to do it over time one time step at a
+31:22
+time
+31:23
+then often you can use some kind of
+31:24
+attention mechanism to cause the model
+31:26
+to focus on different
+31:28
+chunks of the input or different parts
+31:29
+of the input while generating each part
+31:31
+of the
+31:32
+output so that gives us um that that
+31:34
+gives us this very general uh mechanism
+31:36
+of attention
+31:37
+um and then they all work exactly the
+31:39
+same way um so you can kind of guess how
+31:41
+the models work just by reading
+31:43
+the titles of these papers oh man this
+31:46
+image finally showed up
+31:47
+and you can see the bird it's great um
+31:49
+okay so then uh
+31:50
+what so now we've seen this this
+31:52
+mechanism of attention used for a bunch
+31:54
+of different tasks
+31:55
+um but over the past couple of years um
+31:58
+what do you do in computer science once
+32:00
+you've got something that seems useful
+32:01
+for a lot of different tasks
+32:03
+then you want to try to abstract it away
+32:04
+and generalize it and apply that idea to
+32:07
+even more types of tasks
+32:08
+so then um we want i want to step
+32:10
+through a couple steps
+32:12
+that we can start from this this piece
+32:14
+of this this mechanism of attention
+32:15
+that we've used now for for image
+32:17
+captioning and machine translation
+32:19
+and by generalizing it just a little bit
+32:21
+we'll end up with a very powerful
+32:22
+new general purpose layer that we can
+32:25
+insert into our recurrent neural and
+32:26
+into our into our neural networks so one
+32:29
+way to reframe
+32:30
+the type of attention mechanism that
+32:32
+we've seen so far is that it inputs a
+32:35
+query vector
+32:36
+we're going to call it q um and in in
+32:38
+the previous uh attention that would
+32:40
+have taken the place of these
+32:41
+hidden state vectors that we had at each
+32:43
+time step at the output
+32:45
+we also have a collection of input
+32:47
+vectors x
+32:48
+um that correspond to this this set of
+32:51
+hidden vectors
+32:52
+that we want to attend over and we also
+32:54
+have some similarity function f sub att
+32:57
+that we're going to use to compare the
+32:59
+query vector to each of our database of
+33:02
+input vectors
+33:03
+so now this is uh the so then the
+33:05
+computation of this attention mechanism
+33:07
+that we've seen several times now is
+33:09
+that in the computation
+33:10
+we want to produce this vector of
+33:12
+similarities by run
+33:14
+by running this uh attention uh this f
+33:16
+att attention
+33:17
+uh function um on the query vector and
+33:20
+on each element
+33:21
+of the the input vectors and then this
+33:24
+will give us these these unnormalized
+33:26
+similarity scores
+33:27
+that we will run through a softmax
+33:28
+function to give now a normalized
+33:30
+probability distribution
+33:31
+over each of the input vectors x and now
+33:34
+the output now we will output a single
+33:36
+vector y
+33:37
+um that is a weighted combination of the
+33:39
+vectors x in the input
+33:41
+okay so now the first generalization is
+33:43
+that we want to change the similarity
+33:44
+function
+33:45
+so previously we had written down the
+33:46
+similarity function is this kind of a
+33:48
+general
+33:48
+f sub att function but that's indeed
+33:51
+what early
+33:52
+papers on attention had done but it
+33:54
+turns out it's much more efficient and
+33:55
+works just as well
+33:56
+if we use the simple dot product between
+33:58
+vectors as our similarity function
+34:00
+um and that's going to simplify things a
+34:01
+bit um so now
+34:03
+uh rather than running a neural network
+34:05
+to compute these similarities
+34:06
+we can compute all these similarities
+34:08
+all at once with some kind of matrix
+34:09
+multiplication
+34:10
+and that will be much more efficient but
+34:13
+then there's actually a little
+34:15
+detail that people use rather than using
+34:17
+the dot product instead people often use
+34:19
+what's called a scaled dot product for
+34:21
+computing these similarity scores
+34:22
+so now when computing the similarity
+34:24
+score between the query vector q
+34:26
+and one of our input vectors x i um the
+34:29
+the similarity score will be uh q dot
+34:32
+product with x
+34:33
+i divide by square root dq where dq is
+34:36
+the dimensionality of those two vectors
+34:39
+and now why would you want to do that
+34:40
+well the intuition is that
+34:42
+we're going to take we're about to take
+34:44
+those similarity scores and we're about
+34:45
+to run them through a slot max
+34:47
+and we know that if elements of the soft
+34:49
+max are really large
+34:51
+then we'll have a vanishing gradient
+34:52
+problem right if there's one element of
+34:54
+those uh ei of
+34:55
+in that attention weights e that is much
+34:57
+much higher than all the others
+34:59
+then we will end up with a very very
+35:00
+highly peaked soft max distribution
+35:02
+that will give us gradients very close
+35:04
+to zero almost everywhere and that might
+35:05
+make that might make learning
+35:06
+challenging
+35:08
+so what we want to do is um and another
+35:10
+problem is that as we consider vectors
+35:12
+of very very high dimension
+35:13
+then their dot products are likely to
+35:15
+also be very high in magnitude
+35:17
+so as a concrete example consider
+35:19
+computing the dot product of two vectors
+35:21
+a and b
+35:22
+both of dimension d and suppose that
+35:24
+these are constant vectors
+35:26
+now the dot product of those two now
+35:28
+remember the dot product of two vectors
+35:29
+is the product of their magnitudes
+35:31
+multiplied by the cosine of the angle
+35:33
+between the vectors right
+35:34
+um so then if suppose that we have these
+35:36
+two constant vectors
+35:38
+um then the the the magnitude of one of
+35:40
+these vectors
+35:41
+now is going to scale with the square
+35:43
+root of the dimension of the vector
+35:45
+which means that if we are going to work
+35:47
+with neural networks that have very very
+35:48
+large dimensions
+35:49
+then then naturally we would expect
+35:51
+these dot products of very high
+35:52
+dimensional vectors
+35:53
+to give rise to very high values so to
+35:56
+counteract that effect
+35:57
+we're going to divide the dot product by
+35:59
+the square root of the dimension
+36:00
+to counteract this of this effect by
+36:02
+which the dot product tends to scale as
+36:04
+we scale up the dimension
+36:05
+and that will give us nicely more nicely
+36:07
+behaved gradients as we flow through the
+36:08
+softmax function
+36:10
+okay so then the next generalization
+36:14
+is that we want to allow for multiple
+36:15
+query vectors
+36:17
+right so previously we always had a
+36:19
+single query vector at a time
+36:21
+right at each time step of the decoder
+36:23
+we had one query
+36:24
+and then we use that query to generate
+36:26
+one probability distribution over all of
+36:28
+our input vectors
+36:29
+well now we'd like to generalize this
+36:31
+notion of attention and
+36:32
+have a tension that has a set of query
+36:34
+vectors
+36:35
+so now our inputs now we input a set of
+36:38
+query vectors q
+36:39
+and a set of input vectors x and now for
+36:42
+each query vector we want to generate a
+36:45
+probability distribution
+36:46
+over each of the input vectors so then
+36:48
+we can compute all of these similarities
+36:50
+and
+36:51
+then we need to we need to compute a
+36:52
+similarity between each query vector
+36:55
+and each input vector and because we're
+36:57
+using the scale dot product as our
+36:58
+similarity function
+36:59
+we can compute all of these similarity
+37:01
+scores all simultaneously
+37:03
+using a single matrix multiplication
+37:05
+operation um
+37:06
+then remember we want to compute for
+37:09
+each query vector
+37:10
+we want to compute a distribution over
+37:12
+the input vectors
+37:13
+so now we can achieve this by by doing a
+37:16
+softmax over these output
+37:17
+attention scores where we take the
+37:19
+softmax over only one of the dimensions
+37:23
+and then we want to generate our output
+37:24
+vectors as now now we want to generate
+37:27
+previously we were generating one output
+37:29
+vector now because we have a set of
+37:31
+query vectors
+37:32
+we want to generate one output vector
+37:34
+for each query vector
+37:36
+right where the output vector for query
+37:39
+q i
+37:40
+will be a weighted combination of all of
+37:42
+the input vectors
+37:43
+and they will be weighted by the
+37:44
+distribution that we predicted for
+37:46
+that query vector um and again we can
+37:48
+act if you're kind of
+37:49
+careful with your matrix shapes you can
+37:51
+actually compute all of these linear
+37:53
+combinations
+37:53
+all simultaneously using again a single
+37:56
+matrix multiplication operation
+37:58
+between these predicted attention
+37:59
+weights a and the the input vectors x
+38:03
+is this are we clear to this point
+38:07
+okay so then the next generalization is
+38:10
+the way that we use the input vectors
+38:12
+right so if you look at this formulation
+38:14
+we're actually using the input vectors
+38:16
+in two different ways right now right
+38:19
+first we're using the input vectors
+38:21
+to compute the attention weights by
+38:23
+comparing each input vector
+38:25
+with uh each query vector and then we're
+38:27
+using the input vectors
+38:28
+again to produce the output right and
+38:32
+this these actually are two different
+38:34
+functions that we might want to serve
+38:36
+so what we can do is separate this input
+38:38
+vector into
+38:40
+a key vector and a value vector right so
+38:42
+what we're going to do is we're still
+38:44
+going to input
+38:45
+a set of query vectors q and a set of
+38:48
+input vectors x
+38:49
+but now rather than using the input
+38:52
+vectors directly for these two different
+38:54
+functions
+38:54
+inside the inside of the operation
+38:56
+instead we will use
+38:58
+we will have a learnable key matrix wk
+39:01
+and a learnable value matrix wv and then
+39:04
+we will use these learnable matrices to
+39:07
+transform the input vectors
+39:08
+into two new sets of vectors one of the
+39:11
+keys
+39:12
+and one of the values and now these now
+39:15
+we use these two
+39:15
+keys and values for these two different
+39:17
+purposes in the
+39:18
+in the computation of the layer so then
+39:21
+what we're going to do is we're going to
+39:22
+compare
+39:23
+when in order to compute the similarity
+39:24
+scores we compare each query vector with
+39:27
+each key vector
+39:28
+and then when computing the output
+39:30
+scores that the outputs are going to be
+39:32
+a weighted combination
+39:33
+of the value vectors that are going to
+39:35
+be weighted by
+39:36
+the by the predicted similarity scores
+39:40
+right and the intuition here is that
+39:42
+this gives the model more flexibility
+39:44
+in how it uses its input data right
+39:47
+because
+39:47
+the query vector is kind of the model
+39:49
+saying that i want to search for this
+39:51
+thing and then hopefully it needs to get
+39:53
+back information which is different from
+39:55
+the thing it already knew
+39:56
+right it's kind of like when you search
+39:58
+into google um uh
+39:59
+how tall is the empire state building
+40:01
+that's your query
+40:03
+and then google goes and compares your
+40:05
+query to a bunch of web pages
+40:06
+and then returns you the web pages but
+40:08
+you don't actually
+40:09
+care about web pages that match your
+40:11
+query because you already know the query
+40:13
+you want to know something else about
+40:15
+the data which is relevant to it which
+40:16
+is related to the query in some way
+40:18
+so like in a web search application you
+40:21
+retrieve according to this query how
+40:22
+tall is the entire state building
+40:24
+but the data you want to get back is
+40:26
+actually a separate piece of data
+40:27
+which is that height like however many
+40:29
+meters which maybe occurs in the text
+40:32
+that is next to the query in the text is
+40:34
+that kind of distinction clear what we
+40:35
+might want to separate the key value
+40:37
+and the value vector right it gives the
+40:39
+model then more flexibility to just use
+40:42
+its inputs in two different ways
+40:45
+okay so then this is kind of a
+40:46
+complicated operation so we have a
+40:48
+picture and this picture actually shows
+40:49
+up
+40:50
+um so we can kind of visualize this
+40:52
+operation or we've got this set of query
+40:54
+vectors coming in
+40:55
+here at the bottom of q1 and q4 and then
+40:58
+we've got the set of input vectors
+40:59
+x1 to x3 coming in on the left and now
+41:02
+the first thing we do
+41:03
+is for each input vector we apply the p
+41:06
+matrix to compute
+41:07
+a key vector for each input and now we
+41:10
+compare
+41:11
+each key vector to each query vector and
+41:13
+this gives us this matrix of
+41:15
+unnormalized similarity scores
+41:17
+where now for each out where each
+41:19
+element in this similarity matrix
+41:21
+is this a scale dot product between one
+41:23
+of the key vectors
+41:24
+and one of the query vectors and now the
+41:27
+next thing we do is
+41:28
+these uh these attention scores are
+41:30
+unnormalized so the next thing we want
+41:32
+to do is for each query vector
+41:34
+we want to generate a probability
+41:35
+distribution over each of the key
+41:37
+vectors or each of the inputs
+41:39
+so the way that we do this is we perform
+41:41
+a softmax operation over the vertical
+41:42
+dimension
+41:43
+of this of this alignment matrix e and
+41:46
+this gives us our alignment scores
+41:48
+uh a so and now because we've done the
+41:49
+soft max over the vertical direction
+41:51
+now each column of this alignment matrix
+41:53
+gives us a probability distribution
+41:55
+over all of the inputs x1 x2 x3
+41:58
+so now the next thing we do um is we've
+42:01
+got our alignments now we need to
+42:02
+compute the output
+42:04
+so then we um again transform the input
+42:06
+vectors um into another
+42:08
+into the we transform each input vector
+42:10
+into a value vector
+42:12
+that gives us these value vectors v1 v2
+42:14
+v3
+42:15
+in purple and then we're going to
+42:17
+perform a weighted combination
+42:19
+of the value vectors according to these
+42:22
+computed alignment scores
+42:23
+so then what we do is that um for
+42:26
+example
+42:26
+when computing v1 um we'll will uh take
+42:30
+a product going going this way and then
+42:31
+take a sum going this way
+42:33
+um and what that means is that
+42:36
+actually that's not quite right right so
+42:38
+what we want to do is we want to take a
+42:39
+v1 multiplied by a1 v2 multiplied by a12
+42:43
+b3 multiplied by a13 and then sum going
+42:45
+up
+42:46
+so it's kind of like we need to take
+42:47
+their value vectors and then match them
+42:49
+up with each column and then take a sum
+42:51
+going up
+42:52
+and then what you can see is that this
+42:53
+produces one output vector y
+42:56
+for each query vector um q and these
+42:58
+output vectors y will be this linear
+43:00
+combination of
+43:01
+value vectors where the weights are
+43:03
+determined by the dot products between
+43:04
+the key vectors
+43:05
+and the query vectors okay
+43:09
+so now this is uh this is the this is an
+43:11
+attention layer and now this is a very
+43:13
+general layer that you can imagine
+43:14
+inserting into your neural networks
+43:16
+but now anytime you have sort of two
+43:18
+sets of data on one that you want to
+43:20
+think of as a query
+43:21
+and one that you want to think of as the
+43:22
+inputs then you can imagine
+43:24
+just inserting this attention layer that
+43:26
+computes this kind of
+43:28
+this uh all pairs combination where each
+43:30
+query needs
+43:31
+recombined with each input and now one
+43:34
+special case of this is the
+43:35
+self-attention layer
+43:36
+where we actually have as input only one
+43:39
+set of vectors
+43:40
+and now what we want to do is compare
+43:42
+each input of
+43:43
+each each vector in our input set with
+43:45
+each other vector in our input set
+43:48
+and the way that we do this is we add
+43:50
+another learnable weight matrix
+43:51
+layer so now rather than taking the
+43:53
+query vectors as input
+43:55
+we're going to again predict the query
+43:57
+vectors by transforming the input
+43:59
+vectors one at a time
+44:00
+um and then everything else is the same
+44:02
+as what we've already seen
+44:04
+so if you look at how this works
+44:05
+pictorially on the right we receive as
+44:08
+input this
+44:08
+set of input vectors x1 x2 x3
+44:12
+and now for each input vector we convert
+44:14
+it into a query vector by multiplying
+44:16
+with this uh with this query matrix
+44:19
+and then similarly we also convert every
+44:21
+input vector
+44:22
+also into a key vector using the dip
+44:24
+using the separate key matrix
+44:26
+and now we can now we compute these
+44:28
+alignment scores that gives us
+44:30
+the similarity between each key vector
+44:32
+and each query vector
+44:33
+which is then this pairwise similarities
+44:35
+between each pair of inputs in our input
+44:37
+sequence x
+44:39
+now we do the exact same thing we do a
+44:40
+softmax to compute a
+44:42
+distribution over each column and then
+44:44
+we take our input vectors and now
+44:46
+convert them again
+44:47
+into value vectors and then perform this
+44:49
+again weighted similarity
+44:51
+um to uh produce this sequence this set
+44:54
+of output vectors y um and now this
+44:57
+is a very very general mechanism right
+45:00
+so what now we've got this is basically
+45:01
+a whole new type of neural network layer
+45:04
+right because it's inputting a set of
+45:06
+vectors and it's outputting a set of
+45:08
+vectors
+45:09
+and internally what it's doing is
+45:10
+comparing each vector
+45:12
+with each other vector in the input in
+45:14
+this sort of nonlinear
+45:15
+way that is decided by the network for
+45:17
+itself actually this one really
+45:19
+interesting thing about the self tension
+45:20
+layer
+45:21
+is to think about what happens if we
+45:22
+actually change the order of the input
+45:24
+vectors
+45:25
+right so what if we change the input
+45:26
+vectors and we have the same vectors but
+45:28
+rather than presenting them in the order
+45:29
+one two three
+45:30
+we now present them in the order three
+45:32
+one two so now what's going to happen
+45:35
+then we're going to compute the same key
+45:36
+vectors and the same query vectors
+45:38
+because the computation of the key
+45:40
+vectors and the query vectors was all
+45:42
+independent of each other
+45:43
+so we'll end up computing exact same key
+45:45
+vectors and the exact same query vectors
+45:46
+but we'll just have them
+45:48
+also permuted in the same way that the
+45:49
+input vectors were from unit
+45:52
+and then similarly when we go to compute
+45:53
+our similarity scores between these
+45:55
+permuted vectors
+45:56
+we will end up computing all the same
+45:58
+similarity scores but now again this
+45:59
+matrix will be permuted because all the
+46:01
+rows and columns
+46:02
+are commuted but um but the values in
+46:04
+this in this
+46:05
+matrix are the same and then similarly
+46:08
+the attention weights that we're going
+46:09
+to compute will again all be the same
+46:10
+but permuted
+46:11
+the value vectors will all be the same
+46:13
+but permuted and the output vectors will
+46:16
+all be the same
+46:16
+but permuted so what this means is that
+46:20
+um one one technical way to talk about
+46:22
+this is that this this self-attention
+46:24
+layer
+46:25
+or self-attention operation is
+46:27
+permutation equivalent
+46:29
+that means that if we take our input
+46:31
+vectors x and then apply some
+46:32
+permutation to them s
+46:34
+then that then the output is going to be
+46:37
+the same as
+46:38
+uh applying the layer to the unpermuted
+46:40
+inputs and then permuting the outputs
+46:42
+does that make does that make sense
+46:45
+right so
+46:46
+and then another way to think about that
+46:47
+is that this self-retention layer
+46:49
+doesn't care about these order of its
+46:51
+inputs it is somehow a new
+46:53
+type of neural network layer that
+46:55
+doesn't care about order at all
+46:56
+it just operates on sets of vectors so
+46:59
+what another one way to think about what
+47:00
+this self-attention layer is doing
+47:02
+is that you get a set of vectors it
+47:03
+compares them all with each other and
+47:05
+then gives you another set of vectors
+47:08
+um so what this uh this means that this
+47:10
+layer
+47:11
+actually doesn't know what order the
+47:13
+vectors appear and when it processes
+47:14
+them
+47:15
+um so but in some cases you actually
+47:16
+might want to know the order of the
+47:18
+vectors
+47:19
+right so for example if you were
+47:20
+imagining some kind of a translation or
+47:22
+captioning task
+47:23
+then you know maybe the further you get
+47:25
+along in a sequence then the more likely
+47:27
+it becomes that you should
+47:28
+generate a period or generate an edge
+47:30
+token so for some types of tasks
+47:32
+it might actually be a useful signal to
+47:35
+the model to let it know
+47:37
+which vectors appear in which positions
+47:39
+um but because
+47:40
+this self-potential layer is permutation
+47:42
+equivariant
+47:44
+by default it has no way of telling
+47:45
+which vector is the first one and which
+47:47
+vector is the last one
+47:49
+so then as kind of a half we can recover
+47:52
+some
+47:53
+sensitivity to permutation by appending
+47:55
+each input vector
+47:56
+with some encoding of the position so
+48:00
+there's different ways that this can be
+48:01
+implemented one way that you can
+48:03
+implement it is you just
+48:04
+learn a lookup table and you add a
+48:07
+learnable weight to the metric to the to
+48:08
+the network
+48:09
+we're going to learn a vector for
+48:10
+position one learn a vector for position
+48:13
+two
+48:13
+learn a vector for position three and so
+48:14
+on and then when you perform the forward
+48:16
+pass of your network
+48:17
+you're going to append the learned
+48:18
+position one vector onto the pert under
+48:20
+the first vector
+48:21
+we'll append to learn position two
+48:22
+vector input and so on and so forth
+48:25
+and now this gives the model the ability
+48:27
+to now distinguish which parts of the of
+48:29
+the sequence are at the beginning
+48:30
+and which parts of the sequence are at
+48:32
+the end this is sometimes called
+48:34
+positional encodings
+48:35
+and you'll see these sometimes used in
+48:37
+these self-attention models
+48:41
+now another variant on this
+48:42
+self-attention layer that we'll
+48:44
+sometimes use
+48:45
+is called a masked self-attention layer
+48:47
+so here the intuition
+48:49
+is that um when doing some kind of tasks
+48:51
+we actually don't
+48:52
+we want we want to force the model to
+48:54
+only use information from the past
+48:56
+so if you remember in our current neural
+48:58
+network this sort of happened by design
+49:00
+by the way that we have this progression
+49:02
+of hidden states
+49:03
+so for some kind of task like language
+49:05
+modeling we might want to try to predict
+49:07
+we want to ask the network to predict
+49:08
+the next token given all of the previous
+49:10
+tokens
+49:11
+and using this default transformer of
+49:13
+this default self-attention
+49:15
+layer um the the model the model is
+49:18
+allowed to use on every
+49:19
+vector when producing every output
+49:20
+vector um so that it won't work for this
+49:23
+kind of language modeling task
+49:24
+but we can fix that by um adding some
+49:27
+some
+49:28
+some structure to this attention matrix
+49:30
+so if we want for example to force the
+49:32
+model to only use
+49:33
+information from the past then we can
+49:36
+manually intervene
+49:37
+into this predicted matrix
+49:40
+matrix e what we can do is just put in a
+49:43
+minus infinity
+49:44
+in every position we want to force the
+49:45
+model not to pay attention to things
+49:48
+so then in this example we want to when
+49:50
+producing the output vector for the
+49:52
+for the for the first input on q1 um
+49:56
+then we want it to only depend on uh we
+49:59
+want the first output to only depend on
+50:01
+the first input
+50:02
+so we can do that what we do is then we
+50:03
+block those parts of the matrix by
+50:05
+sliding a negative infinities
+50:07
+so then when we compute the softmax
+50:09
+going up the column
+50:10
+then max of minus infinity will give us
+50:12
+a zero of the attention weight
+50:14
+um and there's attention in the
+50:15
+attention weight matrix above
+50:17
+um so then this is a sort of structure
+50:19
+that you'll see when you want
+50:21
+this is called a mask subattention layer
+50:23
+because we're kind of masking out which
+50:25
+parts of input
+50:26
+the the model is allowed to look at when
+50:28
+producing different parts of the output
+50:30
+and this is used very commonly for these
+50:32
+language modeling tasks
+50:34
+where you want to force the model to
+50:35
+always predict the next word given all
+50:37
+the previous words
+50:39
+another variant of this self-attention
+50:41
+layer you'll sometimes see
+50:43
+um is a multi-headed self-attention so
+50:46
+what this means is we'll just
+50:47
+run uh we'll you will choose a number of
+50:49
+heads h
+50:51
+and that will run h self-tensioned
+50:53
+layers independently in parallel
+50:55
+so then given um our set input vectors x
+50:59
+what we'll do is we'll split so if um
+51:01
+well if
+51:03
+our vector x has a dimension d then
+51:05
+we'll split
+51:06
+each of our input vectors into equal
+51:08
+chunks
+51:09
+into h chunks of equal sides and then
+51:12
+feed the chunks into these
+51:13
+separate parallel of self-retention
+51:15
+layers and now these will produce
+51:17
+some each each parallel subatomic layer
+51:20
+we'll produce some set of outputs
+51:21
+one output for each input and then we'll
+51:23
+concatenate those outputs to get the
+51:25
+final output
+51:25
+from this multi-headed self-retention
+51:27
+layer
+51:29
+and now this this multi-headed
+51:30
+self-attention layer is actually used in
+51:33
+practice quite commonly
+51:34
+um and here there's basically two hyper
+51:36
+parameters that we need to set
+51:38
+when setting up one of these
+51:39
+multi-headed self-detention layers
+51:41
+one is this all right so then the input
+51:44
+and the output dimension are kind of
+51:45
+fixed
+51:46
+right the dimension of the query vector
+51:47
+x is now the input dimension of our data
+51:50
+and the final dimension of y is our
+51:52
+output dimension that we want to predict
+51:54
+and now internally in the model there's
+51:56
+two hypogrammers we need to set
+51:58
+one is the query the dimension of the
+52:00
+internal variable key vectors dq
+52:02
+and that's a hypergrammar that we can
+52:03
+set and the other hyperparameter is the
+52:05
+number of heads that we want to use
+52:07
+um so these are both when you look when
+52:09
+you see self-attention layers used in
+52:11
+practice
+52:11
+you'll see people report to the overall
+52:13
+width of the overall width or size of
+52:15
+each flare
+52:16
+that means the prayer dimension dq and
+52:18
+also report the number of heads and
+52:19
+self-attention their h
+52:22
+so then as an example um this this
+52:25
+self-attention layer is this brand new
+52:27
+primitive that we can imagine
+52:28
+inserting into our neural networks and
+52:30
+this is basically a whole new
+52:32
+type of layer that we can slot into our
+52:34
+networks so as an example
+52:35
+we can see how we can build a
+52:37
+convolutional neural network that
+52:38
+incorporates one of these self-attention
+52:40
+layers
+52:41
+so here we can imagine some
+52:42
+convolutional network is taking a
+52:44
+acute cat as input and producing some
+52:47
+vector
+52:48
+some grid of feature vectors of size c
+52:51
+cross h cross w
+52:52
+as the output of some stack of
+52:54
+convolutional layers
+52:56
+now what we can do is we'll use uh three
+52:58
+different one-by-one convolutions
+53:00
+to convert our grid of features into a
+53:03
+grid of queries
+53:04
+a grid of keys and a grid of values and
+53:07
+these will have separate parallel and
+53:08
+these will be converted with three
+53:09
+separate
+53:10
+one-by-one convolutions with their own
+53:12
+weights and biases that are learned
+53:14
+and now we'll compute this uh inner
+53:16
+product between the queries and the keys
+53:18
+that will give us uh these attention and
+53:20
+then we'll compute a softmax
+53:21
+that will give us um for every position
+53:24
+in the input image
+53:25
+then how much does it want to attend to
+53:27
+every other position
+53:28
+in the input image so then this will
+53:30
+generate this very very large matrix of
+53:32
+attention weights
+53:33
+of size h cross w by h cross w
+53:36
+and now we'll use these attention
+53:38
+weights to then have this weighted
+53:39
+linear combination of the value vectors
+53:41
+and will end up producing
+53:43
+one a value vector for each position in
+53:46
+the in for each position in the input
+53:49
+and what this means is that now after we
+53:51
+do this linear combination
+53:52
+then every input vector from the feature
+53:55
+we're producing a new grid of feature
+53:56
+vectors
+53:57
+but now every position in the output
+53:59
+grid now depends on
+54:01
+every position in the input grid and
+54:03
+that's qualitatively a very different
+54:05
+type of computation than we have with
+54:07
+something like convolution
+54:09
+and now in practice when people do these
+54:10
+things they'll often insert maybe
+54:12
+another one by one convolution
+54:14
+after the end of this attention
+54:15
+operation um and they'll also
+54:18
+and it's also very common to add a
+54:19
+residual connection around this entire
+54:21
+self
+54:22
+attention operation and now once we put
+54:24
+all
+54:25
+these pieces together this gives us this
+54:27
+new self-contained
+54:28
+self-attention module that is now this
+54:31
+new neural network module you can
+54:32
+imagine sticking inside of your neural
+54:34
+networks
+54:35
+and you can imagine building networks
+54:36
+that have maybe some convolution some
+54:38
+self-attention some more
+54:39
+convolutions more self-attention and
+54:41
+this gives us basically a whole new type
+54:42
+of layer that we can use to build neural
+54:44
+networks
+54:46
+and now it's interesting to think that
+54:48
+basically at this point we've got three
+54:50
+different primitives that we can use to
+54:52
+process
+54:52
+sequence of sequences of vectors with
+54:54
+neural networks
+54:55
+so the most obvious is um is these
+54:58
+recurrent neural networks that we talked
+54:59
+about in the previous class
+55:01
+right that given a sequence of input
+55:02
+vectors x it produces the sequence of
+55:04
+output vectors y or h
+55:07
+and now what's nice about a recurrent
+55:09
+neural networks
+55:10
+is that they're very good at handling
+55:12
+long sequences right when we use these
+55:14
+recurrent neural networks like an lstm
+55:16
+and they're very good at carrying
+55:17
+information over very
+55:19
+over relatively long sequences and in
+55:21
+particular um after a single r
+55:23
+m layer then the final output or the
+55:26
+final hidden state
+55:27
+y t actually depends on all the on it
+55:29
+depends on the entire input sequence
+55:31
+so in a single rnn layer is sort of able
+55:33
+to summarize an entire input sequence
+55:36
+but there's a problem with recurrent
+55:38
+neural networks and that's actually that
+55:40
+they're not very parallelizing
+55:42
+right because if you think about the way
+55:43
+that a recurrent neural network is
+55:44
+computed
+55:45
+we need to compute hidden state 1 then
+55:47
+hidden state two then hidden state three
+55:48
+that hit in state four
+55:50
+and this is a sequential dependency in
+55:52
+the data that we just cannot get around
+55:54
+so um if you recall back to the lecture
+55:56
+on gpus
+55:58
+um the way that we build really big
+55:59
+neural network models is by taking
+56:00
+advantage of massive massive parallelism
+56:03
+inside of our graphics processing units
+56:05
+or tensor processing units
+56:06
+and somehow a recurrent neural network
+56:08
+is not able to do a very good job
+56:10
+at taking advantage of this massive
+56:12
+parallelism with that we have in our
+56:14
+hardware
+56:15
+so that's actually a problem for the
+56:16
+scalability of building very very large
+56:18
+recurrent neural network models
+56:21
+so now we actually know another way of
+56:22
+processing sequences so we could
+56:24
+actually use one-dimensional convolution
+56:26
+to process sequences
+56:27
+so you could imagine using
+56:28
+one-dimensional convolution and then
+56:30
+having a one-dimensional convolutional
+56:31
+kernel
+56:32
+that we slide over the input sequence so
+56:34
+maybe each out each position in the
+56:36
+output sequence depends on a local
+56:37
+neighborhood
+56:38
+of three uh three adjacent elements in
+56:40
+the input sequence
+56:41
+and this is also something that we could
+56:43
+use to process sequences um
+56:45
+now convolution is unlike recurrent
+56:48
+neural networks
+56:49
+using convolution to process sequences
+56:51
+is highly paralyzable
+56:52
+right because each output element in the
+56:54
+sequence can be computed independently
+56:55
+of all other output elements
+56:57
+so using convolution breaks the
+56:59
+sequential dependency um that we had
+57:00
+with recurrent neural networks
+57:03
+but the problem with convolution is that
+57:05
+it's not very good at very very long
+57:07
+sequences
+57:08
+right because if we want to have a c if
+57:10
+we want um
+57:11
+if we want to have uh some output depend
+57:14
+on the entire sequence
+57:15
+then we can't do that with a single
+57:16
+convolution layer um we're going to have
+57:18
+to stack on many many many many
+57:19
+convolution layers on top of each other
+57:21
+in order to have um see each point in
+57:23
+the sequence be able to see
+57:25
+or talk to or depend on each other point
+57:27
+in the input sequence
+57:29
+so that's actually also a problem for
+57:30
+using convolution to process sequences
+57:33
+but the the benefit is they're very
+57:35
+paralyzable unlike required outputs
+57:38
+and now what you should think about is
+57:39
+that self-attention is a new mechanism
+57:42
+that we can use
+57:43
+to process sequences or sets of vectors
+57:45
+that overcomes both of these
+57:46
+shortcomings
+57:47
+one is that self-attention is good at
+57:50
+long sequences
+57:51
+right because given a set of vectors it
+57:53
+compares every vector with every other
+57:55
+vector
+57:56
+so then similar to an rnn after a single
+57:58
+self-attention layer
+57:59
+each output depends on each input okay
+58:02
+so that's a good thing
+58:03
+but also like convolution self-attention
+58:06
+is highly highly paralyzable
+58:08
+because if you saw the influence if you
+58:09
+recall the implementation of
+58:11
+self-attention a couple of slides ago
+58:13
+self-attention is computed with these
+58:14
+giant with these uh just a couple matrix
+58:16
+multipliers and
+58:17
+one suffix operation so um softmax uh so
+58:21
+uh this self-attention operation
+58:23
+is highly highly paralyzable and it's
+58:25
+very very well suited to run it on gpus
+58:28
+um so what you should think about is
+58:29
+self-attention is now an alternative
+58:31
+mechanism we could use to process
+58:33
+sequences or sets that overcomes both of
+58:36
+these shortcomings of convolution
+58:37
+and uh recurrent neural networks the
+58:40
+downside with self-attention is that
+58:41
+they take a lot of memory but gpus are
+58:43
+getting more and more memory all the
+58:44
+time so maybe we can uh
+58:45
+ignore this point so then the question
+58:48
+is that if you're faced with a problem
+58:50
+where you want to process sequences with
+58:52
+neural networks how should you combine
+58:53
+these things
+58:54
+should you use rnns should you use
+58:56
+convolution should you use
+58:57
+self-attention
+58:58
+should you use some combination of them
+59:00
+well it turns out there was a very
+59:02
+famous paper
+59:02
+a couple years ago it's that attention
+59:04
+is all you need
+59:06
+and it turns out if we want to build
+59:08
+neural networks that process
+59:09
+sequences we can do it using only
+59:12
+self-attention
+59:13
+and the way that that works is that we
+59:15
+build a new primitive
+59:16
+block type called the transformer block
+59:19
+and this transformer block is going to
+59:21
+depend on self-attention
+59:22
+as the only mechanism to compare input
+59:24
+vectors so the way that it works
+59:27
+is that we receive this input sequence
+59:28
+of vectors x1 to x4
+59:30
+we'll run all of our vectors through a a
+59:34
+self-attention layer that might have
+59:35
+multiple heads
+59:36
+and now after the self-attention layer
+59:38
+each output from the self-attention
+59:39
+layer will depend on each input
+59:42
+so that gives us our interaction between
+59:43
+each element between all elements of the
+59:45
+sequence or set
+59:47
+and now after self-attention we'll add a
+59:49
+residual connection around the
+59:50
+self-attention
+59:51
+that will improve the gradient flow
+59:52
+through the model after
+59:54
+the residual connection we'll add layer
+59:56
+normalization
+59:58
+recall that adding having some kind of
+60:00
+normalization in our deep neural
+60:01
+networks is going to aid optimization
+60:03
+and it turns and in convolutional
+60:05
+networks we'll often use batch
+60:06
+normalization
+60:07
+it turns out for these sequence models
+60:09
+layer normalization
+60:10
+is a very useful thing to do but what's
+60:13
+interesting
+60:14
+about it but what's interesting about
+60:15
+the layer normalization the way that it
+60:17
+works out
+60:17
+is that um the output of self-attention
+60:19
+is giving us a set of vectors
+60:21
+and now layer normalization does not
+60:23
+involve any interaction
+60:24
+or any communication among those vectors
+60:26
+it's going to normalize each
+60:28
+of the output vectors from
+60:29
+self-attention independently
+60:31
+so the layer normalization does not
+60:32
+involve any any communication between
+60:34
+our vectors
+60:36
+after after layer normalization we're
+60:38
+going to run a feed-forward
+60:40
+multi-layer perceptron that's what we'll
+60:41
+call it's a fully connected neural
+60:42
+network
+60:43
+and right the output of layer
+60:44
+normalization will be a set of vectors
+60:46
+then we'll take each of those set of
+60:48
+vectors and run it through a little
+60:49
+fully connected network
+60:51
+and again this little fully connected
+60:52
+network is going to operate
+60:53
+independently
+60:54
+for each sequence that is for each of
+60:56
+each vector in our set
+60:57
+which is which is output from the
+60:59
+previous line normalization
+61:01
+um we're going to add another residual
+61:02
+connection around these multiplier
+61:04
+perceptrons
+61:05
+and then we'll add another layer
+61:06
+normalization output
+61:08
+after the output of this residual
+61:09
+connection
+61:11
+and then we'll put all of these things
+61:12
+together into a block that called the
+61:14
+transformer block
+61:15
+and this will be the basic building
+61:17
+block of these large of
+61:19
+this can be the basic building block for
+61:21
+large scale models that process
+61:22
+sequences of vectors so now the input of
+61:25
+a transformer block
+61:26
+is a set of vectors x the output is also
+61:29
+a set of vectors y
+61:30
+with the same where the out the number
+61:32
+of output vectors is the same as the
+61:33
+number of input vectors
+61:35
+but the number of output but it might
+61:36
+have a different dimensionality right
+61:38
+we could use uh you could imagine uh
+61:40
+changing the dimensionality of these
+61:41
+vectors inside the model
+61:43
+um and now what's what's interesting
+61:45
+about this self-attention block
+61:47
+is that the only interaction between the
+61:49
+vectors occurs inside the self-attention
+61:51
+there
+61:51
+because the layer normalization and the
+61:53
+multiple perceptrons all operate
+61:54
+independently on each vector
+61:56
+on each input vector and because of the
+62:00
+because of these nice properties of
+62:01
+self-attention that we saw
+62:03
+this transformer block will be highly
+62:05
+paralyzable
+62:06
+and very amenable to gpu hardware um and
+62:09
+highly paralyzable highly scalable
+62:11
+so this is going to be a very good fit
+62:13
+for our hardware
+62:16
+and now to now what we can do is just
+62:18
+build a transformer model
+62:20
+is just a sequence of these transformer
+62:22
+blocks um and
+62:23
+what we in in order to build a
+62:25
+transformer model we need to choose a
+62:27
+couple hyper crankers
+62:29
+one is the overall depth of the model
+62:31
+the number of blocks that we use
+62:33
+and the original attention is all you
+62:34
+can need in the original attention is
+62:36
+all you need paper
+62:37
+they used as a sequence of 12 blocks
+62:40
+each of those blocks had a query
+62:41
+dimension of
+62:42
+512 and they used six uh multi-head
+62:45
+attention layers
+62:46
+sorry six um multi-head attention heads
+62:49
+inside each self-attention operation um
+62:52
+and that's
+62:53
+basically it right so then um what what
+62:56
+it turns out is that
+62:57
+this transformer architecture has been
+63:00
+called somehow the the imagenet moment
+63:02
+for natural language processing
+63:04
+um and it turns out that these
+63:05
+transformer models have been
+63:07
+very very useful for natural language
+63:09
+processing tasks
+63:10
+so you know in computer vision it's very
+63:12
+common to pre-train our models on
+63:13
+imagenet
+63:14
+and then fine-tune them for some other
+63:15
+downstream task and it turns out that we
+63:17
+can use these transformer models to
+63:19
+achieve a very similar effect
+63:21
+for a lot of sequence prediction or
+63:22
+language prediction tasks
+63:25
+so the common paradigm that's emerged in
+63:26
+natural language processing
+63:28
+maybe like this is all like really
+63:29
+really recent stuff right this is all
+63:31
+basically researched in the last year
+63:33
+um but this there's been a whole bunch
+63:35
+of papers in last year
+63:36
+that basically show that we can
+63:38
+pre-train a very large transformer model
+63:40
+by downloading a lot of text from the
+63:42
+internet and then train a giant
+63:44
+transformer model on a lot of text from
+63:46
+the internet
+63:47
+um that tries to predict the next word
+63:48
+or do other types of language modeling
+63:50
+tasks
+63:50
+on a whole bunch of internet text then
+63:53
+we can fine-tune this big transformer
+63:55
+model
+63:55
+on whatever downstream language
+63:57
+processing task you want to use
+63:58
+you want to do whether it's machine
+64:00
+translation or language modeling or
+64:02
+language generation or question
+64:04
+answering
+64:04
+or whatever other type of task you might
+64:06
+want to do with natural language
+64:07
+processing
+64:09
+and this has been remember a couple
+64:11
+lectures ago we talked about how
+64:12
+imagenet in one hour was this like
+64:14
+really trendy thing that all the
+64:15
+companies were getting behind and trying
+64:16
+to beat each other
+64:17
+well a very similar thing has happened
+64:19
+with these transformer models in the
+64:20
+last year
+64:21
+that basically over the past year um
+64:23
+every big ai lab has been competing with
+64:25
+each other to try to build bigger and
+64:27
+bigger and bigger transformer models
+64:30
+so the original one was this uh
+64:31
+so-called transformer base and
+64:33
+transformer large models
+64:34
+um from this 2017 paper attention as all
+64:37
+you
+64:38
+attention is all you need um their their
+64:40
+large model had 213 million parameters
+64:43
+learnable parameters and they trained it
+64:45
+for 3.5
+64:46
+for three and a half days on eight gpus
+64:48
+so that's like a lot of training a lot
+64:50
+of gpus a lot of parameters but like
+64:52
+kind of reasonable for a lot of research
+64:54
+groups but things got really crazy
+64:56
+really fast so the next one um there was
+64:59
+a so
+65:00
+the original transformer paper it was
+65:02
+from folks at google so they had a lot
+65:03
+of gpus
+65:04
+there was a follow-up paper called bert
+65:06
+that really introduced this pre-training
+65:08
+and fine-tuning paradigm
+65:09
+um they had much bigger models that were
+65:12
+up to 340 million vulnerable parameters
+65:15
+and they changed this thing on 13
+65:16
+gigabytes of text that they download
+65:18
+from the internet
+65:19
+and you know text is small so 13
+65:21
+gigabytes of text is actually a lot a
+65:23
+lot a lot of data
+65:24
+right um i couldn't actually find the
+65:27
+training time or the hardware
+65:28
+requirements of this model in the paper
+65:30
+but then um another group from google
+65:33
+came out
+65:33
+and a team from facebook kind of jumped
+65:35
+on this as well and they had two new
+65:37
+models
+65:38
+called excellent large and roberta that
+65:40
+were trained on about on more than 100
+65:42
+gigabytes of data
+65:44
+and each of these are now trained for
+65:45
+fairly ridiculous amounts of time
+65:47
+so the google model was trained on 512
+65:50
+tpu devices for three for two and a half
+65:51
+days
+65:52
+and the facebook model was trained for
+65:54
+on uh 1024 gpus for one day
+65:58
+and you know that's how long it takes to
+65:59
+chunk through 160 gigabytes of text
+66:03
+but not to be one-upped open ai came out
+66:05
+and really decided to push the envelope
+66:07
+so they generated their own data set of
+66:09
+40 gigabytes of text
+66:10
+and they trained uh transformer models
+66:12
+with up to a 1.5 billion learnable
+66:14
+parameters
+66:16
+um and the model like i should point out
+66:17
+all these models are the same right the
+66:19
+only thing they're doing is using
+66:20
+transformer models that have more layers
+66:22
+have wider uh bigger query dimensions
+66:25
+inside each self-attention layer
+66:26
+and use more self-attention heads but
+66:28
+all these models are fundamentally the
+66:30
+same
+66:30
+um and now this openai model called gpt2
+66:33
+they trained uh
+66:34
+models with up to 1.5 billion parameters
+66:37
+um and the latest results i think is
+66:39
+from
+66:39
+nvidia they came out just a month just
+66:41
+in august this year
+66:43
+they had a transformer called megatron
+66:45
+right
+66:46
+if you guys watch transformers the movie
+66:48
+you know that megatron is the leader of
+66:50
+the transformers in the movie the
+66:51
+transformers
+66:52
+so nvidia wanted to build the biggest
+66:54
+baddest transformer model of them all
+66:56
+so they built a transformer model called
+66:57
+megatron
+66:59
+and their biggest megatron model um has
+67:01
+up has more than eight billion learnable
+67:03
+parameters
+67:04
+and they trained it for nine days on 512
+67:07
+gpus
+67:08
+um so i went ahead and had went the
+67:11
+liberty of computing how much this would
+67:13
+cost
+67:13
+to train this model on amazon web
+67:15
+services does anyone have a guess
+67:19
+how much 500 000 anyone else kind of
+67:22
+guess
+67:26
+okay 500 000 was actually a good guess
+67:30
+so if you were to train this model on
+67:31
+amazon web services it would cost you
+67:33
+about 430 000
+67:35
+um using the pricing uh today so my
+67:38
+research group will not be training this
+67:39
+model anytime soon
+67:42
+but really all these companies have been
+67:43
+jumping all over each other to try and
+67:45
+train bigger and bigger and bigger
+67:46
+transformer models
+67:48
+um and what's really amazing about these
+67:50
+transformer models
+67:51
+is that as they get bigger they seem to
+67:53
+get better and the thing we are
+67:54
+bottlenecked right now on transformer
+67:56
+models
+67:57
+is just how big of a model can we trade
+67:59
+how much data how much
+68:01
+we're not bottlenecked by data because
+68:02
+we can download as much text as we want
+68:04
+on the web
+68:05
+the only constraint on these models at
+68:06
+the moment seems to be how many gpus can
+68:08
+you wrangle together and how how long
+68:10
+can you
+68:11
+how long can you patiently wait to have
+68:12
+them trained um so i think this is a
+68:14
+really really exciting area
+68:16
+of really ai and machine learning
+68:18
+research right now and i'm excited to
+68:19
+see where this goes in the next couple
+68:20
+of years
+68:21
+now another really cool thing that we
+68:23
+can do with these transformer models
+68:25
+is actually generate text from them
+68:27
+right um so actually open ai
+68:29
+was very famous for this um with the
+68:31
+open ai model
+68:32
+they trained it to actually generate
+68:33
+text from the internet um this is
+68:35
+using this language generation language
+68:37
+models that's very very similar to the
+68:39
+recurrent neural network models that
+68:40
+we've seen before
+68:41
+but basically with these uh these
+68:43
+transformer models we can take
+68:45
+the model and give it some input text
+68:47
+and then use that as seed text to the
+68:49
+model
+68:49
+and then tap the model generate new text
+68:51
+that it thinks would be probable
+68:53
+to happen after this query text so for
+68:55
+example what we can do is write some
+68:57
+human product so this is going to be
+68:59
+written by a human
+69:00
+in a shocking finding scientists
+69:02
+discovered a herd of unicorns
+69:03
+living in a remote previously unexplored
+69:05
+valley in the andes mountains
+69:07
+even more surprising to the researchers
+69:09
+was the fact that the unicorns spoke
+69:11
+perfect english
+69:12
+so this is a totally crazy sentence
+69:14
+right but this was written by a human
+69:15
+but if you feed this sentence as seed
+69:17
+text into a transformed model and you
+69:20
+sample from the transformer model to
+69:21
+generate more language
+69:23
+so now this next part is all written by
+69:25
+the transformer
+69:26
+so it says the scientists named the
+69:28
+population after their distinctive horn
+69:30
+or ovid's unicorn
+69:31
+these four horned silver white unicorns
+69:33
+were previously unknown to science
+69:35
+now after almost two centuries the
+69:37
+mystery of what sparked this odd
+69:38
+phenomenon is finally solved
+69:40
+and it goes on and it goes out and it
+69:41
+talks about dr jorge perez
+69:44
+who's an evolutionary biologist who has
+69:46
+ideas about how where these unicorns
+69:48
+originated
+69:50
+so somehow this transformer models
+69:53
+are able to learn a very very amazing
+69:55
+representation of the text on which they
+69:57
+train
+69:58
+and their their ability to generate this
+70:00
+very coherent long-term text
+70:02
+is just a way blows past all these
+70:04
+recurrent neural network models that
+70:06
+people were using
+70:06
+for so this is this this idea of
+70:09
+training bigger and bigger transformers
+70:11
+on
+70:11
+different types of tasks has got a lot
+70:13
+of people really excited right now
+70:14
+and i think this is a super open area
+70:17
+for people to explore in research these
+70:19
+days
+70:19
+um and if you're interested to um write
+70:21
+your own text and see what transformer
+70:23
+has to say
+70:24
+there's a website
+70:25
+talkthroughtransformer.com
+70:27
+i i can't take credit for making this
+70:29
+but someone put up this website
+70:30
+you can go on there you can write your
+70:32
+own c text and then see what type of
+70:34
+text the transfer model will generate
+70:37
+after this stuff so then in summary what
+70:40
+we've seen today
+70:41
+is that we can add this attention well
+70:43
+first off we saw i don't know how to use
+70:44
+powerpoint right
+70:46
+but after that we saw because there's
+70:47
+supposed to be a picture here right but
+70:48
+um we saw that we could add attention
+70:50
+models uh
+70:51
+that we can add attention to our rnn
+70:52
+models and that allows them to
+70:54
+dynamically attend
+70:55
+different parts of their input then we
+70:57
+started to generalize that attention
+70:58
+mechanism
+70:59
+to this new type of operation called
+71:00
+self-attention to a new general
+71:02
+mechanism for building neural networks
+71:04
+that operate on sensor vectors
+71:06
+then we saw that we could use this as
+71:07
+the building block of these transformer
+71:09
+models
+71:09
+which are basically the the thing
+71:11
+everyone's excited about
+71:13
+this that's our summary for today um and
+71:15
+now next week um i will actually be out
+71:17
+of town
+71:17
+in a conference so we're going to have
+71:19
+uh two guest lectures so on on monday
+71:21
+our gs5 will be giving a guest lecture
+71:23
+on some of his research
+71:25
+in vision and language and then on
+71:27
+wednesday we'll have a guest lecture
+71:28
+from professor arthur prakash
+71:30
+um who's a professor here also michigan
+71:32
+and he'll be giving
+71:33
+he'll be telling you about adversarial
+71:35
+machine learning and adversarial attacks
+71:36
+on these
+71:37
+models so hope you've enjoyed those
+71:39
+guest lectures next week
+
+영어 (자동 생성됨)
+
+

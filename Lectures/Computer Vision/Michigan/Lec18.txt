@@ -1,0 +1,5074 @@
+﻿00:01
+so welcome back to lecture 18
+00:03
+and today we're going to talk about
+00:04
+videos so uh last time we so for the
+00:07
+majority of the class
+00:08
+we have been talking about this this
+00:10
+task of 2d image recognition
+00:12
+um so for example we spent a long time
+00:13
+diving into a lot of details about
+00:15
+different ways to build image
+00:16
+classification systems with with deep
+00:18
+learning
+00:19
+and over the past a couple weeks ago we
+00:21
+spent two lectures talking about
+00:23
+moving beyond image classification and
+00:25
+really stepping into understanding and
+00:27
+recognizing 2d shapes of objects in
+00:29
+images
+00:30
+and that led us to tasks like semantic
+00:32
+segmentation object detection instant
+00:34
+segmentation
+00:35
+key point prediction panoptix
+00:36
+segmentation and all these other sort of
+00:38
+2d shape prediction tasks
+00:40
+and then in the last lecture we pushed
+00:41
+beyond the second dimension
+00:43
+and started talking about ways to
+00:44
+represent 3d shapes with
+00:46
+deep neural networks so in the last
+00:48
+lecture we talked about predicting
+00:50
+taking as input a 2d image and
+00:52
+predicting the 3d shape
+00:54
+or we talked about ways for processing
+00:56
+3d input shapes
+00:57
+and then making different classification
+00:58
+decisions and of course we did that in
+01:01
+the context
+01:01
+in order to do that we needed to define
+01:03
+these different types of 3d shape
+01:04
+representations
+01:06
+um so it turns out that you know it's
+01:07
+pretty complicated to represent shapes
+01:09
+in 3d
+01:10
+and we actually needed to define these
+01:11
+different sorts of representations
+01:13
+to represent 3d shapes and they all had
+01:14
+their own pros and cons
+01:16
+and we saw how we can build how we could
+01:17
+build neural network models that could
+01:19
+deal with all these sorts of
+01:20
+all these different types of 3d shape
+01:22
+representations
+01:23
+well um so last lecture was really about
+01:25
+pushing uh convolutional networks from
+01:28
+two-dimensional stuff to
+01:29
+three-dimensional stuff and we did that
+01:31
+by adding this third spatial dimension
+01:33
+and now today there's actually another
+01:35
+way that we can imagine augmenting our
+01:37
+neural network models
+01:38
+with an additional dimension um so last
+01:41
+time we talked we added an extra
+01:42
+dimension of space
+01:43
+um today we're instead going to add an
+01:45
+extra dimension of time
+01:46
+so when you think about what is a video
+01:49
+a video is basically a sequence of
+01:51
+images that unfold over time
+01:53
+um so this is basically another way to
+01:55
+deal with 3d representation this is
+01:56
+another sort of 3d type of
+01:58
+representation
+01:59
+um that that we can work with with deep
+02:01
+neural networks
+02:03
+except that now um unlike the unlike
+02:05
+having three spatial dimensions like we
+02:07
+did in the previous
+02:08
+lecture um instead now we have two
+02:10
+spatial dimensions
+02:11
+and one temporal dimension and that will
+02:14
+that will lead to a lot of additional
+02:15
+challenges
+02:16
+because as it turns out we might want to
+02:17
+do different sorts of things to
+02:19
+represent the spatial dimensions
+02:21
+and the temporal dimension in maybe
+02:22
+different ways and we might want to
+02:24
+treat them differently depending on the
+02:25
+the structure of the task we're working
+02:27
+about
+02:28
+um so then for all for pretty much
+02:30
+everything that we're going to do in
+02:31
+videos
+02:33
+our networks are basically moving from
+02:35
+these three-dimensional tensors that
+02:36
+we've worked with from 2d data
+02:38
+and instead moving to these
+02:39
+four-dimensional tensors so for example
+02:41
+we can look at a video
+02:42
+as a four-dimensional tensor that has t
+02:45
+being the time
+02:46
+or temporal dimension three is the
+02:48
+channel dimension which is maybe three
+02:50
+uh colors rgb channels for the raw input
+02:52
+video
+02:53
+and then two spatial dimensions h and w
+02:56
+um and actually we'll see that
+02:57
+for exactly what type of architecture
+02:59
+you use for video stuff
+03:01
+you might sometimes transpose those
+03:02
+first two dimensions so sometimes we'll
+03:05
+want to put the temporal axis first
+03:07
+and sometimes we'll want to put the
+03:08
+channel axis first and we'll see cases
+03:10
+where we want to use either those two
+03:11
+different representations
+03:13
+but the basic idea is that a video is
+03:15
+just a four dimensional tensor
+03:16
+we've got one spatial dimension one
+03:18
+temporal dimension two spatial
+03:19
+dimensions and one channel dimension
+03:21
+and we need to figure out ways to to
+03:22
+build deep neural networks that can work
+03:24
+with this sort of data
+03:26
+so as a kind of motivating task that
+03:28
+we'll use to motivate a lot of our
+03:30
+architectures on video
+03:32
+we'll imagine this task of video
+03:33
+classification
+03:35
+so here this is basically the analog of
+03:37
+the image classification task that we've
+03:39
+seen many many times
+03:40
+except extending it in time so now the
+03:43
+network will accept some input video
+03:45
+that will be a stack of rgb frames and
+03:48
+the system will be we'll need to select
+03:49
+some category label
+03:51
+that classifies the action or activity
+03:53
+or a semantic category of that input
+03:55
+video
+03:56
+and just as in the image classification
+03:58
+case the system will be aware of some
+04:00
+fixed set of categories at training time
+04:02
+um and we'll have a training data set
+04:04
+that associates a set of videos
+04:07
+with some labeled with some labeled
+04:09
+category label
+04:10
+and i think we don't even need to talk
+04:12
+about loss functions anymore at this
+04:13
+point
+04:14
+because it's clear that we would train
+04:15
+the system with a kind of cross-entropy
+04:17
+loss function
+04:18
+um so that just as we've seen in all the
+04:19
+other classification problems in this
+04:21
+in this semester so then the entire the
+04:24
+entire trick that we need to solve is
+04:25
+how do we go from this four-dimensional
+04:28
+four-dimensional input tensor to this
+04:30
+vector of scores that we can use to
+04:32
+train our cross-entropy loss function
+04:33
+and train these video classification
+04:35
+systems
+04:37
+well um before we talk about concrete
+04:39
+architectures
+04:40
+it's useful to to point out exactly what
+04:43
+are the types of things that we want to
+04:44
+recognize
+04:45
+in videos so when we're doing 2d
+04:48
+recognition tasks
+04:49
+we're often recognizing objects and we
+04:51
+all know and objects are like things
+04:53
+that have some kind of spatial extent or
+04:55
+or identity in the world
+04:57
+so when we recognize 2d images we might
+04:59
+want to recognize on like dogs or cats
+05:01
+different types of animals
+05:02
+or maybe inanimate objects like bottles
+05:04
+or cars
+05:06
+so that's kind of what we usually try to
+05:08
+classify
+05:09
+when we're working with two-dimensional
+05:10
+input images
+05:12
+and then when we are working with
+05:14
+three-dimensional video sequences
+05:16
+the thing that we usually want to
+05:17
+classify are actions or activities
+05:20
+so these are things like maybe swimming
+05:22
+or running or jumping or eating or
+05:24
+standing
+05:24
+and you can see that kind of when in the
+05:26
+two-dimensional case we're trying to
+05:28
+recognize nouns grammatically
+05:29
+and then in the three-dimensional case
+05:31
+we're often trying to recognize verbs
+05:33
+so the nature of the categories that
+05:35
+we're trying to recognize in video
+05:37
+is often very different than the types
+05:38
+of categories we want to recognize
+05:41
+in 2d images and another thing to point
+05:44
+out
+05:44
+is that most of the time in
+05:47
+most of the verbs that we usually care
+05:49
+to recognize in videos
+05:51
+are actually not just arbitrary actions
+05:53
+but actually actions that human beings
+05:55
+are performing
+05:56
+so actually the majority of video of
+05:58
+video classification data sets that
+06:00
+you'll find out there
+06:01
+most of them most of them have object
+06:03
+have a category labels
+06:05
+that correspond to different types of
+06:06
+actions or activities
+06:08
+that people can do because it turns out
+06:10
+that that's maybe a thing that
+06:12
+we are really interested in one really
+06:14
+important thing that we want to use deep
+06:15
+learning for to analyze videos
+06:17
+is to recognize what people are doing in
+06:19
+videos
+06:20
+so that's just kind of to point out the
+06:22
+types of category labels
+06:23
+that we usually are trying to predict in
+06:25
+video classification data sets
+06:27
+so maybe keep that in mind keep that
+06:29
+distinction in mind about
+06:30
+nouns versus verbs as we move through uh
+06:33
+different concrete
+06:34
+architectures so the big problem
+06:37
+with videos is that they are really big
+06:40
+right this is the main constraint that
+06:42
+we have that we need to overcome
+06:43
+when dealing with video data so if we
+06:46
+try to work at this naively
+06:48
+well um something like a tv show or a
+06:50
+movie is often
+06:51
+shot at like 30 frames per second for
+06:53
+most tv shows
+06:54
+or 24 frames per second for most movies
+06:57
+and now if we just
+06:58
+figure out what is the size of raw
+07:00
+uncompressed video files
+07:02
+they end up being absolutely massive so
+07:04
+if you imagine that we have
+07:06
+maybe a standard res a standard
+07:07
+definition video stream
+07:09
+then it has a spatial resolution of 640
+07:11
+by 480 in pixels
+07:13
+and if we have that at 30 frames per
+07:15
+second then just storing the
+07:17
+uncompressed video stream of a standard
+07:19
+of a standard definition video stream
+07:21
+comes out to about 1.5 gigabytes of data
+07:24
+per minute and this is um because this
+07:26
+is raw uncompressed video
+07:28
+where we need to represent each pixel
+07:30
+with three bytes one for the red one for
+07:31
+the green one for the blue
+07:32
+so when you multiply all that out um it
+07:34
+actually takes a lot a lot of data to
+07:36
+just store on raw uncompressed video
+07:38
+um and uh if we if we move to maybe high
+07:41
+definition video
+07:42
+then uh sort of a full hd video would be
+07:45
+at 1920 by 1080
+07:46
+and that's up at 10 gigabytes per minute
+07:49
+if we're storing it in this sort of raw
+07:50
+uncompressed form
+07:52
+um so this is going to be like
+07:54
+absolutely catastrophic for for dealing
+07:56
+with videos in neural networks
+07:58
+if the uncompressed video just using a
+08:00
+byte representation of pixel values
+08:02
+is going to be this big there's
+08:03
+absolutely no way that we can possibly
+08:05
+fit such large video sequences into our
+08:08
+gpu memory
+08:09
+right because um you know a standard
+08:10
+state-of-the-art gpu might have
+08:12
+something like 12 or 16 or 32 gigabytes
+08:15
+of memory
+08:16
+and that memory needs to hold not just
+08:17
+the raw video but also all the
+08:18
+activations of our network
+08:20
+as well that we need to process on top
+08:22
+of those pixels so as a result there's
+08:24
+we can see from just running these
+08:26
+numbers that it's completely infeasible
+08:28
+to
+08:28
+build deep neural networks that actually
+08:30
+process the raw
+08:31
+temporal and spatial resolution of the
+08:33
+types of videos that we usually watch
+08:36
+so the solution is of course we need to
+08:38
+make the data a lot lot smaller
+08:40
+if we're actually going to process it
+08:42
+with deep neural networks so when we
+08:43
+talk about video classification
+08:45
+usually what we mean is that we're
+08:47
+training neural networks that classify
+08:49
+very very short clips of video that are
+08:52
+typically something like three to five
+08:53
+seconds in length and then um to make it
+08:56
+even more tractable
+08:57
+we'll often temporarily subsample those
+08:59
+clips so they are so they're at a very
+09:01
+very low frame rate
+09:02
+so rather than something like 30 frames
+09:04
+per second we might have like five
+09:06
+five frames per second and then we'll
+09:08
+also tend to heavily spatially down
+09:10
+sample the spatial resolution of the
+09:12
+video frames of the video clips that we
+09:13
+work with as well
+09:14
+so as if you recall that when we worked
+09:16
+with um maybe image classification
+09:18
+it was common to use image resolutions
+09:20
+of something like two two four by two to
+09:22
+four
+09:22
+but now um in order because of these
+09:24
+these constraints of working with video
+09:26
+when we work with classifying video
+09:28
+clips we'll often down sample the
+09:30
+spatial resolution to something like 112
+09:32
+by 112
+09:33
+so that's actually a very very low
+09:35
+resolution video and like if your
+09:37
+netflix stream dropped to a video
+09:38
+resolution of 112 by 112 you'd probably
+09:40
+be very very sad as a viewer
+09:42
+but due to computational constraints um
+09:44
+that's kind of the the world the video
+09:46
+world that our neural networks are going
+09:47
+to have to live with
+09:48
+maybe until our memory gets much much
+09:50
+bigger so this is just to kind of ground
+09:52
+the problem
+09:53
+that even though when we think about
+09:55
+processing videos with neural networks
+09:57
+we think about kind of maybe processing
+09:59
+hours hours long video
+10:00
+but in practice that's really not what
+10:02
+we do that just due to these
+10:03
+computational constraints
+10:04
+we're really forced to to work only on
+10:07
+very very short clips that are very
+10:08
+small in size and very small in time
+10:11
+um so this is kind of the what we this
+10:13
+is kind of the setup of these video
+10:14
+classification problems
+10:16
+that we're usually working with so then
+10:19
+maybe to make this a little bit more
+10:20
+concrete um in in the raw video it would
+10:23
+be very very long and have a very very
+10:24
+high frame rate
+10:25
+but during training we would um have to
+10:28
+take very very short clips of these very
+10:29
+very long video sequences
+10:31
+and then actually subsample them in time
+10:32
+as well to reduce the frame rate
+10:34
+um and then our the models that we would
+10:37
+train that we would train our models on
+10:38
+these very very short clips
+10:40
+um so the idea is that maybe if this
+10:42
+input video sequence had the category
+10:44
+label of running
+10:45
+then probably each of these little
+10:47
+temporal clips that we could sample from
+10:48
+the video sequence
+10:49
+should also have the exact same label so
+10:52
+when training our video classification
+10:53
+models
+10:54
+usually we'll take these these very very
+10:56
+short clips from slightly longer videos
+10:57
+that we might get in the data set
+10:59
+and then the model will be changed to
+11:00
+work on these very very short clips of
+11:02
+lower fps
+11:04
+and then at test time often what we'll
+11:06
+do is take that model
+11:07
+which has been run on these very four
+11:08
+very short clips and then apply it at
+11:11
+different positions at the full uh
+11:13
+of the original video and this kind of
+11:15
+gives us uh
+11:16
+many different classification decisions
+11:18
+for different sub clips of that raw
+11:20
+input video sequence
+11:22
+and then we'll make our final
+11:23
+classification prediction for the video
+11:25
+by averaging the predictions of the the
+11:27
+classifier when we run it on these
+11:28
+little different sub clips
+11:30
+so that's a little bit um of a kind of
+11:32
+trick that we need to play
+11:33
+when we're working on video this video
+11:35
+classification problem
+11:37
+um and then we then we get this kind of
+11:38
+mismatch between training and testing
+11:39
+we're training we're doing these short
+11:41
+clips
+11:42
+and then testing will often ensemble a
+11:43
+set of clips over this this longer video
+11:45
+sequence
+11:47
+okay so then let's actually talk about
+11:49
+our very first video classification
+11:50
+model
+11:51
+um and this seems stupid but it actually
+11:53
+works like really really well so the
+11:54
+idea is let's forget that we're working
+11:56
+on video
+11:57
+and instead let's train a model that
+11:59
+looks there's a standard two-dimensional
+12:01
+cnn
+12:02
+that is trained to classify the
+12:04
+individual frames of the video
+12:05
+completely independently
+12:07
+so for example if this video sequence
+12:09
+was uh was
+12:10
+supposed to have the action of running
+12:12
+then what we'll do is just
+12:14
+chop up all the frames of that video
+12:16
+sequence into individual 2d rgb images
+12:19
+and then train your favorite standard 2d
+12:21
+image recognition model
+12:23
+on the individual frames of the video
+12:24
+sequence um and they will be trained to
+12:26
+classify using the the label that we
+12:28
+should assign to the entire clip
+12:30
+so and then at test time what we'll do
+12:32
+is simply uh
+12:33
+run this single frame model on every
+12:36
+frame in the video
+12:37
+in the longer video sequence and then
+12:38
+average the predictions over all of the
+12:40
+all of the video frames and this seems
+12:42
+like a really stupid model right because
+12:44
+it's basically ignoring all of this
+12:46
+temporal structure in the data
+12:47
+but it turns out that this is actually
+12:49
+like a really really strong baseline
+12:51
+for many many different video
+12:52
+classification tasks
+12:54
+so we'll see some concrete numbers later
+12:56
+but basically my advice is that you if
+12:58
+you find yourself in the regime of
+13:00
+needing to build a practical video
+13:01
+classification system
+13:03
+do this first because it's very likely
+13:05
+that this very simple straightforward
+13:07
+single frame baseline model
+13:09
+actually will work good enough in
+13:10
+practice i think for many different
+13:12
+applications
+13:13
+that you might actually want to might
+13:14
+might want to do in practice
+13:16
+um and then all of the kind of fancy
+13:18
+temporal modeling that we'll talk about
+13:19
+the rest of the lecture
+13:20
+will be kind of like will not really
+13:22
+will not usually make the difference
+13:23
+between the system working and the
+13:25
+system not working
+13:26
+usually what it does is just kind of
+13:27
+bump the accuracy up from
+13:29
+from pretty good to like maybe a little
+13:30
+bit better so uh i think you should
+13:33
+really not discount
+13:34
+this very simple single frame baseline
+13:36
+when you're confronted with any kind of
+13:38
+video classification
+13:39
+or video recognition task so definitely
+13:41
+do always try this first
+13:44
+so then we can talk about a slightly
+13:47
+simpler a slightly more complex model
+13:49
+that actually does take into account the
+13:51
+temporal structure of the video
+13:53
+sequences that we're presented with
+13:55
+and this is this idea of late fusion so
+13:58
+basically
+13:59
+what we did in this single frame
+14:00
+baseline is run a cnn
+14:02
+independently on every frame of the
+14:03
+video and extracted in independent
+14:05
+classification decision
+14:06
+for every frame in the video and then at
+14:08
+test time we kind of average those using
+14:10
+some averaging mechanism
+14:12
+now this late fusion approach is
+14:14
+basically very similar
+14:16
+except that we're going to make the
+14:17
+averaging we're going to somehow build
+14:19
+this this notion of averaging across
+14:21
+time
+14:21
+into the network itself so that the
+14:23
+network can be trained in a way that's
+14:25
+aware
+14:25
+of the fact that we will be doing this
+14:27
+this averaging at test time
+14:29
+so more concretely what we'll often do
+14:31
+with this idea of late fusion
+14:33
+is that you'll be presented with this
+14:34
+the sequence of frames from your input
+14:36
+video here at the bottom
+14:37
+that maybe has a temporal size of t for
+14:39
+tap for time
+14:40
+and then your rgb and by h and w and
+14:43
+then
+14:44
+we'll then we'll run your favorite cnn
+14:45
+architecture independently on each frame
+14:47
+of the video sequence
+14:48
+and that will extract us some frame
+14:50
+level features
+14:51
+so for each uh those will all come
+14:53
+operate completely and it can be
+14:55
+operating completely independently
+14:57
+and will be your favorite 2d cnn
+14:58
+architecture like a resnet or an alex
+15:00
+nat or a mobile mat or whatever suits
+15:02
+your fancy
+15:03
+um and after running those those uh
+15:05
+those networks independently on each
+15:07
+frame
+15:07
+we will get these frame level features
+15:09
+um that will maybe be
+15:10
+a one channel dimension and two spatial
+15:13
+dimensions
+15:14
+and one temporal dimension so we've just
+15:16
+extracted uh convolutional features
+15:18
+for each frame of the video sequence
+15:19
+completely independently
+15:21
+and now we need some way to kind of
+15:23
+collapse or average or combine all of
+15:25
+these
+15:26
+all of these per frame independent
+15:28
+features so one way that we can do that
+15:30
+is using a fully connected layer
+15:32
+that we've seen in early image
+15:34
+classification architectures
+15:36
+so then what we could do is take it take
+15:37
+our our per
+15:39
+frame features flatten them into one big
+15:41
+vector that now has shape
+15:43
+t by d by h prime by w prime and then
+15:45
+apply some kind of
+15:46
+set of fully connected layers that moves
+15:48
+from the flattened features
+15:50
+into our final class score c and then we
+15:52
+can train this thing with a
+15:53
+cross-entropy loss as we often do
+15:56
+and this is called a late fusion
+15:57
+approach to video classification
+15:59
+because we're kind of fusing the
+16:00
+temporal information at a very late
+16:03
+phase of the classification pipeline
+16:04
+that we're doing all this independent
+16:06
+per frame modeling with the cnns and at
+16:08
+the very end of the architecture we're
+16:09
+kind of fusing information temporally
+16:12
+um so this approach to late so this is
+16:14
+one of the earliest approaches to late
+16:15
+fusion that um people worked with
+16:17
+and this was using fully connected
+16:19
+layers but just as we saw in the case of
+16:22
+two-dimensional cnn architectures
+16:24
+using a lot of fully connected layers
+16:25
+adds a lot of learnable parameters to
+16:27
+your network
+16:28
+and can lead to some kind of overfitting
+16:30
+so in fact another way that we can
+16:32
+do late fusion is actually the same
+16:34
+trick that we did in image
+16:35
+classification models
+16:37
+which is to replace the the fully
+16:39
+connected the flattened and fully
+16:40
+connected operations
+16:42
+with instead some kind of average global
+16:44
+average pooling followed by fully
+16:45
+conducted layers
+16:47
+so when we apply this this idea of
+16:49
+average pooling to the to the temporal
+16:51
+domain
+16:52
+then we will still get these independent
+16:54
+per frame features using our favorite 2d
+16:56
+cnn architecture
+16:57
+and now we will apply a global average
+16:59
+pooling layer that will pool
+17:01
+both that will perform an average
+17:02
+pooling over all of the spatial
+17:03
+dimensions
+17:04
+and over all of the temporal dimensions
+17:06
+so that will collapse out all the
+17:08
+spatial information and all of the
+17:09
+temporal information
+17:10
+and leave us with just a d-dimensional
+17:12
+vector that we can then apply
+17:14
+a class a set of a linear layer to to
+17:16
+get our final class scores
+17:18
+so this is again a fairly simple
+17:21
+straightforward approach
+17:22
+that is a fairly easy and simple thing
+17:23
+to try and this is a
+17:25
+this is again an example of late fusion
+17:27
+since we're doing all this independent
+17:29
+modeling
+17:29
+and then fusing all the temporal
+17:30
+information very late in the
+17:32
+classification architecture
+17:36
+but so now kind of a problem with this
+17:38
+late fusion approach
+17:39
+is the fact that it's late right so it's
+17:43
+actually
+17:43
+somewhat difficult using this late
+17:45
+fusion approach to model very low level
+17:47
+pixel
+17:48
+very low level motions of pixels or
+17:51
+features
+17:51
+between independent video frames so as
+17:54
+an example if we look at
+17:55
+this this running these clips from this
+17:57
+running video here on this slide
+17:59
+maybe one useful signal that the model
+18:01
+might want to use
+18:03
+when uh when classifying this video is
+18:05
+running is the fact that his foot is
+18:06
+kind of moving up and down
+18:08
+and maybe in one frame you see the foot
+18:10
+is down and then in the same location at
+18:12
+the next frame we see that the foot is
+18:13
+up
+18:14
+and this motion kind of repeats
+18:15
+periodically at the very low level at
+18:17
+the very low pixel level of the input
+18:19
+video sequence
+18:20
+now with this late fusion approach i
+18:22
+think it's kind of difficult for the
+18:24
+network to learn to model
+18:25
+these very low level interactions
+18:27
+between adjacent pixels in the input
+18:28
+video frames
+18:30
+because all because we're kind of um
+18:32
+summarizing the entire
+18:34
+information about each frame in maybe a
+18:36
+single vector so it's sort of difficult
+18:38
+for the network to compare these
+18:39
+low-level pixel values between adjacent
+18:41
+frames so that i think is one
+18:43
+intuitive shortcoming of this late
+18:44
+fusion approach
+18:46
+so given that this is called late fusion
+18:48
+you should imagine that
+18:50
+you should anticipate that the the the
+18:52
+proposed solution to this
+18:53
+would be early fusion so here the idea
+18:56
+is that um with late fusion we were kind
+18:58
+of performing independent processing
+19:00
+on all of the video frames and then
+19:02
+fusing the temporal information at the
+19:03
+end of the architecture
+19:05
+well we can actually do the opposite
+19:06
+which is instead
+19:08
+fuse all of the temporal information of
+19:10
+the network in at the very beginning of
+19:12
+the
+19:12
+of the architecture in the very first
+19:14
+layer of the cnn
+19:16
+and we can actually do this using a two
+19:18
+our familiar friend of two-dimensional
+19:20
+convolutions
+19:21
+so concretely again we have our input
+19:24
+video frame
+19:25
+our input sequence of video frames at
+19:27
+the bottom here with a temporal
+19:28
+dimension
+19:29
+a channel dimension with rgb color
+19:31
+values and then two spatial dimensions
+19:33
+of h by w
+19:34
+now we can actually trans we can
+19:36
+actually reshape this four-dimensional
+19:38
+tensor
+19:39
+and interpret the the temporal dimension
+19:42
+as a set of channels
+19:44
+so what we can do is then um sort of
+19:46
+imagine
+19:47
+taking our our set of input video frames
+19:50
+and kind of stacking them along the
+19:51
+channel
+19:52
+dimension and that will give us a
+19:53
+three-dimensional tensor
+19:55
+with um a channel dimension of now three
+19:57
+by t
+19:58
+which is just all of our rgb frames sort
+20:00
+of stacked along the channel dimension
+20:02
+and then with our two of same spatial
+20:03
+dimensions and this sort of um concat
+20:06
+and then basically we're concatenating
+20:07
+all of the frames along the channel
+20:08
+dimension
+20:09
+and then we can then fuse all of this
+20:11
+temporal information
+20:12
+using a single two-dimensional
+20:14
+convolution operator that now where the
+20:16
+number of input channels to the
+20:17
+convolution is is 3t and the number of
+20:19
+output channels is whatever
+20:20
+we want in our convolutional
+20:22
+architecture
+20:24
+so and then after this very first layer
+20:26
+that is performing this early fusion
+20:27
+then the rest of the network can be
+20:29
+whatever kind of standard
+20:30
+two-dimensional convolutional
+20:32
+architecture we want
+20:33
+because after this very first layer
+20:35
+we've collapsed all of the temporal
+20:36
+information
+20:37
+and we just have a sort of
+20:38
+three-dimensional tensor to work with
+20:40
+and after that we can use our favorite
+20:41
+2d architecture
+20:43
+and this hopefully maybe overcomes the
+20:45
+problem of because now hopefully the
+20:47
+network
+20:48
+can better model very low level pixel
+20:50
+motion between adjacent video frames
+20:52
+because you could for example try to
+20:54
+learn convolutional kernels that kind of
+20:56
+compare
+20:56
+uh whether adjacent video frames have uh
+20:59
+have local pixel motion between them
+21:02
+but the problem with this approach is
+21:04
+that uh maybe
+21:05
+we're kind of maybe too aggressive in
+21:07
+this approach in the way that we pool or
+21:09
+aggregate the temporal information
+21:11
+because using this early fusion approach
+21:13
+we're kind of um destroying or
+21:14
+concatenate or we're kind of destroying
+21:16
+all the temporal information
+21:17
+after one 2d convolution layer and it
+21:20
+might be the case that one 2d
+21:21
+convolution layer
+21:22
+is just not enough computation to
+21:24
+properly model all the types of temporal
+21:25
+interactions
+21:26
+that can happen in a video sequence so
+21:29
+for that reason
+21:30
+we might need we we might want to
+21:31
+consider some kind of other alternative
+21:33
+that doesn't really fuse early or
+21:35
+doesn't really fuse late
+21:37
+instead maybe we want some mechanism
+21:38
+that allows us to kind of
+21:40
+fuse slowly over the course of
+21:42
+processing
+21:43
+a video sequence and for that we can use
+21:46
+a three-dimensional cnn
+21:48
+and this is also sometimes called a slow
+21:50
+fusion network
+21:52
+so the idea here is that this is kind of
+21:54
+like the cnns that we used in the
+21:56
+previous lecture for processing voxel
+21:57
+grids
+21:58
+where now at each layer in the cnn it's
+22:01
+going to
+22:02
+we're going to maintain four dimensional
+22:03
+tensors that have
+22:05
+a channel dimension a temporal dimension
+22:07
+and two spatial dimensions
+22:10
+and then at each layer of processing
+22:12
+inside the cnn
+22:13
+we will use um three-dimensional analogs
+22:15
+of convolution
+22:16
+and three-dimensional analogs of pooling
+22:19
+that will allow us to kind of fuse
+22:20
+information slowly over the pros over
+22:22
+the course of many many layers of
+22:24
+processing
+22:26
+um so then as kind of an as kind of an
+22:29
+example
+22:29
+of maybe three tiny it's kind of so then
+22:32
+it's useful to kind of
+22:33
+draw distinctions between this late
+22:35
+fusion approach
+22:36
+this early fusion approach and this 3d
+22:38
+cnn approach
+22:40
+so to kind of make those distinctions
+22:41
+clear um let's walk through
+22:43
+three little tiny toy examples of um
+22:46
+early verse late fusion versus 3d uh cnn
+22:49
+architectures
+22:50
+so these will all be like tiny tiny
+22:52
+architectures that will just give you
+22:53
+the flavor of these different types of
+22:54
+models
+22:55
+but in practice we would use much much
+22:56
+deeper larger models
+22:58
+um so for a late fusion approach um it
+23:00
+would it
+23:01
+it will have um the input will maybe be
+23:04
+three three channel dimensions 20
+23:05
+temporal dimensions and 64 by 64
+23:08
+height and width dimensions then the
+23:10
+first layer would be a two-dimensional
+23:11
+convolution
+23:12
+um that will maybe be a three by three
+23:15
+convolution that outputs twelve features
+23:16
+and this is kind of uh
+23:18
+so then it will it will apply this
+23:20
+convolution independently to every video
+23:21
+frame
+23:22
+and this will just sort of fuse
+23:24
+information across space but it will not
+23:25
+fuse information across time
+23:27
+so then we can write down both the size
+23:30
+of the of the resulting tensor after
+23:31
+this operation
+23:32
+as well as the effective receptive field
+23:34
+in the original input video
+23:36
+after the operation so you can see that
+23:38
+after a single
+23:39
+three by three 2d convolution operation
+23:42
+then each
+23:42
+output of that 2d convolution is looking
+23:45
+at a 3x3 region in space
+23:47
+and maybe only a one by one only a
+23:49
+single uh
+23:50
+input plane input frame in time
+23:53
+so then we can then uh we can kind of
+23:55
+look at this by sort of building up
+23:56
+receptive fields just as we did
+23:58
+in our familiar 2d convolution case so
+24:00
+then we could imagine maybe we add a
+24:03
+four 4x4 four pooling layer after our
+24:04
+three by three comb that is again
+24:06
+applied independently to every uh
+24:07
+every slice in time that is now gonna
+24:10
+build up some larger receptive field in
+24:11
+space
+24:12
+but not going to build up any receptive
+24:14
+field in time we could follow this with
+24:16
+another three by three convolution that
+24:17
+will again build up more receptive field
+24:19
+in space but no more receptive field in
+24:21
+time
+24:21
+um and then finally have a global
+24:23
+average pooling layer where we flatten
+24:25
+everything and predict
+24:26
+our number of output categories so then
+24:28
+at this global average pooling layer
+24:30
+what we're doing is kind of all at once
+24:31
+building up a giant receptive field over
+24:33
+the entire
+24:34
+temporal extent of the input video as
+24:36
+well as increasing our spatial receptive
+24:38
+field over the entire spatial size of
+24:40
+the video
+24:41
+so this late fusion approach is kind of
+24:43
+building up receptive fields slowly in
+24:45
+space
+24:45
+but kind of building it up all at once
+24:47
+in time at the very end of the network
+24:50
+so in contrast if we look at an early
+24:51
+fusion approach then we can see that
+24:54
+this is an identical architecture the
+24:55
+only thing that's different
+24:56
+is the first convolutional layer because
+24:58
+now in this idea of early fusion
+25:00
+we've taken our input video frames and
+25:03
+stacked them along the channel dimension
+25:05
+at the very first layer of the network
+25:06
+so now the first layer of the network is
+25:09
+building is a
+25:10
+sort of building up a temporal receptive
+25:12
+field immediately over the entire
+25:14
+temporal extent of the video but we're
+25:16
+still building up this
+25:17
+spatial receptive field kind of slowly
+25:19
+in space over the course of many many
+25:21
+layers
+25:23
+now if we look at a 3d cnn in contrast
+25:26
+then we're replacing the two all of
+25:27
+these two-dimensional convolutions and
+25:29
+two-dimensional pooling operations
+25:31
+with instead three-dimensional analogs
+25:33
+so now we're going to maintain these
+25:35
+four-dimensional
+25:36
+feature tensors at every layer of
+25:38
+processing inside the network
+25:39
+and you can see that our now instead of
+25:42
+using a three by three convolution
+25:43
+that slides um in the slides the filter
+25:45
+over 2d and space
+25:47
+instead we'll use a three by three by
+25:49
+three convolution that is sliding the
+25:51
+filter over both space
+25:52
+and time and now our pooling operation
+25:55
+instead of just
+25:56
+collapsing a four by four pooling region
+25:58
+in space it's going to average over a
+26:00
+four by four by four
+26:01
+three dimensional pooling region um in
+26:03
+spa both space and
+26:04
+time and you can see that by extending
+26:07
+these two dimensions these familiar
+26:08
+two-dimensional operators
+26:10
+of convolution and pooling into the
+26:11
+temporal domain then it allows us to
+26:13
+have this network architecture to build
+26:15
+up a receptive field
+26:16
+slowly over both space and time over the
+26:19
+course of many layers of processing
+26:22
+so for this reason because it's not kind
+26:24
+of because it's kind of building up this
+26:25
+receptive field slowly over the course
+26:27
+of many layers
+26:28
+these three-dimensional cnns are
+26:29
+sometimes called a slow fusion approach
+26:32
+because they are slowly fusing the
+26:34
+spatial and the temporal
+26:35
+information over the over the over many
+26:37
+many layers of processing
+26:39
+and again in practice these are like
+26:41
+really really tiny micro architectures
+26:42
+to just give you a sense of what early
+26:44
+verse
+26:45
+late first 3d cnns look like but in
+26:47
+practice we would use much larger much
+26:49
+deeper models that have many more layers
+26:51
+and probably work on bigger images as
+26:53
+well
+26:56
+so then uh one thing that i always get
+26:58
+kind of maybe tripped up on when i when
+26:59
+i first
+27:00
+think about video models is like what
+27:02
+exactly is the difference
+27:04
+between this 2d convolution operation
+27:07
+that we do in early fusion
+27:08
+versus this 3d convolution operation
+27:10
+that we do in a 3d cnn
+27:12
+because it seems that in both contexts
+27:15
+we're using a convolution operator
+27:17
+to build up some receptive field over
+27:18
+both space and time but exactly the
+27:21
+mechanics or the trade-offs or what's
+27:22
+exactly different between these two
+27:24
+forms of
+27:25
+spatial temporal convolution are useful
+27:27
+i think to
+27:28
+to look at in a little bit more detail
+27:31
+so in the early fusion approach recall
+27:33
+that what we've done is we've taken
+27:35
+our input tensor so now
+27:38
+we're kind of drawing this this
+27:39
+three-dimensional tensor with two
+27:41
+spatial dimensions h and w
+27:42
+and one temporal dimension t and now
+27:45
+we're imagining that at every point in
+27:46
+this 3d grid there is
+27:48
+a there is a feature vector attached to
+27:50
+every point in this 3d grid
+27:52
+and now if we imagine using a 2d
+27:55
+convolution
+27:56
+to process this kind of output what
+27:58
+we're doing is we're having a
+28:00
+convolutional filter
+28:01
+that extends over a tiny region of space
+28:04
+but extends over the full depth in time
+28:06
+so that means our 2d convolutional
+28:08
+filter has the same
+28:09
+temporal size as the input video
+28:12
+sequence
+28:12
+and now this convolutional weight we're
+28:14
+going to slide over
+28:16
+every position in space because at every
+28:18
+position in space the temporal extends
+28:20
+over the full
+28:20
+length of time so we can compute a
+28:22
+familiar inner product and that gives us
+28:24
+a two dimensional output
+28:26
+um that will that will that will uh we
+28:28
+can pass the further layers of the
+28:29
+network
+28:31
+so one kind of shortcoming with so this
+28:33
+is kind of appealing because it feels
+28:34
+like a pretty easy and straightforward
+28:36
+way to use
+28:37
+convolution to work with temporal data
+28:40
+but one big shortcoming
+28:41
+with this early fusion approach using 2d
+28:45
+convolution
+28:46
+is that it's not temp it's not
+28:48
+temporarily shift invariant
+28:50
+so what i mean by that is that suppose
+28:52
+we wanted to
+28:53
+suppose that we wanted to learn to
+28:55
+recognize sort of
+28:57
+global transitions in color and maybe we
+28:59
+want
+29:00
+and maybe an important feature that the
+29:02
+network might want to learn to recognize
+29:04
+is having the entire the color shift
+29:06
+from blue to orange at some point in
+29:08
+time
+29:09
+now um one problem with this is that
+29:11
+because
+29:12
+our filters extend over the entire
+29:14
+length in time
+29:16
+then if we want to detect changes in
+29:18
+color
+29:19
+both at different positions in time we
+29:22
+actually would need to learn separate
+29:23
+filters to represent those changes
+29:26
+so for example if we wanted to learn a
+29:27
+field we would have we might be able to
+29:29
+learn one filter
+29:30
+that can learn a shift from blue to
+29:32
+orange at time three
+29:33
+but if we wanted to recognize a shift
+29:35
+from blue to orange at time
+29:36
+seven then we would actually need to use
+29:38
+a whole separate filter
+29:40
+in order to learn that that same
+29:42
+temporal change but at a different
+29:44
+position in time
+29:45
+so that that means that's sort of a
+29:46
+limit a limitation of this
+29:49
+this idea of using 2d convolution to
+29:51
+process 3d data
+29:53
+is that it's kind of just not
+29:54
+temporarily shift in variant
+29:57
+so in contrast if we're going to use 3d
+29:59
+convolution to process our temporal data
+30:02
+then as input we're going to accept the
+30:04
+same space
+30:05
+the same cube with two spatial
+30:07
+dimensions one temporal dimension
+30:09
+and a featured and a feature vector at
+30:11
+every point in this cube
+30:13
+but now our convolutional kernel extends
+30:15
+over only a very
+30:17
+small region in both space and time so
+30:19
+what this means is that now
+30:21
+our convolutional filter is going to
+30:23
+extend only
+30:24
+only over a small region in time so
+30:26
+we're going to slide the filter over
+30:28
+both all the spatial dimensions
+30:30
+as well as over the temporal dimension
+30:32
+and at every at every position in 3d
+30:34
+space over which we slide the filter
+30:36
+then we can compute the inner product
+30:37
+between the filter and the chunk of the
+30:39
+input at that position
+30:40
+and then compute a single scalar output
+30:43
+to produce this full
+30:44
+3d output as output from this layer
+30:48
+and now the key difference is that these
+30:51
+three this this idea of 3d convolution
+30:53
+fixes this problem of temporal shift in
+30:56
+variance
+30:57
+in that that we had with 2d convolution
+30:59
+so now if we wanted to learn to learn to
+31:01
+recognize
+31:02
+transitions from blue to orange we could
+31:05
+actually do that
+31:05
+at all points in time using only a
+31:08
+single three-dimensional convolutional
+31:10
+filter
+31:10
+because we're going to slide that filter
+31:12
+over all positions in time
+31:13
+so that allows us to recognize so now we
+31:16
+no longer
+31:16
+need to learn separate filters if we
+31:18
+want to recognize the exact same thing
+31:20
+happening at different moments in time
+31:22
+for the input video so that means that
+31:24
+this 3d convolution
+31:25
+is maybe more somehow more
+31:27
+representationally efficient
+31:28
+because we don't need to learn as many
+31:30
+filters to represent all the things we
+31:31
+might
+31:32
+want to learn from video sequences
+31:35
+and also kind of a cool thing about
+31:36
+these 3d cnns
+31:38
+is that we can actually visualize these
+31:40
+learned filters as
+31:41
+video clips themselves right so what we
+31:44
+can do
+31:44
+is that here on the right we're showing
+31:46
+these learned 3d convolutional filters
+31:49
+from a three-dimensional cnn and because
+31:52
+the each of these little convolutional
+31:54
+filters has a small extent
+31:56
+in both space and time we can actually
+31:58
+visualize those filters as little
+32:00
+moving rgb video clips and that gives us
+32:02
+some sense
+32:03
+for what types of features that these uh
+32:05
+these 3d convolutional networks
+32:07
+want to learn to recognize so it's
+32:09
+actually kind of interesting to dive
+32:10
+into these like
+32:11
+you see some of them actually don't seem
+32:13
+to learn any motion at all
+32:14
+they're just kind of recognizing the
+32:15
+same oriented edges or blobs or opposing
+32:18
+colors that we often see in 2d cnn's
+32:20
+but other convolutional filters seem to
+32:23
+want to recognize like
+32:24
+local motion in different directions so
+32:28
+that gives you some intuition about the
+32:29
+types of low-level features
+32:31
+that these three-dimensional
+32:32
+convolutional neural networks can learn
+32:34
+to represent
+32:36
+so now in order to kind of benchmark and
+32:39
+see the trade-offs of these different
+32:40
+approaches we actually need some data
+32:41
+set to train on
+32:43
+so one example data set that people
+32:45
+sometimes work with
+32:46
+for this video classification problem is
+32:48
+this sports 1m data set
+32:50
+um so here what they what they've done
+32:52
+is they've some folks at google
+32:54
+they went and took a million youtube
+32:56
+videos and for each of those youtube
+32:57
+videos
+32:58
+they annotated it with um one with a
+33:00
+different type of sports category
+33:02
+so they took like a million different
+33:03
+sports videos on youtube because a lot
+33:04
+of videos of people
+33:05
+playing different sports on youtube and
+33:07
+then annotated them with different uh
+33:09
+with different types of sports
+33:11
+and actually like the types of sports in
+33:12
+this data set are like really fine
+33:14
+grained i don't actually know what all
+33:15
+of them are
+33:16
+um so then if you so here's some example
+33:18
+of input frames from videos from this
+33:20
+data set
+33:21
+and now the blue shows the type shows
+33:24
+the ground truth
+33:25
+sport category for each of these video
+33:26
+frames and the next five
+33:28
+all show the top five predictions from a
+33:30
+model that was trained to do this video
+33:32
+classification task
+33:34
+so for example this first one i don't
+33:35
+know if you guys can necessarily see
+33:37
+that tiny text in the back
+33:38
+this first video should the the correct
+33:41
+label
+33:41
+is track cycling um but the top model
+33:44
+prediction was just normal cycling so
+33:46
+that was a wrong prediction
+33:47
+and actually the second prediction from
+33:49
+the model was track cycling which was
+33:50
+the correct prediction
+33:52
+um but then the next one the next uh the
+33:54
+next predictions from the model were
+33:56
+like road bicycle racing
+33:57
+marathoning and ultra marathoning so
+34:00
+those are like different all
+34:01
+different fine grains different types of
+34:03
+sports that exist in this data set
+34:05
+or in the second category it's kind of
+34:06
+interesting apparently the correct label
+34:09
+was ultra marathon
+34:10
+but the next category labels were half
+34:12
+marathon running
+34:14
+and marathon so i don't know exactly how
+34:17
+a model is expected to tell the
+34:18
+difference between a full marathon and a
+34:20
+half marathon just from a video a short
+34:21
+video clip
+34:22
+but like somehow this model managed to
+34:24
+do it on this clip so that's pretty
+34:25
+surprising to me
+34:27
+um but um so that's just to say that i
+34:29
+think this is a really challenging data
+34:30
+set since it involves all these really
+34:32
+fine-grained distinctions of different
+34:33
+types of sports categories
+34:36
+and then what we can see is we can now
+34:38
+compare a single frame version of the
+34:40
+model
+34:40
+an early fusion model and a late fusion
+34:42
+model and a 3d cnn model
+34:45
+and what we and what's kind of shocking
+34:47
+here is just how well
+34:48
+this single frame baseline does so here
+34:51
+we see that if we took
+34:52
+this uh this this just like train your
+34:55
+favorite two-dimensional cnn
+34:56
+on independent frames of this video of
+34:58
+these videos we can already get up to
+35:00
+like
+35:01
+over 77 accuracy which is just like
+35:04
+shocking how well
+35:04
+this simple single frame baseline model
+35:06
+can do so
+35:08
+again always try single frame baselines
+35:10
+first whenever you're confronted with a
+35:11
+video classification problem
+35:13
+and then as we move from the the single
+35:15
+frame to the early fusion to the late
+35:16
+fusion to the 3d cnn
+35:18
+we actually see the early fusion works a
+35:19
+little bit worse than the single frame
+35:21
+than the single frame baseline which is
+35:22
+a little bit surprising um but the late
+35:24
+fusion and the 3d cnn approaches
+35:26
+do a little bit better than the single
+35:28
+frame approach but not massively so
+35:30
+which again just motivate which is again
+35:32
+just evidence as to how strong this
+35:34
+single frame model is
+35:35
+as a baseline for video recognition
+35:37
+tasks
+35:39
+but of course if you read this like tiny
+35:41
+tiny citation of the slide
+35:43
+down in the lower left corner of the
+35:44
+slide you'll see that this paper was
+35:45
+actually from 2014
+35:47
+which is quite a long time ago like in
+35:50
+2014 people weren't even using gpu
+35:52
+clusters at google to train their models
+35:54
+so these models were actually trained on
+35:55
+cpu clusters at google
+35:57
+and there's a great line in the paper
+35:58
+that says that it took all the models a
+36:00
+month to train
+36:01
+so um i think that the state of the art
+36:04
+in sort of convolutional architecture
+36:05
+design
+36:06
+has advanced quite a lot since 2014 um
+36:09
+so
+36:09
+these these results are a little bit old
+36:11
+and are to be taken with a big grain of
+36:12
+salt
+36:13
+um so as a result uh people people have
+36:15
+made continual advances
+36:17
+in both 2d cnn architectures and 3d cnn
+36:20
+architectures since that time
+36:22
+so as an example of an improved 3d cnn
+36:25
+architecture
+36:26
+is the the very famous c3d model for
+36:29
+convolutional 3d
+36:31
+um and basically this is the vgg of 3d
+36:34
+cnns
+36:35
+so we'll recall that vgg was this like
+36:37
+very simple convolutional neural net
+36:39
+2d convolutional network that was that
+36:41
+consisted entirely of three by three
+36:43
+convolutions
+36:44
+and uh two by two poolings and the vgg
+36:47
+was just this simple architecture of com
+36:48
+kong pool comp compulsool
+36:52
+i think you you remember now and now c3d
+36:55
+is basically the three-dimensional
+36:56
+analog of this vgg architecture
+36:58
+um so it consists entirely of three by
+37:01
+three by three convolutions
+37:03
+and two by two by two poolings with the
+37:05
+slight exception that the very first
+37:07
+pooling only does pooling in space and
+37:09
+not time
+37:10
+but basically it's a it's a pretty
+37:12
+straightforward architecture to look at
+37:13
+here
+37:14
+and this was a particularly influential
+37:16
+video model because unlike the previous
+37:18
+google paper
+37:19
+the c3d authors actually released the
+37:21
+pre-trained weights of their model
+37:23
+so as a result a lot of people who
+37:25
+couldn't afford to train
+37:26
+these these video models on their own
+37:28
+data sets would would often use the
+37:30
+pre-trained c3d model
+37:32
+as a fixed video feature extractor for
+37:34
+their other types of downstream video
+37:36
+classification tasks
+37:37
+so just as we saw that in images it was
+37:40
+very common to pre-train like vgg on
+37:42
+imagenet
+37:42
+and then use the features for other
+37:44
+tasks in video it was also very common
+37:46
+to take this c3d model that was
+37:49
+pre-trained on a large video data set
+37:50
+and then used the features from that
+37:52
+pre-trained c3d model for other types of
+37:54
+downstream video tasks
+37:57
+but the problem is that this c3d model
+37:59
+is like shockingly computationally
+38:01
+expensive
+38:02
+right because if you imagine just how
+38:04
+much com computation like 3d convolution
+38:07
+is really expensive
+38:08
+because now we need to take a
+38:09
+three-dimensional receptive a
+38:11
+three-dimensional kernel
+38:12
+and slide it over an entire
+38:13
+three-dimensional spatial temporal grid
+38:16
+um so now everything kind of spells
+38:18
+scales cubically which is like a really
+38:19
+bad way for your models to scale
+38:21
+computationally
+38:22
+so then if we go and compute the number
+38:24
+of
+38:25
+the number of floating point operations
+38:27
+that are needed to run the forward pass
+38:29
+of this c3d model
+38:31
+and and kind of sum it up over the
+38:32
+entire model we see that it's like
+38:34
+really really really expensive
+38:36
+so um so even though this model takes a
+38:39
+really really tiny input
+38:40
+of 16 uh 16 uh frames in time
+38:44
+and a 112 by 112 spatial resolution at
+38:47
+each frame
+38:48
+that that's even though it takes that
+38:49
+very very tiny low resolution input
+38:52
+the total computational cost of the
+38:54
+model is almost 40 gigaflops
+38:57
+for a single forward pass and to and for
+39:00
+comparison a bgg 16 was like 13.6
+39:03
+gigaflops
+39:04
+so this uh this c3d model is like almost
+39:07
+three times as expensive as a vgg
+39:09
+and compared to alexnet um alexnet on
+39:12
+two to four by two to four
+39:13
+image inputs was only like 0.7 gigaflops
+39:16
+so then c3d is just like way way way
+39:19
+more computationally expensive than
+39:20
+something like alexnet
+39:22
+um so that's kind of a common problem
+39:24
+with these video models is that
+39:25
+anytime you're using 3d convolution the
+39:27
+models just quickly become very very
+39:29
+computationally expensive
+39:32
+but that said this c3d model was able to
+39:35
+do a pretty good job of
+39:37
+pushing up the state of the art on this
+39:39
+sports 1m classification task
+39:41
+so here it was a kind of it's kind of a
+39:43
+similar story that we saw in images
+39:45
+right that in images we saw that for a
+39:47
+period of time people built like ever
+39:49
+bigger and ever deeper and
+39:50
+ever more computationally expensive
+39:52
+models on images and that led to
+39:54
+improvements in 2d image recognition
+39:56
+and it's kind of the same story here
+39:57
+that um we're just building a bigger
+39:59
+deeper
+40:00
+more expensive video model and that also
+40:02
+pushes leads to higher classification
+40:04
+accuracies on this large scale video
+40:05
+benchmark
+40:06
+so that's kind of um one angle that you
+40:09
+can imagine so then there's kind of this
+40:10
+question of like
+40:11
+what's the best way to build a
+40:13
+convolutional neural network
+40:14
+architecture
+40:15
+that works over both space and time um
+40:17
+and maybe one way is just like continue
+40:19
+scaling up this c3d
+40:21
+model and try to make it bigger and
+40:22
+deeper and maybe add residual
+40:24
+connections and bash normalization all
+40:25
+that kind of stuff that we know works
+40:27
+well in images
+40:28
+but um i think there's another
+40:30
+interesting approach which is to think a
+40:32
+little bit more deeply about the fact
+40:33
+that
+40:34
+space and time really maybe should be
+40:37
+treated differently in our models
+40:39
+right because when we're using 3d
+40:41
+convolution and 3d pooling
+40:42
+we're basically inside the way that the
+40:44
+model is performing computation
+40:46
+we're really treating sort of space and
+40:48
+time as interchangeable in a way
+40:49
+because the way that we're processing
+40:51
+both of them is exactly the same
+40:53
+so instead what we might want to do is
+40:55
+is think carefully about ways to
+40:56
+represent
+40:57
+a space and time differently and one
+41:00
+interesting way
+41:01
+is to represent motion more explicitly
+41:04
+inside our neural network models
+41:06
+and to motivate why representing motion
+41:09
+might be a good idea
+41:10
+it's interesting to realize that humans
+41:13
+can actually recognize a lot
+41:14
+using only motion so with this 3d with
+41:17
+just three moving dots
+41:18
+you have some sense of what's going on
+41:20
+in this video sequence
+41:22
+so any anyone you want to guess what's
+41:23
+going on there or this one's like super
+41:25
+clear
+41:27
+like that's definitely a person walking
+41:30
+that's like definitely a person walking
+41:35
+he's climbing and waving he's maybe
+41:37
+riding a unicycle
+41:51
+so this is kind of amazing right it
+41:52
+turns out that human brains
+41:54
+somehow must be doing something
+41:56
+different between processing motion
+41:58
+and processing visual appearance right
+42:00
+because all i think all of us have no
+42:02
+trouble recognizing the actions that are
+42:04
+going on in this video
+42:05
+just from this very low level of motion
+42:08
+cues
+42:08
+and it turns out that we don't actually
+42:10
+need to see the images or the pixels at
+42:12
+all
+42:13
+in order to tell what actions these
+42:15
+these people are performing
+42:16
+or even to recognize that they are
+42:17
+people so kind of motivated by this fact
+42:20
+that human beings
+42:21
+seem to be able to do a lot with just
+42:23
+motion information
+42:24
+um there's a class of neural network
+42:26
+architectures that try to more
+42:28
+explicitly represent motion information
+42:30
+as a primitive inside the inside the
+42:32
+network
+42:34
+so um to kind of make this concrete we
+42:36
+need to talk about um how can you even
+42:37
+measure
+42:38
+motion information more quantitatively
+42:40
+using computers
+42:42
+so one way that we often measure motion
+42:44
+information
+42:45
+is using this idea of optical flow so
+42:47
+optical flow
+42:48
+is going to take as input a pair of
+42:50
+adjacent video frames
+42:51
+and then compute a kind of flow field or
+42:54
+distortion field between two adjacent
+42:56
+video frames
+42:57
+so what it's going to do is say for
+42:59
+every pixel in the first frame
+43:01
+what is the vector displacement telling
+43:03
+where that pixel is going to move
+43:05
+in the second frame and there exists
+43:08
+many many algorithms that for computing
+43:10
+this thing and lots of details about
+43:11
+optical flow that
+43:12
+we just don't want to go into at this
+43:14
+time but basically the idea is that
+43:16
+there exist algorithms for computing
+43:18
+optical flow on input image frames
+43:20
+and optical flow is just giving us some
+43:22
+kind of local motion cues
+43:24
+about how pixels move between adjacent
+43:26
+video between adjacent video frames
+43:29
+so then um optical flow is kind of
+43:31
+highlighting local motion in the scene
+43:33
+um and what we can what we're showing in
+43:36
+this visualization
+43:37
+is visualizing the horizontal components
+43:39
+of the optical flow in the top
+43:40
+and the vertical component of the
+43:42
+optical flow in the bottom
+43:44
+so here given these two input video
+43:46
+frames are this like person like drawing
+43:47
+a bow and arrow
+43:48
+you can see that the optical flow
+43:50
+representation is just highlighting the
+43:52
+local motion of the person's arm
+43:54
+and of the bow in these adjacent video
+43:56
+frames so now
+43:58
+optical flow is now this this very low
+44:00
+level signal about motion
+44:02
+that we can feed to cnns to allow them
+44:04
+to more explicitly disentangle the
+44:06
+appearance of what's going on in visuals
+44:08
+in videos versus the motion of how the
+44:10
+pixels move
+44:12
+so that leads us to this very famous
+44:14
+architecture for um
+44:15
+for video recognition called the two
+44:18
+stream network
+44:19
+so what this two stream network does is
+44:22
+that it has
+44:23
+two parallel convolutional neural
+44:25
+network stacks
+44:26
+the top stack is the spatial stream
+44:28
+which processes the appearance of the
+44:30
+input video
+44:31
+so because we know that this single
+44:34
+frame baseline
+44:35
+is such a strong baseline for
+44:36
+recognizing videos um the top
+44:38
+spatial stream in the two stream comnet
+44:40
+is just going to input a single frame
+44:42
+from the video clip
+44:44
+and now and then from that single frame
+44:46
+it's going to try to predict a
+44:47
+classification distribution over all the
+44:49
+categories that we care about
+44:50
+and now on the lower stream is this
+44:52
+temporal stream
+44:54
+which is processing only motion
+44:55
+information so what we're going to do
+44:57
+is given our clip of maybe t video
+45:00
+frames
+45:00
+we're going to compute optical flow
+45:02
+between every adjacent pair of video
+45:04
+frames in the input sequence
+45:06
+so that will give us t so if we have t
+45:08
+video frames that will give us t
+45:09
+minus one um sets of optical flow
+45:12
+between video frames
+45:13
+and then each of those optical flow
+45:15
+fields will give us two channel
+45:16
+dimensions one in x and one and y
+45:18
+so then we'll concatenate all of those
+45:20
+things into a single big tensor
+45:22
+of size with number of channels equal to
+45:25
+two times t minus one
+45:27
+and just stack all of those optical flow
+45:29
+fields in the channel dimension
+45:30
+and then use an early fusion approach in
+45:33
+the temporal stream
+45:34
+to do early fusion to kind of fuse all
+45:36
+those optical flow fields in the first
+45:38
+convolutional layer
+45:39
+and then use normal 2d cnn operations at
+45:41
+the rest of the network
+45:43
+and then this this this temporal stream
+45:45
+will also sort of try to be trained to
+45:47
+independently predict
+45:48
+the classification decisions uh given
+45:51
+only the motion information
+45:53
+and then at test time what we're going
+45:54
+to do is that the spatial stream will
+45:56
+predict a distribution over classes
+45:58
+the temporal stream will predict a
+45:59
+different distribution of our classes
+46:01
+and then at test time we'll just take an
+46:02
+average of the two probability
+46:03
+distributions
+46:04
+that are predicted by the spatial and
+46:06
+the temporal streams
+46:07
+yeah question yeah the question is where
+46:09
+does the two come one and come from in
+46:11
+the stack of optical flow
+46:12
+well that's because each optical flow
+46:14
+gives us a vec a displacement vector
+46:17
+in the image plane so if so optical flow
+46:19
+at every point in the image it gives us
+46:21
+a two dimensional vector
+46:22
+telling us both so that's the x the x
+46:24
+component and the y component of that
+46:26
+optical flow vector
+46:27
+at every point in the input image so
+46:28
+that gives us the two
+46:31
+and then this two stream network if we
+46:33
+uh look so i've kind of like done a bit
+46:34
+of a bait and switch on you and it's
+46:36
+actually a different data set than we've
+46:37
+looked at in the previous slides but if
+46:39
+we look at this two stream network
+46:41
+we see that this uh two-stream network
+46:44
+using
+46:44
+only the temporal stream is actually
+46:46
+able to outperform
+46:48
+this this spatial stream which means
+46:50
+that this idea of recognizing activities
+46:52
+from motions
+46:53
+is maybe not particular to our own human
+46:55
+brains it turns out that our neural
+46:57
+networks are also pretty good at
+46:58
+recognizing
+46:59
+activities using only motion information
+47:02
+and then when we fuse
+47:03
+the the the appearance stream and the
+47:05
+temporal stream
+47:06
+then we actually get a pretty a slight
+47:09
+improvement over using
+47:10
+only the temporal stream alone
+47:13
+okay so basically at this point now
+47:15
+we've seen a bunch of different ways for
+47:17
+lot
+47:18
+modeling short term structure in
+47:21
+in using different types of cnn
+47:24
+architectures
+47:25
+so we've seen using maybe 2d convolution
+47:28
+or 3d convolution
+47:29
+or optical flow as ways to compute
+47:32
+information over the temporal dimension
+47:33
+of our input videos
+47:35
+but all of these different types of
+47:37
+processing operations we've seen so far
+47:39
+are very very local in what they are
+47:41
+able to do right so 3d convolution is
+47:43
+maybe looking at a
+47:44
+so early fusion actually just like
+47:46
+didn't really work that well
+47:47
+um 3d convolution only is looking at
+47:50
+only a very tiny receptive field in time
+47:52
+and optical flow is also only looking
+47:54
+between adjacent frames to compute
+47:56
+the motion between a pair of frames but
+47:59
+what happens
+48:00
+if we actually want to build cnns that
+48:02
+can recognize
+48:03
+stuff which is like more distant in time
+48:06
+well then we're going to need some other
+48:07
+kind
+48:07
+of operator um so we already
+48:11
+but it turns out we've already seen one
+48:12
+thing in this class that lets us one
+48:14
+type of neural network architecture
+48:15
+that lets us deal with very long term
+48:18
+sequence information and that's
+48:19
+recurrent neural networks
+48:20
+so why don't we why don't we combine
+48:22
+together these two ideas
+48:24
+so here the idea is that we'll um have
+48:26
+our video stream in time
+48:27
+at the bottom we'll apply some kind of
+48:29
+cnn either a 2d cnn or a 3d cnn
+48:32
+to extract local features at every point
+48:34
+in time
+48:35
+and then we'll use uh some kind of
+48:36
+recurrent neural network architecture
+48:38
+to fuse information temporally given the
+48:40
+outputs of these uh
+48:41
+of these individual of these independent
+48:43
+rnns and then we could use kind of a
+48:46
+many-to-one operation if we wanted to
+48:47
+make a single classification decision at
+48:49
+the end of the video
+48:50
+we could use the final r and hidden
+48:52
+state to then make the prediction over
+48:53
+the entire video sequence
+48:55
+or we could also do kind of a
+48:57
+many-to-many task
+48:59
+and maybe make a set of predictions at
+49:00
+every point in time over the video
+49:04
+and actually turns out there was a paper
+49:05
+all the way back in 2011 that proposed
+49:07
+this exact architecture
+49:08
+that used sort of 3d cnns to extract
+49:11
+spatial temporal information locally
+49:13
+and then fuse them over long term using
+49:15
+an lstm
+49:16
+so this was like way back in 2011 i
+49:18
+think this paper was way ahead of its
+49:19
+time and people should cite it more
+49:21
+um but the one that people tend to
+49:23
+associate this idea with
+49:25
+more is this a 2015 paper that i think
+49:27
+got a little bit more recognition
+49:30
+and then another kind of a thing to
+49:32
+point out here is that one trick when
+49:34
+combining cnns and rnns for processing
+49:36
+videos
+49:37
+is that sometimes we only back propagate
+49:39
+through the rnn
+49:40
+remember like in c3d we talked about
+49:42
+people would sometimes use c3d as a
+49:44
+fixed feature extractor
+49:46
+well that then that then here we could
+49:47
+do that same thing um in the cnn rnn
+49:50
+setup
+49:50
+so we could use a pre-trained c3d that's
+49:52
+been trained on a video data set
+49:54
+and then use c3d as a feature extractor
+49:56
+to extract features from every point in
+49:58
+video
+49:59
+and then use an rnn to work on top of
+50:02
+those pre-extracted c3d features
+50:04
+so that will be a way to get us around
+50:06
+this kind of memory constraint
+50:08
+and if we're only using the the cnn as a
+50:10
+feature extractor
+50:11
+then we don't need to back propagate
+50:12
+into the cnn and then we can actually
+50:14
+train these models over very uh very
+50:16
+wide time periods as well
+50:17
+so that's kind of an appealing approach
+50:21
+okay so now we've kind of seen maybe two
+50:22
+different approaches for merging
+50:24
+temporal information one is using kind
+50:26
+of operations
+50:27
+inside the cnn that kind of merge
+50:29
+information locally
+50:30
+and the other is using some kind of
+50:32
+recurrent information to kind of
+50:34
+fuse at the top outside after we run our
+50:36
+cnn architecture
+50:37
+so is there some way that we can combine
+50:38
+both approaches and it turns out we can
+50:41
+maybe take another inspiration from
+50:43
+recurrent neural networks and look back
+50:44
+at this idea of a multi-layer rnn
+50:47
+so now what we can do is remember in a
+50:49
+multi-layer rnn we had this
+50:50
+two-dimensional grid
+50:51
+where at every point in the grid our
+50:53
+vector was going to depend
+50:55
+both on the previous vector in the
+50:57
+previous layer at the same time step
+50:59
+as well as the vector from the previous
+51:01
+time step at the same layer
+51:03
+and then we would um you process video
+51:05
+sequences of arbitrary length
+51:06
+by sharing weights over the sequence
+51:08
+well we can actually do the exact same
+51:10
+thing
+51:10
+using our convolutional neural networks
+51:12
+and now we can build a kind of
+51:14
+multi-layer
+51:15
+recurrent convolutional network so now
+51:17
+what we're doing is we're building up
+51:18
+this two-dimensional
+51:20
+grid of features every point in this
+51:22
+two-dimensional grid
+51:23
+is a three-dimensional tensor with
+51:25
+spatial with
+51:27
+two spatial dimensions and one channel
+51:28
+dimension and now at every point in the
+51:30
+grid
+51:31
+the this feature this feature tensor is
+51:33
+going to be computed
+51:35
+by combining both the the the features
+51:38
+at the previous layer at the same time
+51:39
+step
+51:40
+as well as the features at the previous
+51:42
+time step of the same layer
+51:43
+and then we can fuse these two things
+51:45
+using some kind of convolution operation
+51:49
+so then to see exactly the the way that
+51:51
+we might fuse these things
+51:52
+remember that in a normal 2d cnn what
+51:55
+we're doing is we're kind of inputting
+51:56
+uh one two 3d tensor
+51:58
+running two 2d convolution and then
+51:59
+outputting another 3d tensor
+52:02
+now what we want to do is build a
+52:04
+recurrent convolutional network
+52:05
+where we're taking as input two 3d
+52:08
+tensors
+52:09
+one gives us features from the same
+52:10
+layer and the previous time step
+52:12
+and the other gives us features from the
+52:14
+previous layer
+52:16
+and the same time step and then we want
+52:18
+to fuse these in using some kind of
+52:20
+rnn-like recurrence formula
+52:21
+that gives us the features for the
+52:23
+current layer and the current time step
+52:25
+and this um if you'll recall this kind
+52:27
+of structure looks very similar to the
+52:29
+structure that we saw when using
+52:30
+recurrent neural networks so now
+52:32
+to use the exact functional form here
+52:34
+what we can do is just again
+52:36
+copy and paste from our recurrent from
+52:38
+our favorite recurrent neural networks
+52:40
+so if you recall what we did in a
+52:41
+vanilla tan hrn
+52:43
+we would take our two inputs process
+52:46
+project each of them using a separate
+52:48
+learned weight matrix
+52:49
+add the two results and then squash with
+52:50
+the tan h and this operation will give
+52:52
+us our next output vector
+52:54
+well now in order to convert this this
+52:56
+vector
+52:57
+this vector version of an rnn that we've
+52:59
+seen before what we can do is replace
+53:01
+all the matrix multiply operations
+53:03
+with 2d convolution operator operations
+53:06
+instead
+53:07
+so now in order to take kind of a
+53:09
+recurrent convolutional form
+53:11
+of this vanilla rnn we can use this
+53:14
+architecture
+53:14
+here so then what we can do is given our
+53:17
+two feature tensors
+53:18
+one from the same layer in the previous
+53:19
+time step and one from this
+53:21
+from the previous from the same time
+53:23
+step and the previous layer
+53:25
+we can project each of them to some new
+53:27
+feature tensor
+53:28
+using some 2d convolution operation then
+53:31
+sum them and then squash the result with
+53:32
+a tan h
+53:33
+and that will give us our next feature
+53:35
+vector at the next
+53:36
+our output feature vector for the
+53:38
+recurrent rnn
+53:40
+and then we could do this not we could
+53:41
+do this with kind of any rnn
+53:42
+architecture
+53:43
+so then you could take your favorite rnn
+53:45
+architecture like a gru
+53:46
+or an lstm or something else and just
+53:49
+translate it from
+53:50
+this kind of rnn that operates on
+53:52
+vectors into an rnn that operates um
+53:54
+using convolution
+53:56
+over three-dimensional feature maps and
+53:58
+the way that you do that is simply
+53:59
+convert all the matrix multiply
+54:01
+operations
+54:01
+into convolution operations instead
+54:05
+so then what we've done here is that
+54:07
+we're kind of contrast then we saw this
+54:09
+this previous approach
+54:10
+on the left actually combined two
+54:12
+different ways of modeling spatial and
+54:14
+modeling temporal information so if we
+54:16
+use a cnn and then an lstm on top
+54:18
+then inside the cnn we're kind of
+54:20
+modeling local structure between
+54:22
+adjacent frames and then the rnn is
+54:24
+maybe processing long-scale
+54:26
+long-term global structure well now
+54:28
+using this recurrent cnn
+54:30
+then it's kind of like every layer in
+54:32
+every neuron inside of our convolutional
+54:34
+network
+54:35
+is itself a little recurrent network so
+54:37
+there's kind of like both spatial and
+54:38
+temporal fusing
+54:40
+happening in this very nice way uh
+54:42
+inside every layer of the network
+54:43
+so this is actually a very beautiful
+54:45
+idea i think
+54:47
+but it turns out that people have
+54:48
+actually not used this idea too much
+54:50
+in practice so then to think about why
+54:53
+that might be the case
+54:54
+it turns out that even though this idea
+54:56
+is very beautiful it's actually not very
+54:58
+computationally effective
+55:00
+right because the problem is that rnns
+55:03
+are actually
+55:03
+very slow for long sequences because
+55:06
+rnns
+55:07
+force you to compute the previous time
+55:09
+step before you can compute the next
+55:11
+time step
+55:12
+so that means that r and n's just don't
+55:14
+paralyze very well over very very long
+55:16
+sequences
+55:17
+and i think that's a reason why people
+55:18
+have actually not used this kind of
+55:19
+recurrent cnn architecture too so much
+55:21
+in practice
+55:23
+and and if you think about ways to solve
+55:25
+this problem
+55:26
+you should actually again think back to
+55:28
+our discussions in uh previous lectures
+55:30
+where we talked about different ways to
+55:32
+model sequences and their pros and cons
+55:35
+so um in a previous lecture we talked
+55:37
+about these different approaches for
+55:38
+processing long sequences
+55:40
+we saw one approach was recurrent neural
+55:41
+networks which are nice because they're
+55:43
+good at modeling long-term temporal
+55:44
+information
+55:45
+but they were bad because of their
+55:46
+sequential processing and now that's
+55:48
+kind of in in the video domain that's
+55:50
+kind of equivalent to this architecture
+55:51
+of cnn
+55:52
+followed by an lstm now we had this
+55:55
+other approach which is maybe 1d
+55:56
+convolution for processing sequences
+55:59
+and this was nice because it's sort of
+56:01
+computationally effective we can
+56:02
+paralyze the computation of the sequence
+56:04
+um at training time we don't no longer
+56:07
+have the sequential dependence on the
+56:08
+time steps
+56:09
+um and now in video the equivalent of
+56:11
+this is kind of 3d convolution
+56:14
+but if you'll recall we actually saw
+56:15
+another mechanism for processing
+56:17
+sequences
+56:18
+in the past and that's this notion of
+56:20
+self-attention
+56:21
+so if you'll recall self-attention kind
+56:23
+of like was really good at processing
+56:25
+long sequences
+56:26
+because it computes this like a tension
+56:28
+between all pairs of vectors
+56:30
+and it's highly parallelizable because
+56:32
+uh because there's no temporal
+56:34
+dependency on the structure just like
+56:35
+with rnns
+56:37
+so now then the question is can we find
+56:40
+some way to apply this idea of
+56:41
+self-attention
+56:42
+to our video to process video sequences
+56:45
+as well
+56:46
+and of course it turns out the answer is
+56:47
+yes
+56:49
+so a quick reminder on self-attention
+56:51
+remember that the input was a set of
+56:52
+vectors
+56:53
+then for every set every input vector in
+56:55
+the set then we would predict uh keys
+56:57
+queries and values
+56:59
+then we would pre by using some kind of
+57:00
+linear projection operator on the on
+57:02
+on the input vectors we would compute an
+57:04
+affinity matrix which tells us
+57:06
+how much is every pair of vectors
+57:08
+related by computing some kind of
+57:10
+dot scaled dot a square root scale the
+57:13
+dot product between the keys and the
+57:15
+keys and the queries and then the output
+57:17
+for each vector would be this weighted
+57:18
+linear combination of the values
+57:20
+that are weighted by the values in the
+57:21
+infinity matrix
+57:23
+so now we can actually um just port this
+57:25
+whole architecture over into 3d
+57:27
+where now um now what we're going to do
+57:29
+is is process some part of our network
+57:31
+using a 3d cnn and that will give us
+57:33
+this four dimensional tensor
+57:35
+with a channel dimension and three
+57:36
+spatial dimensions and now we can
+57:38
+interpret this four-dimensional
+57:40
+tensor as a set of vectors where we have
+57:43
+a set
+57:43
+of vectors of dimension c and the number
+57:46
+of vectors
+57:46
+is t times h times w and then we can
+57:49
+just run this exact same
+57:50
+uh self-attention operator using uh the
+57:53
+set of vectors from
+57:54
+uh some layer in a 3d convolutional
+57:56
+network
+57:58
+so then we actually have seen this exact
+58:00
+slide before in a previous lecture it
+58:01
+just it had 2d convolution instead of
+58:03
+3d convolution but the idea is that
+58:06
+we'll receive some set of input features
+58:08
+from a 3d cnn
+58:09
+um we'll compute keys queries and values
+58:12
+using
+58:13
+one by one by one convolution then we'll
+58:16
+compute some inner product between
+58:18
+every key and every value and then we'll
+58:20
+compute a soft max over one of the
+58:21
+dimensions
+58:22
+and that will give us this big affinity
+58:23
+matrix or a set of attention weights
+58:26
+then we'll use this to combine uh to
+58:29
+linearly weight the values
+58:30
+and then sum that out with a matrix
+58:32
+multiply
+58:33
+and then it's very common to actually
+58:35
+project the output of this operation
+58:37
+with another one by one con
+58:38
+and then actually to connect the whole
+58:40
+thing with a residual connection
+58:42
+so that gives us so when we combine all
+58:43
+these three all these things together
+58:45
+then this operator when can is a block
+58:48
+that we can slot into our 3d cnns
+58:51
+that's computing a kind of spatial
+58:53
+temporal self-attention
+58:55
+and this is sometimes called a non-local
+58:56
+block for the paper that introduced it
+59:00
+and now kind of a neat trick is that we
+59:02
+can actually initialize this
+59:04
+if we initialize this last conflair to
+59:06
+be all zeros
+59:07
+then everything inside this operator is
+59:09
+going to compute zeros
+59:11
+which means that the whole block is
+59:12
+going to compute the identity because of
+59:14
+the residual connection
+59:15
+so then actually a common trick that
+59:17
+people use with these non-local blocks
+59:19
+is to initialize the the non-local block
+59:22
+such that it computes the identity
+59:23
+function by initializing the last thing
+59:24
+the zeros
+59:25
+and then we can take a a non-local block
+59:28
+that is computing identity
+59:29
+and insert it into an existing
+59:31
+pre-trained 3d cnn model
+59:33
+and then continue fine-tuning with this
+59:35
+additional inserted non-local block
+59:37
+so that's kind of a trick that people
+59:38
+will use so then it looks something like
+59:40
+this that we
+59:41
+now we now we have this notion of um we
+59:44
+have some kind of 3d cnn and we're going
+59:46
+to slot in these non-local blocks at
+59:48
+different points in the 3d cnn
+59:49
+and now um the 3d cnn chunks are kind of
+59:52
+going to do this slow
+59:53
+fusion over space and time and now each
+59:56
+non-local block is going to give us this
+59:57
+this global fusion over all of space
+60:00
+and all of time so this is actually a
+60:02
+pretty powerful
+60:03
+pretty close to state-of-the-art
+60:04
+architecture for video recognition
+60:07
+but then the problem is um what is the
+60:09
+actual so then now non-local blocks give
+60:11
+us this power powerful way
+60:12
+to introduce global temporal processing
+60:15
+into our 3d combnets
+60:16
+but the question is we still need to
+60:18
+choose some 3d cnn architecture
+60:20
+that we can insert our non-local blocks
+60:22
+into
+60:23
+so then the question is what is actually
+60:25
+the best 3d cnn architecture
+60:27
+for us to build so one really cool idea
+60:31
+is this idea of inflating existing
+60:34
+two-dimensional networks
+60:36
+from 2d into 3d right because
+60:39
+we know that there's been a lot of work
+60:41
+on people doing a lot of effort to
+60:43
+design
+60:44
+really good two-dimensional cnn
+60:45
+architectures and somehow we would
+60:48
+not want to repeat all of that effort as
+60:50
+a community and we don't want to sort of
+60:51
+start over from scratch in inventing the
+60:53
+best 3d cnn architectures
+60:55
+so instead what if there was a way where
+60:57
+we could take a 2d cnn architecture that
+60:59
+we know works well on images
+61:01
+and then somehow adapt it in a very tiny
+61:03
+way to make it also work on video
+61:06
+so that's the idea of inflating a
+61:07
+two-dimensional convolutional network
+61:09
+and sort of
+61:09
+blowing it up like a balloon and then
+61:11
+adding this third dimension to an
+61:12
+existing network architecture
+61:14
+so then the recipe is that we're going
+61:16
+to take an existing
+61:17
+two-dimensional cnn architecture that is
+61:20
+that has maybe two-dimensional
+61:21
+convolutions and two-dimensional pooling
+61:22
+operations and then for every uh every
+61:25
+one of those operations we're going to
+61:26
+replace it
+61:27
+replace the 2d convolution with a 3d
+61:29
+convolution and replace each 2d pooling
+61:31
+with a 3d pooling
+61:33
+and now the only choices that we need to
+61:35
+make so then what that kind of looks
+61:36
+like
+61:37
+is that um here's an example using the
+61:39
+inception block
+61:40
+so then the paper that introduced this
+61:42
+was uh from google and
+61:43
+inception architecture was from google
+61:45
+so of course they had to apply that
+61:47
+thing on top of the
+61:48
+homegrown network architecture so then
+61:50
+what this then here's an example
+61:52
+of the 2d inception module remember that
+61:54
+it has these uh parallel branches of
+61:56
+convolution and pooling
+61:58
+and now and then kind of concatenates
+61:59
+them a lot after having these parallel
+62:01
+branches of processing
+62:02
+and now after inflating the three
+62:04
+dimensions all we do is add an
+62:05
+additional temporal dimension
+62:07
+to each convolution operation and each
+62:09
+pooling operation
+62:11
+and this gives us this super simple
+62:12
+recipe for taking a 2d architecture
+62:15
+and just applying it to 3d
+62:18
+but it turns out that um so this this is
+62:20
+about
+62:21
+taking this is about transferring
+62:22
+architectures right so far this trick
+62:24
+has allowed us to take
+62:25
+an architecture that works on 2d
+62:27
+networks and then
+62:30
+formulatedly change the architecture so
+62:32
+that it can be applied on 3d
+62:33
+3d videos as well but it turns out we
+62:36
+can actually go a step further
+62:37
+and we can not only inflate the
+62:39
+architecture we can also
+62:41
+transfer the weights the trained weights
+62:43
+from a network which was trained on
+62:45
+images
+62:46
+and then we can use those trained those
+62:47
+weights that were trained to operate on
+62:49
+images
+62:49
+to actually initialize the inflated
+62:52
+version of our 3d cnn
+62:54
+and to see how that works um what we do
+62:57
+is
+62:57
+remember that when we inflate the cnn
+63:00
+we're going to add this extra temporal
+63:02
+dimension to all of the convolution
+63:03
+layers so now what we can do is what
+63:05
+we're going then
+63:06
+um in order to initialize the weights of
+63:09
+this inflated architecture
+63:10
+using weights of the image version what
+63:13
+we're going to do is
+63:14
+copy the convolutional kernels for each
+63:16
+convolution layer
+63:18
+and copy it t times in time so we're not
+63:21
+only
+63:22
+adding this extra temporal dimension
+63:24
+we're actually just copying in time
+63:26
+the the weights of each convolutional
+63:28
+layer and just like
+63:29
+duplicating them in time and then all
+63:32
+after you duplicate them in time
+63:33
+you then divide them by the duplication
+63:36
+factor
+63:37
+and the reason that we do this is that
+63:39
+because um
+63:40
+if you imagine taking an original input
+63:42
+image
+63:43
+and then making the world's most boring
+63:45
+video by copying that input image many
+63:47
+many times in time
+63:49
+that will give us this sort of trivial
+63:50
+constant input video
+63:52
+and now if you imagine running uh this
+63:56
+to this 3d convolution with duplicated
+63:58
+weights
+63:59
+on the boring input video that will end
+64:02
+up computing
+64:03
+the exact same result as running the 2d
+64:05
+convolution
+64:06
+on the original image so what that so
+64:09
+what that means
+64:10
+so that you can kind of like think
+64:11
+through this all what's going on
+64:13
+but basically this works because
+64:14
+convolution is a linear operator right
+64:16
+so when we duplicated
+64:18
+the the the frames in time then we can
+64:20
+also duplicate the weight and time and
+64:21
+divide with a duplication factor
+64:23
+and that that means we're computing the
+64:24
+exact same thing so because of this
+64:26
+trick
+64:27
+this this uh this super cool trick
+64:28
+actually allows us to pre-train a model
+64:31
+on images and then initial and then
+64:34
+inflate the architecture and inflate the
+64:36
+weights
+64:36
+and then continue fine-tuning that model
+64:38
+on a video data set
+64:40
+and moreover it also lets us recycle all
+64:42
+of the existing architectures that we
+64:44
+know work well on images
+64:46
+and also recycle all the pre-trained
+64:48
+models that we have laying around
+64:49
+that work well on images so then this
+64:52
+actually works quite well
+64:54
+um so then if we uh kind of look at yet
+64:56
+another 3d
+64:57
+yet another uh video data set called
+64:59
+kinetics 400
+65:00
+um then if we run this per frame
+65:03
+baseline
+65:04
+then the the blue so the blue bars here
+65:07
+are showing um training from scratch on
+65:08
+the video data set
+65:10
+and the orange bars are showing models
+65:12
+where we initialize the video model
+65:14
+from the image model so we can see that
+65:17
+when for a per
+65:18
+frame model moving from a perfray model
+65:20
+to this
+65:21
+cnn lstm model to this two-stream cnn
+65:24
+actually gives us steady improvements
+65:27
+but as we move
+65:28
+from the two-stream cnn to an inflated
+65:30
+cnn
+65:31
+that actually does much better so then
+65:34
+this kind of gives us some empirical
+65:36
+results
+65:37
+that actually this idea of taking 2d
+65:39
+comnets and inflating them in time
+65:41
+is actually a pretty good way to
+65:42
+generate good 3d cnn architectures
+65:45
+and it turns out that two stream
+65:48
+networks is still a good idea
+65:49
+so we can actually take two inflated
+65:51
+networks and take one inflated network
+65:53
+to work on the appearance stream
+65:55
+and a second inflated network to work on
+65:57
+these optical flow fields
+65:59
+and that gives us a two stream inflated
+66:01
+network that actually works quite well
+66:04
+okay so that kind of as a fun aside one
+66:07
+thing we can do is that now that we've
+66:08
+got these kind of two stream networks
+66:10
+that work really well at classifying
+66:11
+videos
+66:12
+we might want to know like how can we
+66:14
+visualize what these learned what these
+66:15
+video models have learned
+66:17
+and we can actually use this exact same
+66:19
+trick that we've used for visualizing
+66:21
+trained models and images
+66:22
+we can take um take an input we can
+66:25
+randomly initialize an input image
+66:27
+randomly initialize a flow field and
+66:29
+then compute forward passes through the
+66:30
+trained network to compute the score the
+66:33
+classification score
+66:34
+and then back propagate through the
+66:35
+network to compute the gradient of the
+66:37
+score
+66:37
+with respect to the input image in
+66:39
+respect to the flow field and then we
+66:40
+can use gradient descent
+66:41
+or gradient ascent to find the image and
+66:44
+the flow field
+66:45
+that maximize the classification score
+66:47
+for the particular category
+66:50
+so then what does this look like so then
+66:52
+here's an example
+66:53
+so then here on the left we're showing
+66:55
+uh the appear
+66:56
+the optimized image for the appearance
+66:58
+stream
+66:59
+and then in the middle we're showing an
+67:02
+optimized flow field
+67:03
+that has been add we added some temporal
+67:06
+constraints to constrain the flow field
+67:08
+from changing too fast in time
+67:10
+and then on the right we've kind of
+67:11
+lifted that temporal constraint and
+67:12
+allowed the flow field to change
+67:14
+faster in time so can anyone guess the
+67:16
+action that's going on in this in this
+67:17
+video frame
+67:20
+i think i heard weightlifting was a good
+67:22
+it was a good guess
+67:23
+right so this is actually pretty cool
+67:25
+then we see that the appearance stream
+67:27
+is kind of looking for barbells anywhere
+67:29
+in the image
+67:30
+um at the slow motion stream it kind of
+67:32
+looks like it's looking for kind of like
+67:33
+the bar wiggling at the top of the lift
+67:36
+and in the fast motion stream it looks
+67:37
+like he's looking for the part where it
+67:38
+pushes the bar overhead
+67:40
+so that's actually pretty exciting okay
+67:42
+let's try it again
+67:43
+so here's the appearance stream here's
+67:45
+the slow motion
+67:46
+and here's the fast motion i i don't
+67:48
+think anyone's going to guess this
+67:50
+what eyes eyes or face
+67:54
+that's a good guess the it's actually
+67:56
+applying eye makeup
+67:59
+right so you can see that for the
+68:00
+appearance stream it's look so there's
+68:02
+like a lot of youtube videos of like
+68:03
+people doing makeup tutorials right
+68:05
+and then um so that on the appearance
+68:07
+stream is kind of looking for eyes
+68:08
+anywhere in the input image and now for
+68:10
+the slow motion it kind of looks like
+68:12
+maybe the motion of the head or the
+68:14
+hands
+68:14
+and then the fast motion kind of looks
+68:16
+like the local brushing motion of
+68:18
+actually applying the makeup
+68:19
+so it's i thought it's really cool that
+68:21
+we can take all these same
+68:22
+techniques that we know and love for
+68:24
+visualizing images and then just kind of
+68:25
+apply them on video sequences as well
+68:29
+okay so then i also wanted to briefly
+68:30
+mention so
+68:32
+kind of looking at these two stream
+68:33
+networks we saw that they still rely on
+68:35
+this external optical flow algorithm
+68:37
+and it would be really nice if we could
+68:38
+relax that constraint and just build
+68:40
+networks that can train on the raw pixel
+68:42
+values
+68:43
+and not rely on this external optical
+68:45
+flow um so that brings us to this uh
+68:47
+state-of-the-art slow fast network that
+68:49
+was just published like a month ago
+68:52
+that is actually current state of the
+68:53
+art on a lot of video recognition tasks
+68:55
+so what the idea is is that we're
+68:57
+actually going to have we're still going
+68:58
+to have two parallel network branches
+69:00
+just as we did in the two stream network
+69:02
+except that both of them are going to
+69:04
+operate on raw pixels
+69:06
+the difference is that they are going to
+69:07
+operate at different different temporal
+69:09
+resolutions
+69:10
+so one branch will be the slow branch
+69:12
+that operates at a very low frame rate
+69:15
+but has a lot is a very expensive
+69:16
+network that uses a lot of channels at
+69:18
+every layer of processing
+69:19
+so to visualize this network we kind of
+69:21
+have three dimensions we can play with
+69:23
+one is the spatial dimension of the
+69:24
+input image one is the channel dimension
+69:26
+the number of features the number of
+69:28
+layers in every layer of the network and
+69:29
+the other is the temporal dimension
+69:31
+which is what is the temporal frame rate
+69:33
+at which the network is applied
+69:34
+so then the first branch is this slow
+69:36
+branch that uses a
+69:38
+a small temporal res uses a very slow
+69:41
+temporal frame rate
+69:42
+but a lot of channels so it's a doing
+69:44
+using fewer frames but putting a lot of
+69:46
+processing on each frame
+69:48
+then so it's a low frame rate and then
+69:49
+the second branch of course is the fast
+69:51
+branch
+69:52
+that operates at a higher frame rate but
+69:54
+uses a much thinner network
+69:56
+so then the the fast branch has
+69:59
+operates at a high temporal frame rate
+70:01
+but uses only a little bit of processing
+70:03
+on each frame
+70:04
+and then so it is a high frame rate and
+70:06
+it uses a very small number of channels
+70:08
+at every at every layer
+70:10
+and moreover there's lateral connections
+70:12
+that fuse information
+70:13
+from the fast branch back into the slow
+70:15
+branch so
+70:16
+unlike the traditional two stream
+70:18
+networks that only fuse the information
+70:19
+at the very end through averaging
+70:21
+these slow fast networks are actually
+70:23
+fusing information at multiple stages
+70:24
+inside the network
+70:26
+and then at the very end there's some
+70:27
+kind of fully connected layer that does
+70:29
+the predictions
+70:30
+and then i'm not going to walk through
+70:32
+this in detail but this sort of gives us
+70:34
+the the concrete architecture
+70:36
+instantiation of these slow fast
+70:38
+networks
+70:38
+and this kind of combines together all
+70:40
+of the techniques that we've talked
+70:41
+about in this lecture
+70:42
+so it has two streams um one that's
+70:45
+operating on mostly appearance
+70:46
+and one that's operating on temporal
+70:48
+information each of these streams
+70:50
+is itself an inflated resnet 50
+70:52
+architecture
+70:53
+so this brings us back to this idea of
+70:55
+inflation so they take
+70:56
+an existing resnet50 architecture that
+70:58
+we know works well on images
+71:00
+and then inflate it in time to to form
+71:02
+each of these two streams
+71:04
+um but now the difference is that the
+71:06
+slow pathway operates at a
+71:08
+very low frame rate and the fast pathway
+71:10
+operates at a very high frame rate
+71:12
+and then it turns out that we can also
+71:14
+add non-local blocks into this model as
+71:16
+well
+71:16
+and get it to work really well so i
+71:19
+don't want to go through this in detail
+71:20
+but i think this
+71:21
+is actually the current state of the art
+71:22
+in video understanding and video
+71:24
+recognition for a lot of tasks
+71:25
+so if you're looking for the for the
+71:26
+model to use today i think it's this one
+71:30
+okay then i also wanted to very briefly
+71:32
+mention that so far
+71:33
+we've talked mostly about this this this
+71:35
+task of classifying very short video
+71:37
+clips
+71:38
+like taking these like two to like three
+71:40
+to five seconds of video
+71:42
+and then predicting a classification
+71:43
+score um but this was a good this was a
+71:45
+good task to motivate a lot of our
+71:47
+spatial temporal architectures in
+71:49
+comnets but it turns out that
+71:51
+of course there's a lot of different
+71:52
+video tasks video understanding tasks
+71:55
+that people try to tackle with
+71:56
+convolutional neural networks
+71:58
+so as an as just a very brief sample
+72:01
+another
+72:01
+thing that people sometimes want to do
+72:03
+in video is work on this task of
+72:06
+temporal action localization so here
+72:08
+we're going to be given a very long
+72:10
+untrained uh untrained untrimmed video
+72:12
+sequence
+72:13
+and now we're going to want to detect
+72:15
+this the there might be multiple
+72:17
+activities that happen in this video
+72:19
+sequence
+72:19
+and we want the model to both um detect
+72:21
+all the activities and tell us for each
+72:23
+activity
+72:24
+which span and time um did that activity
+72:27
+occur for
+72:28
+and you can imagine that you could
+72:30
+actually build an architecture similar
+72:32
+to faster rcnn
+72:34
+that did this type of uh this type of
+72:36
+operation
+72:37
+and this is indeed what people have done
+72:39
+so you can imagine this type of
+72:40
+architecture that does now kind of like
+72:42
+some lightweight computation over the
+72:43
+video sequence
+72:44
+to get um action proposals instead of
+72:46
+region proposals
+72:48
+that tells us what regions and video are
+72:50
+likely to contain an action
+72:52
+and then have a second stage of some
+72:53
+kind of like 3d comnet that um
+72:55
+works on that that processes to pick the
+72:57
+raw pixels or the features
+72:59
+of each of those actions so you can
+73:01
+imagine the building a
+73:02
+kind of faster rcnn like architecture
+73:05
+that works over space
+73:06
+that works over time and of course um
+73:09
+now we've seen how we can build models
+73:11
+to detect
+73:11
+objects in space this model lets us
+73:14
+detect actions in time
+73:16
+so of course we've got to do both so
+73:18
+there's also some work on
+73:19
+spatial temporal action detection so
+73:22
+here the task is that the input is this
+73:24
+video is like a long video sequence and
+73:27
+the task
+73:28
+is that you need to detect the people
+73:30
+all the people in the in each video
+73:32
+frame
+73:33
+and also say the temporal span of the
+73:35
+actions
+73:36
+those p that those people are performing
+73:38
+in the video so now this is a super
+73:40
+challenging task because it involves
+73:41
+both um spatial detection in each frame
+73:44
+as well as temporal detection in time
+73:47
+and one
+73:47
+really exciting data set for this
+73:49
+spatial temporal detection task
+73:52
+is this uh very recent ava data set that
+73:54
+was published
+73:55
+just last year in 2018 so what they did
+73:57
+is they went and annotated a bunch of
+73:59
+movies
+74:00
+with different kinds of actions that
+74:01
+people are doing and now so this also
+74:03
+brings in the problem of very
+74:05
+long temporal dependencies very long
+74:07
+video clips
+74:08
+so now you need to detect not just like
+74:10
+classify little two three second clips
+74:12
+but instead the input is like 15 minutes
+74:14
+of video and you need to both detect all
+74:16
+the people in that 15 minutes of video
+74:17
+and say what activities they're
+74:18
+performing
+74:19
+so i think there's there's been not yet
+74:21
+a ton of work on this data set
+74:23
+but i think that in the next couple of
+74:25
+years we'll i i predict that we'll see a
+74:27
+lot of people moving to this kind of
+74:28
+spatial temporal activity detection on a
+74:32
+long untrimmed video
+74:33
+because i think that's an exciting task
+74:34
+that people will probably start working
+74:36
+on
+74:38
+so that was kind of our whirlwind tool
+74:40
+uh tour of video models today
+74:42
+um so today we saw many many different
+74:44
+video classification models
+74:45
+um including building all the way up to
+74:47
+slow fast networks which again was like
+74:49
+just published this
+74:50
+like a month ago and i think is the
+74:52
+current state of the art so if you're
+74:53
+looking to work with video i think
+74:55
+that's a good one to
+74:56
+play with and actually there's code
+74:57
+available as well so that gives us
+74:59
+that's our brief summary of video models
+75:01
+and the next time we'll move to a
+75:03
+completely different topic and start
+75:04
+talking about generative models
+75:06
+and in particular about generative
+75:07
+adversarial networks
+
+영어 (자동 생성됨)
+
+

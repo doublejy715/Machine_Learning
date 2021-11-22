@@ -1,0 +1,4964 @@
+﻿00:00
+and this appears that the microphone is
+00:02
+gone from the room today so i'll just
+00:03
+have to shout and hopefully everyone can
+00:05
+hear me and that'll work okay
+00:07
+uh but everyone in the back you can hear
+00:08
+me okay yeah okay good
+00:10
+so today we're up to lecture 20 and
+00:12
+we're going to continue our discussion
+00:14
+of generative models
+00:15
+so this will be generative models part
+00:16
+two um so remember last time we started
+00:19
+our discussion of generative models by
+00:20
+recapping a couple big distinctions in
+00:22
+machine learning that we need to
+00:24
+that we need to be aware of so one of
+00:26
+these was this distinction between uh
+00:27
+supervised learning and unsupervised
+00:29
+learning
+00:30
+so then you'll recall that in supervised
+00:32
+learning we have um
+00:33
+both the data the raw data x which is
+00:35
+like our image
+00:36
+as well as the label y which is the
+00:38
+thing we want to predict and in
+00:39
+supervised learning what we wanted to do
+00:41
+was learn some function that predicts
+00:43
+the label from the image
+00:44
+and this has been very successful this
+00:46
+works well this is we've seen throughout
+00:48
+the semester
+00:48
+this concept of supervised learning lets
+00:50
+us solve a lot of different types of
+00:52
+computer vision tasks
+00:53
+but supervised learning of course
+00:55
+requires us to build a big data set
+00:57
+of images that have been labeled by
+00:59
+people in some kind of label watch
+01:01
+so we'd like to figure out so kind of
+01:02
+one of these holy gale holy grail
+01:04
+problems
+01:05
+in computer vision or even machine
+01:06
+learning more broadly
+01:08
+is figuring out ways that we can take
+01:10
+that we can learn useful representations
+01:12
+of data
+01:12
+without those labels wide which brings
+01:14
+us to unsupervised learning
+01:16
+where we have no labels just data and
+01:18
+somehow our goal is to learn some
+01:20
+underlying structure of the raw data
+01:22
+even without any human provided labels
+01:24
+and if we could do this this would be
+01:25
+awesome
+01:26
+right because you can know you can go
+01:27
+out on the internet and just download
+01:29
+tons and tons and tons of data
+01:30
+and hopefully if we did um if we could
+01:32
+do unsupervised learning in the right
+01:34
+way
+01:34
+then we could just download more and
+01:36
+more data we don't have to label it so
+01:38
+it comes for free
+01:39
+and then we our models can just get
+01:40
+better and better and better so this is
+01:42
+kind of the one of the holy grail
+01:43
+challenges in machine learning
+01:45
+um and i think we're not there yet but
+01:47
+that's kind of one direction that we're
+01:49
+pushing with
+01:49
+generative models so remember last time
+01:52
+we also talked about this station
+01:54
+between distributor models and
+01:56
+generative models and this is more of
+01:58
+the problem and this was about the
+01:59
+probabilistic formalism
+02:00
+that we use when building our concrete
+02:02
+machine learning models
+02:04
+so remember that a discriminative model
+02:06
+is trying to model the probabilities
+02:08
+distribution of the output or the label
+02:10
+y conditioned on the input image x
+02:12
+and that because of the way probability
+02:14
+distributions work we know that
+02:16
+probability distributions have to be
+02:17
+normalized they have to integrate to one
+02:20
+so then this this constraint on
+02:22
+probability distributions that they need
+02:24
+to integrate to one
+02:25
+induces a sort of competition among the
+02:27
+support or among the elements of the of
+02:29
+the probability distribution
+02:30
+so then recall that when we're building
+02:32
+a discriminative model this means we
+02:34
+have a competition among the different
+02:35
+labels that the model might choose to
+02:37
+assign to the input image
+02:39
+so for this input input image of a cat
+02:41
+then the labels dog and cat
+02:43
+are kind of competing with each other
+02:44
+for probability mass
+02:46
+and then remember that for
+02:47
+discriminative models this fact that the
+02:49
+labels are competing with
+02:50
+each other was a bit of a downside
+02:52
+because it meant that discriminated
+02:54
+models had no way to like
+02:55
+reject unreasonable data so if we gave
+02:58
+this like an image of a monkey
+02:59
+that even though monkey is not a valid
+03:01
+label the model has no choice but to
+03:03
+force the labels to integrate to one
+03:05
+and it still force the model to like
+03:07
+output a full valid
+03:08
+probability distribution over the label
+03:10
+set even though the image itself was
+03:12
+unreasonable
+03:14
+so then of course with a generative
+03:15
+model what we were going to do is learn
+03:17
+a just a probability distribution or a
+03:19
+density function over the images
+03:20
+themselves
+03:21
+and now again because of this constraint
+03:24
+that density functions need to integrate
+03:26
+to one
+03:26
+now but now the things that are
+03:28
+competing with each other are the images
+03:30
+themselves
+03:31
+so then with a with a generative model
+03:33
+we need to assign a likelihood to each
+03:35
+possible image that could possibly
+03:37
+appear in the universe
+03:39
+and those those all those all those all
+03:40
+those densities for all of those images
+03:42
+need to integrate out to one
+03:44
+so that means that the model needs to
+03:45
+decide without any labels which
+03:47
+combinations of pixels are more likely
+03:49
+to be valid images
+03:51
+and this requires a very deep
+03:52
+understanding of the types of visual
+03:55
+data
+03:55
+so that's our generative model that
+03:57
+we're trying to learn of course we also
+03:59
+saw the this third option of a
+04:01
+conditional generative model
+04:02
+which is trying to model the images
+04:04
+conditioned on the label
+04:05
+and of course we we saw that we can use
+04:07
+bayes rule to write out a conditional
+04:09
+generative model
+04:10
+in terms of these other components um
+04:12
+like the
+04:13
+the a discriminative model and in terms
+04:15
+of an unconditional generative model
+04:17
+and later in this lecture we'll see
+04:19
+actually some some more concrete
+04:20
+examples of conditional generative
+04:22
+models
+04:22
+um that are built out of out of neural
+04:24
+networks
+04:26
+so then after this kind of introduction
+04:27
+we saw this big taxonomy of generative
+04:29
+models
+04:30
+right that this this idea of building
+04:32
+probability distributions over our raw
+04:34
+data
+04:34
+is quite a large and rich area of
+04:36
+research and a lot of smart people have
+04:38
+spent a lot of effort
+04:39
+trying to build build different sorts of
+04:41
+generative models with different sorts
+04:43
+of properties
+04:44
+so last time we talked about um one type
+04:46
+of generative model which is the auto
+04:48
+aggressive generative model
+04:50
+so now if you'll remember in an auto
+04:51
+regressive generative model
+04:53
+it's explicitly writing down some
+04:55
+parametric form of this density function
+04:57
+so then if we're trying to model the the
+05:00
+the likelihood of an image x
+05:01
+we break the image x down into a set of
+05:04
+pixels
+05:04
+x1 through xt and then we assign some
+05:07
+kind of order to those pixels
+05:09
+and we always say that the problem that
+05:11
+the likelihood of a pixel
+05:12
+is um is we write down a function that
+05:16
+right that spits out the likelihood or
+05:17
+the
+05:18
+the likelihood of a pixel conditioned on
+05:20
+all of the previous pixels in the image
+05:22
+and this was just like the the types of
+05:24
+models that we had built for for
+05:26
+modeling sequences with recurrent neural
+05:28
+networks
+05:28
+so remember that we saw this exact same
+05:30
+type of model when for example doing
+05:32
+image captioning or language modeling
+05:34
+with recurrent neural networks um but
+05:37
+then with these with these auto
+05:38
+regressive models then we wanted to kind
+05:40
+of um just
+05:40
+model the pixels of the image one at a
+05:42
+time and we could use that either with
+05:44
+some kind of recurrent
+05:45
+recurrent neural network which gave rise
+05:47
+to this pixel rnn
+05:49
+or this um pixel cnn where we modeled
+05:52
+this kind of dependence
+05:53
+using a convolutional neural network
+05:55
+over a finite window rather than using a
+05:57
+recurrent neural network
+05:58
+but either way um we're either these
+06:00
+either these types of autoregressive
+06:02
+models
+06:02
+what we're doing is we're writing down
+06:04
+this parametric function
+06:06
+with a neural network that is just
+06:07
+directly parametrizing the likelihood of
+06:09
+an image
+06:10
+and then we train the model by just
+06:12
+doing a very straightforward maximum
+06:13
+likelihood estimation
+06:15
+so we just want to maximize the
+06:16
+likelihood that the model
+06:18
+assigns to all of the training data and
+06:20
+in doing that um
+06:21
+it'll allow us to then sample or
+06:23
+generate new data at test time
+06:25
+after the model is trained so these auto
+06:27
+regressive models we saw are kind of
+06:29
+simple and straightforward they're just
+06:30
+kind of
+06:31
+directly learning a density function
+06:33
+over images
+06:34
+and maximizing it on the training data
+06:37
+so then after we after we saw these
+06:39
+auto-aggressive models
+06:40
+we moved on to this this more
+06:42
+interesting
+06:43
+category of degenerative models called
+06:46
+variational auto encoders
+06:48
+so then in variational auto encoders
+06:50
+remember we kind of lost
+06:51
+something compared to auto aggressive
+06:53
+models but we also gained something
+06:55
+so what we gained with respect to uh
+06:57
+with auto arrested models
+06:59
+is that in addition to modeling the
+07:01
+likelihood of the data
+07:02
+we've also introduced this late variable
+07:05
+z
+07:05
+which is supposed to be some late
+07:08
+representation
+07:09
+that uh that assigns sort of
+07:11
+characteristics that contains
+07:12
+characteristics or attributes
+07:14
+of the data that are hopefully of a
+07:16
+higher semantic level compared to the
+07:18
+raw pixel values
+07:19
+and now with a variational autoencoder
+07:21
+what we wanted to do
+07:22
+was learn a generative model that could
+07:25
+that was um
+07:26
+could produce images conditioned on this
+07:28
+latent variable c
+07:30
+but we found that in trying to like
+07:32
+manipulate the math
+07:33
+we saw that it was completely
+07:34
+intractable to both to just directly
+07:37
+maximize the likelihood of the data once
+07:39
+we introduced this notion of this
+07:41
+this latent variable z so then last time
+07:44
+we saw that we
+07:45
+kind of went through this long extended
+07:46
+proof that we could that you could
+07:48
+look back at the slides but at the end
+07:50
+of the day we derived this lower bound
+07:52
+on the on the data likelihood so then
+07:55
+we'll remember that we have this data
+07:56
+likelihood term on the left which is
+07:58
+or the log likelihood of the data on the
+08:00
+left and on the right we have a lower
+08:02
+bound
+08:02
+on this data likelihood that consists of
+08:05
+these two terms
+08:07
+and in order to derive this lower bound
+08:10
+we had to introduce an auxiliary network
+08:12
+called the decoder network and this is
+08:14
+so then now our encoder network on the
+08:16
+left here
+08:17
+is trying to predict the the likelihood
+08:20
+of the latent variable z
+08:21
+conditioned on the image x and now the
+08:24
+decoder network on the right here
+08:25
+is trying to model the likelihood of the
+08:27
+data x conditioned on the lathe variable
+08:30
+c
+08:31
+and where we kind of left off with last
+08:32
+time is that we had
+08:34
+introduced these two networks and we
+08:36
+used these two networks to derive this
+08:38
+lower bound on the likelihood
+08:40
+and then remember what we're trying to
+08:41
+try to do with a variation auto encoder
+08:43
+is then train these two networks the
+08:46
+input the encoder
+08:47
+and the decoder we want to learn the
+08:49
+parameters of these networks jointly
+08:51
+to maximize this lower bound on the data
+08:53
+like
+08:54
+because we can't actually access the we
+08:56
+can't compute the true likelihood of the
+08:58
+data
+08:59
+but we can compute this lower bound so
+09:01
+that maybe the true likelihood of the
+09:02
+data is here
+09:03
+and this data likelihood is some lower
+09:05
+bound now we're going to train the
+09:06
+train the two networks to maximize the
+09:08
+lower bound so then hopefully
+09:10
+when we train these networks to maximize
+09:12
+the lower bound on the likelihood
+09:14
+that will hopefully also in some
+09:16
+indirect way
+09:17
+also hopefully maximize the likelihood
+09:19
+of the data
+09:20
+so that sort of then that this so then
+09:23
+this lower bound on the on the slide
+09:24
+here
+09:25
+gives us our training objective for a
+09:27
+variational auto encoder
+09:29
+so now um when we had we're talking
+09:31
+about variation auto encoders
+09:33
+we need both of these both the encoder
+09:35
+network and the decoder network
+09:36
+they need to input a piece of like a for
+09:39
+the encoder for example
+09:40
+it needs to output a probability
+09:42
+distribution which is a different sort
+09:44
+of thing that we've seen with most of
+09:45
+our neural networks
+09:46
+right so with the encoder network if we
+09:48
+wanted to input a concrete sample of
+09:51
+data x
+09:52
+and we wanted to output a full
+09:54
+probability distribution
+09:55
+over the potential latent variables z
+09:58
+and now now this now
+09:59
+outputting a probability distribution
+10:01
+from a neural network is kind of a funny
+10:03
+thing that we haven't really seen
+10:04
+in other contexts so far so then we need
+10:07
+to we needed to do an additional trick
+10:09
+in order to allow neural networks to
+10:11
+have probability distributions
+10:13
+as their outputs so then the trick that
+10:15
+we used
+10:16
+is that we just we just we just decided
+10:18
+that the all of these probability
+10:20
+distributions
+10:21
+would be gaussian um and in particular
+10:23
+would be diagonal gaussian
+10:25
+and now we would train the encoder
+10:26
+network to output both
+10:28
+the mean and the diagonal covariance
+10:30
+matrix
+10:31
+of this gaussian distribution and to
+10:34
+maybe look at
+10:34
+what and then the decoder is going to be
+10:36
+similar that it wants to input a
+10:38
+concrete sample of the latent variable z
+10:40
+and then output a distribution over the
+10:41
+images x and the way that we do that is
+10:44
+again just decide that this distribution
+10:45
+is going to be
+10:46
+a diagonal gaussian and we have the
+10:48
+neural network output the mean
+10:50
+and the covariance of the diagonal
+10:52
+covariance matrix of that gaussian
+10:55
+so then to be a little bit more concrete
+10:57
+than if we were
+10:58
+we could imagine sort of writing down a
+11:00
+fully connected variation auto encoder
+11:02
+architecture
+11:03
+to train it up on the mnist data set for
+11:05
+example
+11:06
+so then if we were training on this
+11:08
+mnist data set
+11:10
+then all of our images are a grayscale
+11:12
+images of size 28 by 28
+11:14
+so we can flatten those to a single
+11:16
+vector of size 784
+11:18
+and now we could decide that our
+11:19
+dimension of our latent variable z
+11:21
+is going to be a 20 dimensional latent
+11:23
+variable and that that dimension of the
+11:25
+latent variable is of the late
+11:27
+that latent that size and late variable
+11:29
+z is a hyper parameter that we would
+11:30
+need to set before we started training
+11:32
+so then a concrete architecture for what
+11:35
+this could look like
+11:36
+is that the encoder network then needs
+11:38
+then inputs this vector x
+11:40
+it could pass through some linear layer
+11:41
+to go from 784 down to 400
+11:44
+units and then from that hidden layer we
+11:46
+have two other
+11:47
+linear layers that are going from the
+11:49
+400 hidden units
+11:51
+into 20 units where where one of those
+11:54
+hidden layers is going to output the
+11:55
+mean
+11:56
+of this of this of this distribution and
+11:58
+the mean
+11:59
+for because z is a 20 dimensional vector
+12:01
+then the mean of the diagonal covariance
+12:04
+the the mean of the gaussian is just
+12:05
+another 20 dimensional vector so then
+12:07
+the network will just have a linear
+12:08
+layer that out directly outputs the mean
+12:10
+of that distribution
+12:11
+and then there's a parallel layer which
+12:13
+is also going to output the diagonal
+12:15
+covariance matrix
+12:16
+of that gaussian distribution and then
+12:18
+again because z
+12:19
+is a 20 dimensional vector then the
+12:21
+covariance matrix is a
+12:22
+full covariance matrix would be a 20 by
+12:24
+20 matrix
+12:26
+but because we made this simplifying
+12:28
+assumption of diagonal covariance
+12:30
+then the then all the off diagonal
+12:32
+entries are zero
+12:33
+so the only non-zero entries on that
+12:35
+matrix is the diagonal
+12:37
+so there's 20 elements along the
+12:38
+diagonal so then we just need to have
+12:40
+our neural network then output sort of
+12:42
+20 numbers for the mean
+12:43
+and 20 numbers for those elements of the
+12:45
+diagonal along the
+12:47
+diagonal of the covariance matrix so
+12:50
+that would give us this concrete
+12:51
+architecture
+12:52
+of of an encoder network for this fully
+12:54
+connected variational autoencoder
+12:56
+and now the decoder would look very
+12:57
+something very similar then it's going
+12:59
+to input a vector z
+13:00
+and then it's going to have a couple
+13:02
+linear layers that will uh
+13:04
+output the the mean and the covariance
+13:06
+of the pixels themselves
+13:07
+where we again use this simplifying
+13:09
+assumption that the pixels are
+13:10
+distributed according to
+13:12
+a gaussian distribution with some mean
+13:14
+that as output by the network and some
+13:16
+diagonal covariance which is output by
+13:17
+the network
+13:18
+and of course um i've sort of omitted
+13:20
+the fact that i've written down linear
+13:22
+layers on the slide here but of course
+13:23
+out every linear layer should have some
+13:25
+kind of non-linearity between them
+13:26
+so that's kind of implied in this
+13:28
+diagram
+13:30
+okay so then once we've got this sort of
+13:31
+concrete architecture for a variational
+13:33
+auto encoder
+13:34
+then we need to think about how to train
+13:36
+it so recall that we're going to train
+13:38
+oh yeah question
+13:39
+oh so the dimension of the output the
+13:42
+decoder is 768
+13:43
+because we assumed that we're working
+13:45
+with a 20 28 by 28
+13:46
+image and 28 by 28 is 768 i'm outside of
+13:49
+the math problem
+13:51
+uh maybe i did the math wrong what is it
+13:53
+28 times 28
+13:55
+7 784 okay yeah i did that i messed up
+13:58
+the multiplication
+13:59
+okay thank you uh it's more common to
+14:02
+use 768 because 768 is like two
+14:05
+512 plus 256 that's actually a pretty
+14:06
+common number to use so i think i just
+14:08
+typed that and actually multiply it
+14:09
+but thanks for pointing that out okay so
+14:13
+then how do we actually train this thing
+14:14
+now that we've got a concrete
+14:15
+architecture
+14:16
+so remember that our training objective
+14:18
+is that we want to maximize this
+14:19
+variational lower bound
+14:21
+and this variation lower bound looks
+14:23
+kind of scary it has an expectation as a
+14:25
+kl divergence and these are like things
+14:27
+that we
+14:27
+usually don't see in loss functions but
+14:30
+it turns out it's actually
+14:31
+not as bad as it looks so that we can
+14:34
+kind of walk through
+14:35
+then what it actually looks like when
+14:36
+we're training a variational autoencoder
+14:39
+so when we train a variational
+14:40
+autoencoder first we take
+14:42
+some mini batch of data um x here
+14:46
+which is our input data from our data
+14:47
+from our training data set
+14:49
+and then we pass that input data or that
+14:51
+midi batch input data
+14:53
+through our encoder network and that
+14:54
+encoder network is then going to spit
+14:56
+out a probability distribution
+14:58
+over the latent variable z for for our
+15:00
+in for that input element x
+15:02
+and now we now immediately we can use
+15:04
+this this predicted probability
+15:06
+distribution
+15:07
+to compute the second term in the very
+15:09
+in the in the variational lower bound
+15:11
+so what is this what is the second term
+15:14
+in the variation lower bound saying
+15:16
+it's it's saying that we want to compute
+15:18
+the kl divergence between two
+15:20
+distributions
+15:21
+one distribution on the left here is
+15:23
+this q theta
+15:24
+of z given x so that is the predicted
+15:27
+distribution of
+15:28
+z um that is predicted by the the
+15:31
+encoder network
+15:32
+when we feed it with the with the input
+15:34
+data x so that distribution is just this
+15:36
+diagonal gaussian
+15:37
+that our encoder that our encoder has
+15:39
+spit out for us
+15:41
+and now the second the second
+15:42
+distribution p of z is the prior
+15:45
+distribution over the latent variable z
+15:47
+which we decided is going to be some
+15:49
+simple distribution like a unit gaussian
+15:51
+and that is not learned that that prior
+15:53
+distribution over z is something that we
+15:55
+fix at the beginning of training
+15:57
+so now we all we need to do is compute
+15:58
+the kl divergence between
+16:00
+uh this this distribution that was
+16:01
+output by the network which is a
+16:03
+diagonal gaussian
+16:04
+and this prior distribution which is a
+16:06
+unique gaussian
+16:07
+and now it's clear why we chose
+16:09
+everything to be gaussian
+16:11
+because if we all choose all these
+16:12
+distributions to be gaussian then we can
+16:14
+actually compute this kl divergence in
+16:16
+closed form
+16:17
+so i don't want to walk through exactly
+16:19
+the derivation here but it turns out
+16:21
+that um if you sort of expand out the
+16:23
+definition of the kl divergence
+16:24
+then by the fact that these two
+16:26
+distributions are both diagonal
+16:28
+gaussians
+16:28
+then we can just compute this kl
+16:30
+divergence in closed form
+16:32
+so then uh yeah question yeah the
+16:34
+question is um can we choose sort of
+16:36
+other
+16:36
+prior distributions for p of z so i
+16:39
+think in a classical variational auto
+16:40
+encoder we we tend to use a unit
+16:42
+gaussian because
+16:44
+it allows us to compute this term in
+16:45
+close form but it's definitely an active
+16:47
+area of research to
+16:49
+choose other types of prior
+16:50
+distributions for z
+16:52
+um and the problem is that so sometimes
+16:54
+you'll see people you try to use like a
+16:56
+bernoulli distribution and then you have
+16:57
+categorical
+16:58
+variables or maybe like a laplacian
+17:00
+distribution and it implies some like
+17:01
+different sparsity pattern of late
+17:03
+variables
+17:04
+so you definitely can choose different
+17:06
+prior distributions for z
+17:08
+in a variational autoencoder but
+17:12
+being able to compute this kl divergence
+17:14
+term might become difficult
+17:15
+depending on the particular prior
+17:16
+distribution that you choose um so we
+17:19
+often use the gaussian just for
+17:20
+computational simplicity but it allows
+17:22
+us to compute this term in closed form
+17:24
+yeah yeah so the question is should we
+17:27
+assume sort of different priors for
+17:28
+different data sets
+17:30
+well i think this is actually that's
+17:31
+actually a very interesting question
+17:33
+because this this prior is over the
+17:35
+latent variables
+17:36
+right so what does it mean if we have a
+17:39
+diagonal
+17:39
+gaussian and so one is that this priors
+17:43
+over the latent variables
+17:44
+and the latent variables are not
+17:46
+observed in the data set the model is
+17:48
+sort of learning the latent variable
+17:49
+representation
+17:50
+jointly with everything else so actually
+17:53
+um the choice of prior
+17:54
+is sort of our way to tell the model
+17:56
+what sorts of latent variables that we
+17:58
+want it to mark so then when we
+18:00
+if we choose this like diagonal this
+18:02
+unit uh this unit
+18:03
+gaussian as a prior then that's telling
+18:06
+the model that we want it to learn
+18:08
+uh latent variables which are
+18:10
+independent because it's a u because
+18:11
+it's a diagonal gaussian
+18:13
+and then all have zero median of
+18:15
+variance um
+18:16
+so i think that because the latent
+18:18
+variables are being discovered jointly
+18:20
+by the model for the data
+18:21
+that's why i think it's okay maybe to
+18:23
+use the same prior distribution even for
+18:25
+different data sets
+18:26
+but again it's sort of active area of
+18:28
+research to try out different sorts of
+18:30
+prior distributions in variational
+18:32
+models
+18:33
+yeah question question is um could we
+18:35
+train sort of z different binary
+18:37
+z dimension of z different binary
+18:39
+classifiers instead of a diagonal
+18:41
+gaussian
+18:42
+and i think that would be equivalent but
+18:44
+the difference is that um we actually
+18:45
+want to
+18:46
+we want to share the computation within
+18:48
+the encoder network
+18:49
+so right now the variation auto encoder
+18:50
+is kind of interesting because we've got
+18:52
+sort of
+18:52
+two levels of modeling inside the model
+18:55
+one is like the neural network
+18:56
+which is computing many layers and the
+18:58
+other is kind of the probabilistic
+19:00
+formulation
+19:01
+so it's true that even though we want
+19:02
+that we're telling the model we wanted
+19:04
+to learn
+19:05
+a set of latent variables that are
+19:06
+uncorrelated the way that we're
+19:08
+computing
+19:09
+those means and standard deviations of
+19:11
+those latent variables
+19:12
+is through a neural network that is
+19:13
+going to share a lot of parameters and a
+19:15
+lot of weights through shared hidden
+19:16
+layers
+19:17
+so i think it's a computational reason
+19:18
+that we choose to do it in this way
+19:22
+okay that gives us our first term of our
+19:24
+very of our variation objective
+19:26
+and really what this term what this term
+19:27
+is just saying is that we want the
+19:28
+distributions which are predicted by the
+19:30
+encoder
+19:31
+to sort of match the prior that we've
+19:33
+chosen and the kl divergence is just
+19:35
+penalizing the difference with disparity
+19:37
+between the predicted distribution and
+19:38
+the prior distance
+19:40
+okay so then once we've got a player so
+19:42
+that that allows us to compute this
+19:44
+first term of the loss
+19:45
+so then once we've got um now that we've
+19:47
+got our distributions over those things
+19:49
+over those over those latent variable z
+19:51
+then we can sample from the predicted
+19:53
+distribution
+19:54
+to actually generate some concrete
+19:56
+samples z
+19:57
+which are now sampled from the
+19:58
+distribution which was predicted by the
+20:00
+encoder network
+20:02
+and then we can take these samples z and
+20:05
+feed them to the decoder network
+20:07
+and now the decoder network is going to
+20:09
+predict a distribution
+20:10
+over the images x and now this
+20:14
+this leads us to our second term in the
+20:15
+objective so what does this second term
+20:18
+in the objective say
+20:19
+well it's we're taking an expectation
+20:22
+and this expectation the variable over
+20:24
+which we're taking the expectation
+20:25
+is z the latent variable and the
+20:27
+distribution over which z is drawn
+20:30
+should be q theta of z given x so um
+20:33
+sorry a q phi of z given x so q phi
+20:36
+of z given x is the predicted
+20:39
+distribution over z
+20:40
+that is predicted by the encoder q when
+20:43
+presented with the input
+20:45
+uh with the with the with the input
+20:48
+x right so then we fee was that that's
+20:50
+exactly what we've done is that
+20:51
+we've fed the input x to the encoder
+20:54
+we've gotten this distribution
+20:55
+z given x and now we've taken uh some
+20:58
+samples from that distribution
+21:00
+in order to have some sampling based
+21:02
+approximation to this to this objective
+21:05
+right so then this this term isn't a is
+21:06
+an is expectation and the thing over
+21:08
+which we're taking the expectation
+21:10
+are latent variables which have been
+21:12
+sampled according to the predicted
+21:14
+distribution
+21:15
+okay so that's kind of the the first
+21:17
+half of the of this objective
+21:19
+now the second question is what is the
+21:20
+thing inside the expectation
+21:22
+so now the thing inside that expectation
+21:24
+is that we want to maximize the
+21:26
+likelihood of the data x
+21:28
+under the predicted distribution of the
+21:30
+decoder when we feed
+21:32
+it a sample z so then we want to uh so
+21:35
+that this is kind of an auto encoder
+21:37
+objective right that basically this is a
+21:39
+data reconstruction term
+21:41
+then it's saying that what we want to do
+21:43
+is we take the data x
+21:44
+we feed it to the encoder we sample some
+21:47
+and then we get a predictive
+21:48
+distribution over
+21:49
+z we sample some z according to the
+21:51
+distribution
+21:52
+we feed those samples back to the
+21:54
+decoder and now we
+21:56
+and now the d now the predicted
+21:57
+distribution of the z of the decoder
+22:00
+um under that predicted distribution
+22:02
+over x
+22:03
+the original data x should have been
+22:05
+likely so this is really a data
+22:07
+reconstruction term
+22:08
+it means that if we take our data and
+22:10
+then use it to get a latent code
+22:12
+and then use that that same latent code
+22:14
+the original data should be likely again
+22:17
+so that's that so this term is really
+22:19
+why this is called an autoencoder
+22:21
+right because remember an autoencoder
+22:23
+was a function that tried to predict its
+22:25
+input
+22:25
+by bottlenecking through some latent
+22:27
+representation and that's exactly what
+22:29
+this term is doing
+22:30
+except now it's sort of a probabilistic
+22:31
+formulation of an autoencoder
+22:33
+but it looks exactly the same it's a
+22:35
+data reconstruction term
+22:37
+but now um then then then we can easily
+22:39
+compute this
+22:40
+this uh this second term in the loss
+22:42
+function right because we've got some
+22:44
+samples from our latent codes
+22:46
+and then we can run those samples
+22:47
+through the decoder to get our
+22:48
+distribution
+22:49
+and then we can just use a maximum
+22:51
+likelihood estimate like a maximize the
+22:53
+likelihood of the predicted data
+22:55
+under the predicted distribution from
+22:56
+the decoder um so that we can then we
+22:59
+can compute the second term in the
+23:00
+objective
+23:01
+once we've gotten these predicted
+23:02
+distributions of x given z
+23:05
+and that gives us our full training
+23:06
+objective for the variational auto
+23:08
+encoder
+23:08
+so then uh the kind of every forward
+23:10
+pass in our variation auto encoder we
+23:12
+would give these two terms in the loss
+23:14
+and then we would use that to train the
+23:16
+to train the two networks jointly
+23:18
+so then basically these two objectives
+23:20
+are kind of fighting against each other
+23:22
+right because the the blue term is this
+23:24
+data reconstruction term
+23:26
+it's telling us that if we take the data
+23:28
+give it back to the latent code and then
+23:29
+get the latent code it should be easy to
+23:31
+reconstruct the data
+23:32
+but now the the green term is kind of
+23:34
+saying that
+23:35
+the predicted distribution over the
+23:37
+latent variables should be simple
+23:39
+and it should be gaussian so that's sort
+23:41
+of could it putting some kind of
+23:42
+constraint
+23:43
+on the types of latent codes that the
+23:45
+encoder is allowed to predict
+23:47
+right so then the the the kl divergence
+23:49
+is sort of like forcing the latent codes
+23:51
+to be as simple as possible by forcing
+23:53
+it to be close to this this simple prior
+23:55
+and the data reconstruction term is
+23:57
+encouraging the latent codes to contain
+23:59
+enough information
+24:00
+to reconstruct the input data so somehow
+24:02
+these two terms in the variational
+24:04
+autoencoder
+24:05
+are kind of fighting against each other
+24:07
+but then once this thing is trained then
+24:09
+of course we could uh
+24:10
+sample a reconstruction of our original
+24:12
+data by sort of sampling from
+24:15
+a new reconstructed data from this uh
+24:17
+this final predictive distribution of
+24:19
+the data
+24:20
+okay so then this is how you would train
+24:22
+a variational auto encoder but once it's
+24:24
+trained we can actually do some cool
+24:25
+things
+24:26
+so one thing is that we can generate new
+24:29
+data
+24:29
+um from the to the trained variational
+24:31
+auto encoder so we can ask the
+24:33
+variational auto encoder to just invent
+24:35
+new data for itself
+24:36
+that is sort of sampling from the
+24:38
+underlying distribution from which the
+24:40
+training data was drawn
+24:41
+so the way that we can do that is that
+24:43
+we we're going to use only the decoder
+24:45
+so here we're going to first
+24:47
+sample a a random latent variable from
+24:50
+the prior distribution over z
+24:52
+and then we'll take that random latent
+24:54
+variable and then feed it to the decoder
+24:56
+network
+24:57
+to get a distribution over the over new
+24:59
+data x
+25:00
+and then we can sample from that
+25:01
+predicted distribution over new data x
+25:04
+to give some some invented sample from
+25:06
+the from the data set
+25:08
+so this means that after we've trained a
+25:10
+variational auto encoder
+25:11
+we can use it to just like synthesize
+25:14
+new images
+25:14
+that are hopefully similar to the images
+25:16
+that were seen during the training set
+25:19
+so now first now we actually get to see
+25:21
+some some example results of exactly
+25:23
+this process
+25:24
+so now these are example images which
+25:26
+have been synthesized from a variational
+25:28
+auto encoder which has been trained
+25:30
+on different data sets so on the left we
+25:32
+see um some examples where we
+25:34
+well not me but the authors of the paper
+25:36
+had trained some variational autoencoder
+25:39
+on the cfar data set
+25:40
+and then these are now generated images
+25:42
+which kind of look like cfar images that
+25:45
+have been invented by the model
+25:46
+and now on the right um they've trained
+25:48
+it on a data set of faces
+25:50
+and now you can see the model is kind of
+25:51
+inventing new images um
+25:53
+new faces that kind of look similar to
+25:55
+the faces that it had seen
+25:56
+during training so this is um this is
+25:59
+like a it's a generative model so we
+26:01
+should be able to generate data
+26:02
+and that's exactly what we're doing here
+26:05
+but now another
+26:06
+like but now or another really cool
+26:08
+thing we can do with variational auto
+26:09
+encoders
+26:10
+is actually play around with that uh
+26:12
+that latent variable z
+26:14
+so remember we um in our we forced some
+26:17
+structure on the latent variables
+26:19
+because we we put a prior distribution
+26:21
+that the model was supposed to
+26:22
+to to match over the latent variables
+26:25
+so in particular with the fact that we
+26:27
+chose the the prior distribution
+26:29
+to be an independent to be a diagonal
+26:31
+gaussian means that each of the latent
+26:33
+variables should somehow be independent
+26:35
+so what this means is not now um here
+26:38
+we're doing a visualization
+26:39
+where we're varying two dimensions in
+26:41
+this latent code
+26:42
+and then feeding different different
+26:44
+latent vectors z
+26:46
+to the decoder that will generate new
+26:48
+images
+26:49
+and we can see that as we vary on the
+26:52
+horizontal direction
+26:53
+as we vary z2 maybe the second dimension
+26:56
+of the latent code
+26:57
+then the images kind of translate from
+26:59
+sort of smoothly transition from a seven
+27:01
+on the left to some kind of a slanted
+27:04
+one on the right
+27:05
+and now on the vertical direction if we
+27:07
+vary a different dimension of that
+27:09
+latent code z
+27:10
+then we can see the generated images are
+27:12
+going to smoothly transition from a six
+27:14
+at the top
+27:15
+um sort of down through fours in the
+27:16
+middle through nines in the middle and
+27:18
+then down to sevens at the bottom
+27:20
+so now this this is now something that
+27:23
+we could that this is now showcasing
+27:25
+some of the power of the variational
+27:26
+auto encoder
+27:27
+over something like the pixel cnn that
+27:30
+because the variational auto encoder
+27:32
+is not just learning to generate data
+27:34
+it's also learning to represent data
+27:36
+through these through these latent codes
+27:38
+z and by manipulating the latent codes
+27:41
+we can then have some effect on the way
+27:43
+that the data is generated
+27:45
+so that's a really powerful aspect of
+27:47
+the variational auto encoder
+27:49
+that the the something like the the like
+27:51
+the auto aggressive models just just
+27:53
+can't do
+27:55
+so now another thing we can do with
+27:56
+variational autoencoders is actually
+27:58
+edit images so we can take an input
+28:01
+image and then modify it in some way
+28:03
+using a variational auto encoder so the
+28:05
+way that we can do that
+28:06
+is that first we need to train it on our
+28:08
+data set with an after training what we
+28:10
+can do
+28:11
+is say we've got an image x that we'd
+28:13
+like to edit somehow
+28:15
+then what we can do is take that image x
+28:17
+pass it through the encoder of the
+28:19
+variational autoencoder
+28:20
+to now predict this latent code z for
+28:22
+that image
+28:23
+x and now we can sample a latent code
+28:26
+from that
+28:26
+distribution and now we can modify that
+28:29
+latent code in some way
+28:30
+like maybe change around some of the
+28:32
+values in that predicted latent code
+28:34
+and then we can take that edited latent
+28:36
+code and feed it back to the decoder
+28:38
+to now generate a new edited data sample
+28:41
+x
+28:42
+so now because we want and then why does
+28:44
+this make sense
+28:46
+this makes sense because we wanted the
+28:48
+latent codes to somehow
+28:50
+represent some kind of higher order
+28:51
+structure in the data and the generator
+28:53
+model is supposed to discover this
+28:55
+higher order structure
+28:56
+in the data through the latent codes by
+28:59
+through the process of maximizing this
+29:00
+variation of lower bound
+29:02
+so then um but then after it's trained
+29:04
+then we can actually edit images
+29:06
+using variational autoencoders using
+29:07
+this kind of approach
+29:09
+so then here we have like maybe some
+29:11
+some uh some initial image which is a
+29:13
+face
+29:14
+and then we take that initial image feed
+29:16
+it to our variation auto encoder to get
+29:17
+the latent code for the face
+29:19
+and then here we can then change around
+29:21
+different elements of the predicted
+29:23
+label code
+29:24
+and feed them back to the decoder to get
+29:25
+a new uh edited version of that initial
+29:28
+image
+29:29
+so you can see that maybe as we vary
+29:31
+along the horizon along the vertical
+29:32
+direction because we're then we're
+29:34
+varying one dimension in that late
+29:35
+code then we can see that at the top the
+29:37
+guy looks really angry and he's not
+29:39
+really smiling at all
+29:40
+and at the bottom he's sort of smiling
+29:42
+and looks very happy
+29:43
+so somehow this this one dimension of
+29:46
+laden code
+29:47
+somehow seems to encode something like
+29:49
+the facial expression or the happiness
+29:51
+level of the
+29:52
+face and now as we vary z2
+29:55
+uh which is along the horizontal
+29:57
+direction then we're then we're editing
+29:59
+we're modifying a different dimension of
+30:01
+this predicted laser code
+30:02
+and then you can see that the guy is
+30:04
+actually like turning his face from one
+30:06
+side to another
+30:07
+that somehow the model has learned to
+30:09
+sort of encode
+30:10
+the pose of the person's face into one
+30:13
+of the dimensions of the latent code
+30:16
+and now by editing that dimension of a
+30:17
+latent code then we can actually edit
+30:19
+input images using a variation auto
+30:21
+color of course it's important to point
+30:24
+out
+30:24
+that we have no control we don't know
+30:26
+upfront which elements of the latent
+30:28
+code will correspond to which properties
+30:30
+of the input image
+30:31
+those are decided by the model for
+30:32
+itself but by kind of playing around
+30:34
+with them after the fact
+30:36
+then we can see that the model has sort
+30:37
+of assigned in many cases
+30:39
+some kind of semantically meaningful
+30:41
+data to the different dimensions of that
+30:43
+latent code
+30:45
+so here's another example from a
+30:46
+slightly more powerful version of
+30:48
+variational autoencoder
+30:50
+where we're doing this idea of image
+30:52
+editing again so then in the left column
+30:54
+we have the original image
+30:55
+um the next the second column shows the
+30:58
+the reconstruction of the original image
+31:00
+if we sort of take the unedited latent
+31:01
+code and feed it back to the decoder
+31:03
+and then the next five columns are all
+31:05
+showing uh edited versions of that
+31:07
+initial image
+31:08
+where we change one of the values in the
+31:10
+predicted leak code
+31:11
+so you can see on the left that um by
+31:13
+changing one of the dimensions in the
+31:15
+latent code
+31:16
+we're again sort of changing the
+31:17
+direction of the head and now in the
+31:19
+example on the right
+31:20
+we see that a different dimension of a
+31:22
+lame code corresponds to the direction
+31:24
+of the illumination
+31:25
+the direction of the light in the scene
+31:27
+so then again this shows us how we can
+31:29
+use
+31:30
+um sort of variational auto encoders to
+31:33
+actually do image editing
+31:34
+through these latent codes and this is a
+31:37
+and this is really kind of the reason
+31:38
+why we want like
+31:40
+variation encoders took a lot of ugly
+31:41
+math right like there's a lot more
+31:43
+complicated conceptually
+31:44
+than something like the autograph models
+31:46
+but this is the re this is the payoff
+31:48
+right here
+31:48
+that we went through all that additional
+31:50
+work with the variation auto encoder
+31:52
+so that we could learn these useful
+31:53
+leaking codes for images
+31:55
+in addition to to a sampling problem um
+31:58
+so i think that's that's kind of
+32:00
+most of what we want to say about
+32:02
+variational autoencoders
+32:05
+so in kind of a summary of variation
+32:06
+auto encoders is that they're kind of a
+32:08
+probabilistic spin on these traditional
+32:10
+auto encoders
+32:11
+um that they're kind of a principled
+32:13
+approach to generative models is kind of
+32:14
+a good thing
+32:15
+and that they they're really powerful
+32:17
+because they learn these distributions
+32:19
+over latent codes from the data itself
+32:21
+now one of the one of the downsides of
+32:23
+variational autoencoders
+32:25
+is that um they're not actually
+32:26
+maximizing the data likelihood
+32:28
+they're only maximizing a lower bound to
+32:30
+the data likelihood
+32:31
+so all the probabilistic stuff is sort
+32:33
+of approximate when we're working with
+32:34
+variational autoencoders
+32:36
+another problem with with variational
+32:37
+encoders is that the generated images
+32:40
+often tend to be a bit blurry
+32:42
+and i think that has to do with the fact
+32:43
+that we're making sort of diagonal
+32:44
+gaussian assumptions about the data when
+32:46
+we're working with variational
+32:47
+autoencoders
+32:49
+okay so then so far we've seen two
+32:51
+different types of generated models
+32:53
+we saw these auto-regressive models that
+32:54
+are directly maximizing the probability
+32:56
+of the data
+32:57
+and they give us pretty high quality
+32:58
+sharp images but they're sort of slow
+33:00
+they don't give us latent codes
+33:02
+and we saw a variation and we saw these
+33:04
+variational auto encoders
+33:05
+that maximize the lower bound the images
+33:08
+are kind of blurry
+33:09
+but they're very fast to generate images
+33:11
+because it's just like four pass through
+33:12
+this through the speed forward neural
+33:14
+network
+33:14
+and they learn these very rich latent
+33:16
+codes which is very nice
+33:18
+so then is there some way that we can
+33:20
+just like get the best of both worlds
+33:21
+and actually combine
+33:23
+the auto-aggressive models with the
+33:24
+variational models
+33:26
+and this i think is a bit of a teaser i
+33:28
+don't want to go into this in too much
+33:29
+detail
+33:30
+but there's a very cool paper that
+33:32
+actually will be presented at a
+33:34
+conference next month
+33:36
+that does this exact approach so this is
+33:38
+called a vector quantized variational
+33:41
+auto encoder
+33:42
+vq vae2 and kind of the idea is that we
+33:45
+want to get kind of the best of both
+33:46
+worlds of both variation a lot of
+33:47
+encoders
+33:48
+and auto regressive models so what we're
+33:50
+doing is kind of on the left
+33:52
+first we train some kind of variational
+33:54
+autoencoder type method
+33:56
+that learns a grid of latent feature
+33:58
+vectors um as sort of the first that
+34:00
+looks kind of like training a variation
+34:01
+auto encoder
+34:02
+but rather than learning a latent vector
+34:04
+instead we learn a latent grid of
+34:05
+feature vectors
+34:07
+and now on the right once you've learned
+34:08
+that latent grid of feature vectors
+34:11
+then we can use a pixel cnn um
+34:14
+as an autoregressive model that is now
+34:16
+doing that is now an autoregressive
+34:17
+model that operates
+34:18
+not in raw pixel space but instead
+34:21
+operates in the
+34:22
+latent code space so then it's kind of
+34:24
+like sampling a latent code and then
+34:26
+based on the predicted latent code it
+34:28
+steps to the next element in the grid
+34:29
+samples the next latent code and so on
+34:31
+and so forth so this actually speeds up
+34:33
+generation a lot
+34:35
+and now the hope is that this kind of
+34:37
+will hopefully combine and give us
+34:39
+best of both worlds between variational
+34:40
+autoencoders and pixel cnns
+34:43
+and actually this model gives amazing
+34:46
+results
+34:47
+so these are actually generated images
+34:49
+using this vector quantized variational
+34:51
+auto encoder model
+34:52
+so these are 256 by 256 generated images
+34:56
+um that are conditioned they're actually
+34:58
+this is a conditional generator model
+34:59
+so the model is conditioned on the class
+35:01
+that it's trying to generate from
+35:03
+but the but this model is super
+35:04
+successful it's able to generate really
+35:06
+high quality images so i think this is a
+35:08
+pretty exciting
+35:08
+direction of future research for generic
+35:11
+models
+35:13
+so you can see that this model is able
+35:14
+to generate really high quality
+35:16
+of high resolution 256 by 256 generated
+35:19
+images
+35:20
+when we train it on even large scale
+35:21
+complicated data sets like imagenet
+35:24
+and now where this model works really
+35:26
+really well is actually on human faces
+35:29
+so these are actually generated faces
+35:31
+these are not real people
+35:33
+these are fake people that have been
+35:34
+invented by this vector quantized
+35:36
+variational autoencoder model
+35:38
+um that's working at this extremely high
+35:39
+resolution of 1024x1024
+35:42
+and you can see that um you know it's
+35:44
+like it's can model people with crazy
+35:46
+hair colors it can model like facial
+35:48
+hair with a lot of detail
+35:50
+these are also generated bases from this
+35:52
+model um so it's kind of
+35:54
+astounding to me just how well this
+35:55
+model is able to do
+35:57
+in modeling these very complicated
+35:59
+structures of people's faces
+36:02
+so so personally i'm pretty excited
+36:04
+about this as a
+36:05
+possible future direction for generative
+36:07
+models but like i said this paper is
+36:09
+yet to be it will be presented at a
+36:11
+conference next month so it's sort of
+36:13
+out in the air to see whether or not
+36:14
+this will
+36:15
+this will become the next big thing in
+36:17
+general models
+36:19
+okay but this i just this i just wanted
+36:20
+to serve as kind of a sneak peek as kind
+36:22
+of state of the art in uh
+36:23
+in auto aggressive and variational
+36:26
+models
+36:27
+so kind of where we are so far in
+36:29
+generative models is that you know we've
+36:30
+seen these auto regressive models
+36:32
+that are directly maximizing the
+36:33
+likelihood of the training data
+36:35
+and then we've seen these variational
+36:37
+autoencoder models that
+36:39
+give up directly maximizing the
+36:40
+likelihood of the data and instead um
+36:43
+and instead maximize this variational
+36:45
+lower bound and this allows them to
+36:46
+learn these latent codes
+36:48
+jointly while maximizing this variation
+36:50
+of lower power
+36:52
+now the now so now we need to talk about
+36:54
+another category another big category of
+36:56
+generative models
+36:57
+and that's these generative adversarial
+36:59
+networks organs
+37:01
+so these are a very different idea here
+37:04
+we're going to completely give up
+37:06
+on trying to model explicitly the
+37:08
+density function of the images
+37:10
+so instead we don't we no longer care
+37:13
+about being able to compute
+37:15
+um the the density over images or even
+37:17
+some lower bound or some approximation
+37:19
+to the density
+37:20
+instead with a with a generic
+37:22
+adversarial network the only thing we
+37:24
+care about is being able to sample
+37:26
+data from some some density of the
+37:29
+well we care about sampling we don't
+37:31
+care about actually writing down or
+37:33
+spitting out
+37:34
+the likelihood of our training data so
+37:37
+then how do we do that
+37:38
+so then the kind of setup with very with
+37:40
+a general adversarial networks
+37:42
+is that we assume that we've got some
+37:44
+some training data
+37:45
+xi some finite sample of training data
+37:48
+that have been drawn from some true
+37:50
+distribution
+37:50
+of p data so now p data of x is like the
+37:54
+true
+37:54
+probability distribution of images in
+37:56
+the world um and this density function
+37:58
+is like the density function of nature
+38:00
+so there's no way that you can actually
+38:02
+evaluate this density or write it down
+38:04
+but we just assume that the natural
+38:05
+images in our data set have been sampled
+38:08
+from this
+38:09
+like natural density of data and now
+38:12
+what we want to do is somehow learn a
+38:13
+model
+38:14
+that allows us to draw samples from p
+38:16
+data
+38:17
+um but and we don't actually care about
+38:19
+evaluating the likelihoods all we want
+38:21
+to do is be able to draw new samples
+38:23
+from this probability distribution data
+38:26
+okay so now the way that we're going to
+38:28
+do this is that we're all
+38:29
+like a variational auto encoder we're
+38:31
+going to introduce a latent variable z
+38:33
+but the way that we use the latent
+38:35
+variable z is going to be a bit
+38:36
+different
+38:37
+so here we're going to um we're just
+38:39
+like in various log encoders we're going
+38:40
+to assume late variable z
+38:42
+with some fixed prior pz and this can be
+38:45
+something simple like a uniform
+38:46
+distribution or a diagonal gaussian
+38:48
+or some other kind of simple
+38:49
+distribution
+38:51
+so now what we want to do is we want to
+38:53
+sample a latent variable z from our
+38:55
+prior distribution
+38:56
+and then pass a sample through some
+38:59
+function
+39:00
+g capital g called the generator network
+39:03
+and by passing the latent variable
+39:04
+through the generator network
+39:06
+it should output it's going to output
+39:08
+some sample of data
+39:09
+x and now um now because
+39:12
+now because now the generator network is
+39:14
+g is sort of implicitly defining
+39:17
+some probability distribution over
+39:18
+images that we're going to call p
+39:20
+sub g and p sub g it's sort of difficult
+39:24
+to write down that exact density you'd
+39:25
+have to use kind of like the change of
+39:27
+variables function
+39:28
+um from probably distributions but um
+39:30
+because
+39:31
+because the generator we're like
+39:32
+sampling some some we're sampling some
+39:35
+latency from the prior
+39:36
+passing the latent variable through the
+39:38
+generator function and that gives us a
+39:39
+data sample x
+39:41
+so then the generator kind of implicitly
+39:43
+defines
+39:44
+this distribution p sub g over data
+39:46
+samples
+39:47
+and now we can't explicitly write down
+39:49
+the value of p sub g
+39:51
+but we can sample from p sub g because
+39:53
+we just sample from the prior then pass
+39:55
+it through the generator
+39:56
+and now what we want to do is somehow
+39:58
+train this generator network
+40:00
+g such that uh this the p the p sub g
+40:03
+which is implicitly modeled by the
+40:05
+generator network
+40:06
+we want it to be equal to this true
+40:08
+distribution piece of data
+40:10
+of the the the distribution of the data
+40:12
+coming from nature
+40:13
+so then pictorially what this looks like
+40:15
+is that we want to draw some sample z
+40:18
+from this prior pc feed it to our
+40:20
+generator network g
+40:21
+and that will give us some generated
+40:22
+sample and then what we
+40:24
+then the generator's job is what it
+40:26
+takes a prior from pz
+40:27
+and turns it into a sample from pg
+40:31
+but now now we need some mechanism to
+40:33
+force pg
+40:34
+to end up being close to p data so then
+40:37
+to do that
+40:38
+we're going to introduce a second neural
+40:39
+network called the discriminator network
+40:42
+so what the discriminator network is
+40:43
+doing is performing an image
+40:45
+classification task
+40:46
+the discriminator network is going to
+40:48
+input images
+40:50
+and try to classify whether or not they
+40:52
+are real or fake
+40:53
+and now the so then the discriminator
+40:55
+network will be trained both on samples
+40:57
+from the generator
+40:58
+as well as on our real or real samples
+41:01
+from the data set
+41:03
+and then this is sort of a supervised
+41:04
+learning problem for the discriminator
+41:06
+network
+41:06
+we've got sort of samples from the
+41:08
+generator that we know are fake we've
+41:09
+got samples from the real data that we
+41:11
+know are real
+41:12
+and now the discriminator network should
+41:13
+be trained to do a binary classification
+41:15
+task
+41:16
+to classify images as either real or
+41:18
+fake
+41:19
+and now uh the gen but now we're going
+41:22
+to actually train these two networks
+41:23
+jointly we're going to train the
+41:25
+generator to try to
+41:26
+fool the discriminator so the
+41:28
+discriminator is trying to learn whether
+41:30
+classified images are as real or fake
+41:32
+and the discriminator is trying to get
+41:34
+its images classified as real
+41:36
+so then intuitively these two networks
+41:38
+are kind of fighting against each other
+41:40
+the discriminator is trying to learn all
+41:42
+the ways in which the disc in which the
+41:43
+generator's images look fake
+41:45
+and the generator is trying to learn how
+41:46
+to have its images passed as realistic
+41:49
+by the generator or by the discriminator
+41:51
+so then hopefully kind of the intuition
+41:53
+is that if both of these networks get
+41:55
+really good at their jobs
+41:57
+then hopefully uh this pg will somehow
+42:00
+converge to p data and hopefully after
+42:03
+by training these two networks jointly
+42:05
+then hopefully the the samples from the
+42:07
+generator
+42:08
+will end up looking a lot like the
+42:10
+samples from the real data
+42:12
+and this is the intuition behind
+42:13
+generative adversarial network
+42:16
+now kind of more concretely like the
+42:18
+particular loss function that we use to
+42:20
+train
+42:20
+gener the general adversarial network is
+42:23
+called is this a following mini max game
+42:25
+between g and d so there's this big
+42:28
+hairy objective function in the middle
+42:29
+that will go
+42:30
+through piece by piece and now now the
+42:32
+discriminator d
+42:33
+is trying to maximize all the terms in
+42:35
+this objective and the generator g
+42:37
+is trying to minimize all the terms in
+42:38
+this objective and now we can color code
+42:41
+this a little bit based on our previous
+42:42
+picture to make these each of these
+42:44
+terms a little bit easier to understand
+42:47
+so then we can look at these two these
+42:48
+these terms one by one
+42:50
+so this first term is um the expectation
+42:53
+of
+42:53
+x drawn according to p data so that's
+42:56
+just sort of
+42:56
+then we can approximate this expectation
+42:58
+by just uh taking the sum or the average
+43:01
+over the real
+43:02
+our real data samples from our training
+43:04
+set um and now
+43:06
+the the discriminator now this term the
+43:08
+discriminator is trying to maximize this
+43:10
+term
+43:11
+so the discriminator is trying to
+43:12
+maximize log of dx
+43:14
+and dx is a number between zero and one
+43:16
+log is a monotonic function
+43:18
+so what this term is saying is that when
+43:20
+the when the discriminator tries to
+43:22
+maximize this term
+43:23
+it's trying to get the real data
+43:25
+classified as real
+43:26
+that the discriminator is trying to make
+43:28
+sure that the discriminator
+43:30
+output on real data is one and the
+43:33
+generator is trying to minimize this
+43:34
+term
+43:35
+but this term does not depend on the
+43:37
+generator so in fact the generator
+43:39
+doesn't care about this term at all
+43:40
+this term is just saying that the
+43:42
+discriminator is trying to correctly
+43:43
+classify the real data as real
+43:46
+okay now the second term is that the
+43:48
+discriminator is trying to map
+43:49
+again maximize this term so now again
+43:52
+this is an expectation
+43:53
+but the expectation is over latent
+43:55
+variables z that have been drawn
+43:57
+according to the prior pz
+43:58
+and now given uh given a sample of z
+44:01
+from the prior
+44:02
+we're going to pass the latent variable
+44:03
+through the generator to get a fake
+44:05
+sample
+44:06
+and then take that fake sample and pass
+44:07
+it to the discriminator which will give
+44:09
+us a number between zero and one
+44:11
+so now the discriminator is trying to
+44:13
+maximize this term which means that this
+44:15
+that log is log of something is
+44:17
+maximized when log of one minus
+44:19
+something is maximized
+44:20
+when the something is minimized which
+44:22
+means that the discriminator is trying
+44:24
+to
+44:25
+set d of x equal to zero when when acts
+44:28
+as a fake data
+44:29
+so this term when the discriminator is
+44:31
+maximizing this term it's trying to make
+44:33
+sure that the fake data is classified as
+44:35
+fake as a binary
+44:36
+classification problem okay but then we
+44:38
+can look at this term from the
+44:39
+generator's perspective
+44:41
+so the generator remember is trying to
+44:42
+minimize this whole objective function
+44:45
+and now the so then the generator is
+44:46
+looking at this exact same term in the
+44:48
+objective
+44:49
+we're trying to minimize it so that
+44:50
+means that the generator is trying to
+44:52
+adjust itself
+44:53
+such that the generated samples are
+44:55
+classified by the discriminator
+44:57
+as real so that gives us our training
+45:00
+objective for
+45:01
+this for this minimax game so then the
+45:03
+kind of idea
+45:04
+is that we'll uh train this thing using
+45:06
+alternating gradient descent
+45:08
+that will will jointly train both the
+45:10
+generator and the discriminator
+45:12
+so that they're both trying to one is
+45:13
+trying to maximize this objective and
+45:15
+one of the others trying to minimize
+45:16
+this objective
+45:17
+so then for a notational convenience we
+45:19
+can write down that whole messy
+45:20
+expression as v
+45:21
+of g and d and then our training
+45:24
+objective is we run in a loop
+45:25
+and then for each for each time in the
+45:27
+loop we come we want to first
+45:29
+update the discriminator so then we
+45:30
+compute the derivative of the objective
+45:33
+v
+45:33
+with respect to the discriminator
+45:34
+weights and now we're trying to maximize
+45:37
+the objective for the discriminator
+45:38
+so we want to do gradient ascent so then
+45:41
+we move in the direction of the gradient
+45:43
+and take a gradient step
+45:44
+to do a gradient ascent step on d and
+45:46
+then once we update d
+45:48
+then we compute the gradient of
+45:49
+objective with respect to the generator
+45:51
+weights
+45:52
+and now the generator is trying to
+45:53
+minimize this objective so then we need
+45:55
+to take a gradient
+45:56
+descent step on this objective to update
+45:58
+the weights of the generator g
+46:00
+and then we'll just kind of update these
+46:01
+two one after another and we'll loop
+46:03
+forever
+46:04
+and hopefully things will uh end up
+46:06
+happy
+46:07
+but it turns out there's actually a
+46:08
+problem right that actually um you know
+46:10
+normally when you're training neural
+46:11
+networks you can just like look at the
+46:12
+loss and the loss is kind of going down
+46:14
+like this and that means you know that
+46:15
+everything is working well
+46:17
+but uh it turns out that's not the case
+46:18
+at all for these generative adversarial
+46:20
+networks
+46:21
+because the loss of the two of the
+46:22
+generator like the law the generator has
+46:24
+its own loss
+46:25
+the discriminator has its own loss and
+46:27
+they depend on each other
+46:28
+right because when the gen for example
+46:30
+if the discriminator is really good
+46:32
+and the generator is really bad then the
+46:34
+discriminator will have low loss and the
+46:36
+generator will have high loss
+46:38
+but if the generator is really but like
+46:40
+the two losses sort of depend on each
+46:41
+other in complicated ways
+46:43
+so when you're training gender
+46:44
+adversarial networks usually the loss
+46:46
+does not go down like this
+46:48
+usually if you plot the losses of these
+46:50
+two things they're like all over the
+46:51
+place
+46:52
+and you can't really you can't really
+46:53
+gain any intuition by looking at the
+46:54
+loss curves when training these things
+46:56
+so training generator ever serial
+46:58
+networks tends to be a pretty tricky
+47:00
+process that i
+47:01
+i don't know if i can actually give you
+47:02
+that great of advice on how to train
+47:03
+these things properly
+47:05
+but suffice to say is challenging
+47:08
+okay but there's actually kind of
+47:09
+another problem here is that um
+47:11
+this so this term on the right this log
+47:14
+of one minus d of g of z
+47:15
+um we can actually plot this um as a
+47:18
+curve
+47:19
+so here on the x axis we're plotting d
+47:21
+of g of z
+47:22
+um and on the y y-axis we're plotting
+47:24
+log of one minus d of g of z
+47:26
+um and now at the start of the training
+47:28
+you have to think about what's gonna
+47:29
+happen at the very start of training
+47:31
+at the very start of training the
+47:32
+generator is probably gonna produce like
+47:34
+random garbage
+47:35
+and then that random garbage will be
+47:36
+very easy for the discriminator to tell
+47:38
+whether it's real or fake
+47:39
+because sort of classifying real data
+47:41
+versus random garbage is very easy
+47:43
+the discriminator will usually get that
+47:44
+within a couple gradient steps
+47:46
+so now at the very beginning of training
+47:48
+d of g of z is close to zero
+47:50
+because the discriminator is like really
+47:51
+good at catching the fake data
+47:54
+so then d of g then if d of g of x is
+47:56
+close to zero
+47:57
+that means that this term is like over
+47:59
+here on this uh
+48:00
+in this red this red arrow for the
+48:03
+generator and now that's really bad
+48:04
+because the gradient is flat so that
+48:06
+means that at the very beginning of
+48:07
+training
+48:08
+the generator will get almost no
+48:10
+gradient we'll have a we have a
+48:11
+vanishing gradient problem at the very
+48:12
+beginning of training
+48:13
+so that's so that's that's bad so then
+48:16
+to fix this
+48:17
+we actually uh in practice we often we
+48:19
+train the generator
+48:21
+to uh to minimize a different function
+48:24
+so rather so in this sort of raw
+48:27
+formulation that i've written up here
+48:28
+the generator is trying to minimize log
+48:30
+of one minus d of g of z
+48:32
+but in practice we want what we're going
+48:34
+to do instead is train the generator to
+48:36
+maximize
+48:37
+minus log of d of g of z which is still
+48:40
+has the same interpretation
+48:42
+of having the generator's data be
+48:44
+classified as real
+48:45
+but the way that that's realized into
+48:47
+the objective function is a little bit
+48:48
+different
+48:49
+so now if we plot a minus log of d of g
+48:51
+of z we see that at the beginning of
+48:53
+training
+48:53
+then the generator actually gets good
+48:55
+gradients so that so this is actually
+48:57
+how we're going to train generative
+48:58
+adversarial networks in practice
+49:00
+um that the the the generator the
+49:03
+discriminator is trying to classify data
+49:04
+as real as fake
+49:05
+the generator is trying to get its data
+49:07
+classified as real by the discriminator
+49:09
+but the exact objective that the two are
+49:11
+optimizing is a little bit different
+49:13
+just to account for the spanish
+49:14
+ingredient problem yeah
+49:16
+we want to minimize log of one minus d
+49:19
+of g
+49:19
+z so we want to maximize minus log of d
+49:23
+of g of c
+49:23
+i think actually maybe that should be uh
+49:26
+maybe that should be a minimize
+49:27
+yeah i think you could be right let me
+49:29
+double check and get back to me
+49:31
+yeah okay so then there's sort of
+49:34
+like we have this intuition that
+49:36
+generator is generated trying to full
+49:37
+discriminator
+49:38
+and there's a question of like why is
+49:40
+this particular objective
+49:41
+a good idea to accomplish this goal
+49:45
+and now it turns out that this
+49:46
+particular objective this particular
+49:48
+mini max game
+49:49
+actually achieves its global minimum
+49:51
+when p of g is equal to p data
+49:53
+and now to see this we need to do a
+49:55
+little bit of math so then here's our
+49:57
+objective so far
+49:58
+um and we're kind of ignoring the fact
+49:59
+that generators actually optimizing a
+50:01
+different objective we're just
+50:02
+pretending that they're both optimizing
+50:04
+this this one objective
+50:05
+so here's our objective so far now what
+50:07
+we can do is we can do a change of
+50:08
+variables on the second expectation
+50:10
+so now rather than writing it as an
+50:12
+expectation over z drawn according to
+50:14
+the prior
+50:14
+we can write it as an expectation of x
+50:16
+drawn according to the p of g
+50:19
+which is this distribution that the
+50:20
+generator is implicitly modeling
+50:22
+so we're just kind of doing a change of
+50:23
+variables on the second expectation
+50:26
+now we can expand out these two now we
+50:28
+can expand out the definition of the
+50:29
+expectation into an integral
+50:31
+and that gives us this expanded version
+50:34
+and now
+50:35
+if all of our functions are well behaved
+50:36
+we can push the max we can exchange the
+50:38
+order of the max in the integral
+50:40
+and push the max inside the integral and
+50:42
+now we actually want to
+50:44
+actually now what we have is that we
+50:46
+want to actually compute this max
+50:48
+so the discriminator is trying to
+50:49
+perform the maximum um but the integral
+50:51
+is over all of x
+50:52
+so now we want to write down what is the
+50:54
+optimal value of the discriminator
+50:56
+for each possible value of x so now we
+50:58
+can do that with a little bit of side
+51:00
+computation
+51:01
+so we can write down that we can really
+51:03
+recognize this this thing
+51:04
+inside the max as a function that looks
+51:07
+kind of like a log y
+51:09
+plus b log one minus y where a is p data
+51:12
+of x
+51:13
+b is pg of x and y is d of x
+51:16
+and now this this function f of y we can
+51:18
+just compute the derivative set it equal
+51:20
+to zero
+51:21
+and then find we'll find that this
+51:22
+function f has a local max
+51:24
+at um a over a plus b so we can kind of
+51:27
+go back
+51:28
+and plug that back in and then that
+51:30
+tells us that that gives us
+51:31
+the value of the optimal discriminator
+51:33
+that is the discriminator which is
+51:35
+actually satisfying this maximum inside
+51:37
+the integral
+51:38
+so that the optimal discriminator which
+51:40
+is achieving this maximum value
+51:42
+um depends on the generator so now the
+51:45
+optimal discriminator
+51:46
+d star for the generator g up has its
+51:49
+value of p data of x
+51:50
+over p data of x plus pg of x so that's
+51:53
+the the value of the optimal
+51:55
+discriminator for any value of x
+51:57
+um so it's important to point out that
+51:59
+we can compute that this is the optimal
+52:01
+value for the discriminator
+52:02
+but we can't actually like evaluate this
+52:04
+value
+52:05
+right because this this d g at this d
+52:07
+star sub g of x
+52:09
+involves p data of x which we already
+52:11
+can't evaluate
+52:12
+and involves p g of x which we also
+52:14
+can't evaluate
+52:15
+so this is kind of a nice mathematical
+52:17
+formalism we know that this is the value
+52:19
+the optimal discriminator must take
+52:21
+but we can't actually compute that value
+52:22
+because it involves terms that we can't
+52:23
+actually compute
+52:25
+but then what we can do is sort of sub
+52:27
+that val that optimal discriminator
+52:29
+back into the model and that sort of
+52:31
+eliminates that inner maximization
+52:33
+right so then we've sort of performed
+52:35
+that inner maximization
+52:36
+we found the value of the optimal
+52:38
+discriminator now we can plug in the
+52:40
+value of that optimal discriminator
+52:42
+in every term of that integral so now
+52:44
+we've got um
+52:45
+now this is the same the same objective
+52:47
+function but we've just kind of like
+52:49
+done the inner maximization over the
+52:50
+discriminator uh for us automatically
+52:54
+now this is getting messy so let's push
+52:55
+this up and then
+52:57
+uh then we can use the definition of
+52:59
+expectation to sort of rewrite this
+53:01
+integral
+53:02
+back as a pair of expectations so now we
+53:05
+now we're sort of pulling this back out
+53:07
+and now we write this as two
+53:08
+expectations one expectation is
+53:10
+x over p data of log of this ratio
+53:13
+and the other is x according to pg log
+53:15
+of this ratio
+53:17
+um and this is again using the
+53:19
+definition of expectation
+53:21
+now we need to do a little bit of
+53:23
+algebraic nonsense multiply it by
+53:25
+constant
+53:25
+pull it out then we kind of pull out
+53:27
+this log four and then we end up with
+53:29
+this particular mathematical formalism
+53:31
+this is getting messy so let's push it
+53:32
+up again um and now
+53:34
+now this is something that maybe if
+53:36
+you've taken enough information theory
+53:37
+you could recognize this as an important
+53:39
+term um so now
+53:41
+it turns out there's this thing called
+53:42
+the collag library divergence or kl
+53:44
+divergence
+53:45
+which somehow measures the distance
+53:47
+between two probability distributions
+53:49
+and now we can recognize that we've
+53:50
+actually got two kl divergence terms
+53:53
+sitting here right here so then by the
+53:55
+definition of the kl divergence
+53:57
+um it's over a distribution p and a
+53:59
+distribution q
+54:00
+and then it's the expectation of x drawn
+54:01
+according to p of log of the ratio
+54:03
+between them
+54:04
+and now we can see we've got two pale
+54:06
+divergence terms sitting right here
+54:07
+inside these two expectations so then we
+54:10
+can rewrite this as uh
+54:11
+there's the two kl divergence one is the
+54:14
+kl divergence between p
+54:15
+data and this average of p data and pg
+54:18
+the other is the outlook the other way
+54:19
+the average of pg
+54:21
+and this average distribution then we
+54:23
+saw this log4 hanging out
+54:25
+now we can recognize another uh sort of
+54:27
+fact from information theory
+54:29
+there's another distribution we can
+54:31
+recognize called the jensen shannon
+54:32
+divergence
+54:33
+which is yet another way to measure
+54:35
+distances between different probability
+54:36
+distributions and the jensen shannon
+54:38
+divergence is just defined in terms of
+54:40
+the kl divergence
+54:42
+and now we can see we've actually got a
+54:43
+jensen shannon divergence sitting right
+54:45
+here on this equation
+54:46
+so then we can simplify this even
+54:48
+further and write down this whole
+54:50
+objective
+54:50
+as just this jensen shannon divergence
+54:53
+between uh p data
+54:54
+and pg so that means that um
+54:57
+now this is actually quite interesting
+54:59
+right because we've taken this like mini
+55:01
+max objective function that we're trying
+55:02
+to minimize and maximize
+55:04
+we reshuffle things we actually computed
+55:06
+the maximum with respect to the
+55:08
+discriminator
+55:08
+and then we boiled this all down so now
+55:11
+we just need to fight and then this
+55:12
+whole objective reduces to
+55:14
+the minimum of the jensen shannon
+55:15
+divergence between the true data
+55:17
+distribution p data
+55:18
+and the implicit distribution the
+55:20
+generator is modeling pg
+55:22
+minus this constant log four and now
+55:25
+there's an amazing fact about the jensen
+55:27
+shannon divergence that i'm sure you're
+55:28
+all aware of
+55:29
+is that the jensen shannon divergence is
+55:31
+always non-negative so it's always
+55:32
+greater than equal to zero
+55:34
+and in fact it only achieves zero when
+55:36
+the two distributions are equal
+55:38
+so that means that the that now this
+55:41
+whole expression
+55:42
+we were trying to minimize find the
+55:44
+generator that minimizes this expression
+55:46
+and it turns out that the unique
+55:48
+minimizer of this expression
+55:49
+occurs when p data is equal to pg
+55:52
+qed right so that means that um the
+55:55
+optimal so
+55:56
+the unique that means that the global
+55:58
+solution the global
+55:59
+the global minimizer of this whole
+56:01
+objective
+56:02
+happened so then kind of summarizing
+56:04
+this we kind of rewrote this whole thing
+56:06
+as this
+56:06
+minimum as this this minimization
+56:08
+function now the summary of all this
+56:11
+is that the overall global minimum of
+56:12
+this minimax game happens
+56:14
+is that when the discriminator assigns
+56:16
+this particular value this is
+56:18
+this particular ratio um to all of to
+56:21
+any data sample
+56:22
+and then when the when the generator
+56:23
+just models directly the true data
+56:25
+distribution
+56:26
+so that's kind of the beautiful math
+56:28
+that underlies why generative
+56:29
+adversarial networks
+56:30
+have the potential to work and why
+56:32
+training with this midi max objective
+56:34
+actually has the capacity to cause the
+56:36
+generator to learn the true data
+56:38
+distribution
+56:40
+but of course there's a lot of caveats
+56:41
+here right so that um
+56:43
+this this is sort of a proof that makes
+56:45
+us feel good but
+56:46
+there's some holes in this when it comes
+56:48
+to applying this proof in practice
+56:50
+so one is that in fact um we've kind of
+56:52
+done this minimization assuming that g
+56:54
+and d can just represent any arbitrary
+56:56
+function but in fact g and d
+56:58
+are represented by neural networks with
+56:59
+some fixed fixed and finite architecture
+57:02
+and we're only allowed to optimize the
+57:03
+weights so it's possible that the
+57:05
+optimal the generator and the optimal
+57:07
+discriminator
+57:08
+just might not be within the space
+57:10
+expressible functions
+57:11
+for our generator and discriminator so
+57:13
+that's a problem so it doesn't actually
+57:15
+tell us
+57:15
+whether or not fixed architectures can
+57:17
+represent these optimal solutions
+57:20
+and it also doesn't tell us anything
+57:21
+about convergence so this does not tell
+57:23
+us about whether
+57:24
+we can actually converge to this
+57:26
+solution in any kind of meaningful
+57:28
+amount of time
+57:29
+so i think this this proof is nice to be
+57:31
+aware of it shows us that p
+57:32
+that we are hopefully learning the true
+57:34
+distribution but there's sort of a lot
+57:36
+of
+57:37
+caveats left okay so that's hopefully
+57:40
+enough math for one lecture and let's
+57:41
+look at some pretty pictures
+57:43
+so then uh here's some results from the
+57:45
+very first paper on general adversarial
+57:47
+networks back in 2014
+57:49
+and you can see that um back in 2014 we
+57:51
+were able to generate these gender
+57:53
+adversarial network
+57:54
+samples that could um reproduce faces to
+57:56
+some extent
+57:57
+and reproduce these images these uh
+57:59
+these handwritten digits to some extent
+58:02
+and then for comparison we're showing
+58:03
+the nearest neighbor in the training set
+58:05
+for
+58:05
+each of these generated samples um so
+58:07
+the fact that the nearest neighbor is
+58:08
+not exactly the same as the generated
+58:10
+image
+58:10
+means that this model is not just
+58:12
+regurgitating trading samples
+58:14
+that it's hopefully learning to generate
+58:16
+new samples that just look like
+58:17
+plausible training
+58:18
+like plausible uh samples from the
+58:20
+training set
+58:21
+okay so this was kind of um the
+58:23
+beginning of generative adversarial
+58:24
+networks
+58:25
+but this was 2014 five years ago and
+58:27
+this is a fast-moving field so we've got
+58:29
+a lot of advancements since then
+58:32
+so then kind of the first really big
+58:33
+successful result in general adversarial
+58:35
+networks
+58:36
+was this so-called dc gantt architecture
+58:39
+which used
+58:40
+like a five-layer convolutional network
+58:41
+for both the generator and the
+58:43
+discriminator
+58:44
+and they got this thing to train
+58:45
+actually much better than some of the
+58:47
+original papers
+58:48
+and now some of the generated samples
+58:49
+from dc dan ended up looking
+58:52
+quite nice so here what we're doing is
+58:54
+we're training dc gan on a data set of
+58:56
+image of photos of bedrooms
+58:58
+and now we're sampling new photos of
+59:00
+bedrooms from a trained dc game model
+59:02
+and you can see that these generated
+59:04
+samples are actually quite complicated
+59:06
+they're capturing a lot of structure of
+59:07
+bedrooms
+59:08
+you can see that there's like beds and
+59:10
+windows and furniture and a lot of
+59:12
+interesting structure being captured by
+59:13
+this generic model
+59:15
+but what's even cooler about this this
+59:18
+these networks
+59:18
+is that we can do interpolation in the
+59:20
+latent space
+59:22
+so remember that a general member serial
+59:23
+network is taking a latent variable z
+59:25
+and then passing it to the generator to
+59:27
+generate a data sample x
+59:28
+so now what we can do is we can sample a
+59:31
+z over here
+59:32
+and a z over here and then linearly
+59:34
+interpolate a bunch of z's in between
+59:36
+and then feed each of those linearly
+59:37
+interpolated z's the generator
+59:39
+to now generate interpolated images
+59:41
+along this uh this latent path in the
+59:44
+late space
+59:45
+so then each row in this figure is
+59:47
+showing us an interpolation in latent
+59:49
+space
+59:50
+between a one bedroom on the left and a
+59:52
+different bedroom on the right
+59:54
+and you can see that the images are
+59:55
+somehow like continuously morphing into
+59:57
+each other in a really non-trivial way
+60:00
+so that suggests that this adversarial
+60:01
+network has learned something really
+60:03
+non-trivial about the underlying
+60:04
+structure of bedrooms
+60:06
+it's not just doing like an alpha
+60:07
+transparency blend with the two images
+60:09
+it's like learning to warp the spatial
+60:10
+structure of those images into each
+60:12
+other
+60:14
+another really cool thing we could do
+60:15
+with gender adversarial networks is some
+60:17
+kind of vector map
+60:18
+on these line vectors so what we can do
+60:20
+is we um can sample a bunch of
+60:22
+a bunch of samples from the network and
+60:24
+then sort of manually categorize them
+60:25
+into a couple different categories
+60:27
+so here on the left we've got a bunch of
+60:29
+samples of smiling women they look kind
+60:31
+of like smiling women if we look at the
+60:33
+generated images
+60:34
+in the middle we've got sort of
+60:35
+non-smiling women on the right we've got
+60:37
+non-smiling men
+60:39
+and then each of the free these data
+60:40
+samples we have the latent vector which
+60:42
+generated it
+60:43
+so then for each of these different
+60:44
+columns we can compute
+60:46
+the average latent vector along the
+60:48
+column and then uh
+60:50
+refeed that average latent vector back
+60:52
+to the generator to generate kind of an
+60:54
+average smiling woman an average neutral
+60:56
+woman and an average neutral man
+60:58
+from according to this trained model and
+61:00
+now we can do vector math
+61:02
+so what happens if we take a smiling
+61:03
+woman subtract a neutral woman and then
+61:06
+add a neutral man
+61:08
+smiley man there we go and then you
+61:11
+could sort of sample some new vectors
+61:12
+around that smiling man vector and sort
+61:14
+of get other smiling man images
+61:17
+or we could do something similar to man
+61:19
+of glasses
+61:20
+minus man without glasses plus women
+61:23
+without glasses
+61:24
+what are we going to get
+61:27
+women with glasses there we go so then
+61:30
+somehow these uh gender members here oh
+61:31
+that works
+61:32
+let us do some kind of
+61:33
+semi-interpretable vector map in latent
+61:35
+vector space which is really cool
+61:38
+so this was in 2016 and i think after
+61:40
+this paper
+61:41
+people got really really excited about
+61:43
+gender adversarial networks
+61:44
+and the field went crazy so this is a
+61:46
+graph showing the number of
+61:48
+jan papers as a function of year from
+61:51
+2015 to 2018
+61:52
+and you can see that the number of gan
+61:54
+papers being published is just like
+61:56
+exploding at a ridiculous rate
+61:58
+so there's a there's a website called
+61:59
+the gan zoo where they try to keep track
+62:02
+of all the different papers that are
+62:03
+being published about gans
+62:04
+so here i sort of took a screenshot of
+62:07
+the gansu
+62:08
+this goes through b and they're
+62:10
+alphabetized so there's
+62:11
+the the gansu just captured like
+62:13
+hundreds and hundreds and hundreds of
+62:14
+research papers that are
+62:15
+being written about hands so there's no
+62:17
+way that we can possibly talk about all
+62:19
+the advancements in gans
+62:20
+since 2016. but i wanted to try to hit a
+62:23
+couple of the highlights
+62:24
+so one is that we've got improved loss
+62:27
+functions for gans now
+62:28
+so uh now we there there's an
+62:30
+improvement called the wazerstein gam
+62:32
+which is which uh sort of changes the
+62:34
+loss function that we use for generating
+62:35
+gams
+62:36
+for for training dans and you can see
+62:38
+that as we use this wazer scene loss
+62:39
+function
+62:40
+then the generated samples tend to work
+62:42
+tend to be a little bit better
+62:44
+another thing we've gotten better at is
+62:46
+improving the resolution of images
+62:48
+with dance so uh here are some samples
+62:50
+from this model called the progressive
+62:52
+gan
+62:53
+which was published just last year in
+62:54
+2018. so the progressive gan
+62:56
+on the left we're showing 256 by 256
+63:00
+generated images of bedrooms
+63:02
+on this same bedroom data set that we've
+63:04
+been sitting that we've been working on
+63:05
+so these are like fake images of
+63:06
+bedrooms and these look like i would
+63:08
+like i would stay there if that was on
+63:09
+airbnb
+63:10
+um those look pretty good and on the
+63:12
+right we're seeing these high resolution
+63:14
+1024x1024 generated faces by this
+63:17
+progressive gan architecture
+63:19
+but of course that was 2018 and we're in
+63:22
+2019
+63:22
+so things have gotten even better since
+63:24
+then so then the same authors behind
+63:26
+progressive gan
+63:27
+wrote this new one called stylegan which
+63:29
+was published just this year in 2019
+63:31
+which is also pushing towards higher
+63:32
+resolution so here are some results of
+63:35
+style gan
+63:35
+generating images of cars which i don't
+63:38
+know look pretty realistic to me
+63:40
+and on the right are again 10 24 by 1024
+63:43
+generated faces
+63:44
+using this style gan model and now
+63:47
+what's really cool is we saw that gans
+63:49
+could be used for interpolation and
+63:50
+latent space
+63:51
+well we can apply interpolation and
+63:53
+latent space to these high resolution
+63:55
+faces that are being generated by style
+63:57
+gan
+63:58
+so you can see that a style gain is kind
+64:00
+of like learning to warp
+64:02
+in by warping by continuously moving the
+64:05
+latent vector in that z
+64:06
+in latent space you can see that the
+64:08
+generated faces
+64:09
+are kind of continuously deforming into
+64:12
+each other
+64:13
+so the fact that this that the
+64:14
+transitions between the faces are so
+64:16
+smooth
+64:17
+gives us a very strong indication that
+64:19
+this model is not
+64:20
+memorizing the training data oh no this
+64:22
+model seems to be learning some
+64:24
+important structure of the generated
+64:25
+faces
+64:26
+because otherwise there's no way it
+64:27
+could possibly interpolate between them
+64:29
+in such a smooth way
+64:30
+so these so this is sort of like 2019
+64:32
+gans or early 2019 gans
+64:36
+okay so then another thing we might want
+64:37
+to do is do conditional gains so
+64:40
+all of these samples we've seen so far
+64:41
+have been unconditional we train it on a
+64:43
+data set and then we just sample to get
+64:45
+new images from that data set
+64:46
+but what we might want to do is be able
+64:48
+to get more control over the types of
+64:50
+images that are generated from gans
+64:52
+so to do that we can use a conditional
+64:54
+generative model and
+64:55
+and model uh the the the distribution of
+64:58
+x the image x
+64:59
+conditioned on some label y so then the
+65:02
+way that we do that is we change the
+65:04
+architecture of our generator
+65:05
+to input both the the random noise c
+65:09
+along with the label y in some way
+65:12
+and the particular way that we tend to
+65:14
+input the label information into gans
+65:16
+these days
+65:16
+is this trick called conditional batch
+65:18
+normalization
+65:20
+so we know so recall we have batch
+65:21
+normalization on the left remember in
+65:23
+batch normalization we're always going
+65:24
+to do a scale and a shift
+65:26
+and then multiply by alert we do the
+65:28
+normalization of the data
+65:29
+then we add and multiply by a learn
+65:31
+scale and shift gamma and beta
+65:33
+so now what we do is we learn a separate
+65:36
+gamma and beta
+65:37
+for each clap for each category label y
+65:39
+that we want the model
+65:40
+to model so then the way that we input
+65:42
+the lay the label
+65:44
+y into the generator is just by swapping
+65:46
+out a different uh
+65:47
+gamma or beta um that we learned
+65:49
+separately for each class
+65:51
+and this seems like kind of a weird
+65:53
+trick but it actually seems to work
+65:54
+quite well
+65:54
+in fusing label information into gans
+65:59
+so then once we once we have this trick
+66:01
+of conditional batch normalization
+66:02
+we can train conditional gans so then
+66:05
+these are um this is an example of a
+66:06
+conditional gam model which was trained
+66:08
+on imagenet
+66:09
+but now rather than just inputting
+66:10
+random noise we actually tell the
+66:12
+generative model which
+66:13
+category we want it to generate so then
+66:16
+on the left we have generated a welsh
+66:18
+springer spaniels
+66:19
+in the middle we have generated fire
+66:20
+trucks and on the right we have
+66:21
+generated daisies
+66:23
+and all these images are generated from
+66:24
+the same model but we control which
+66:26
+type of category we want it to generate
+66:28
+by feeding different uh different wides
+66:30
+to the model
+66:32
+and this paper also introduced this new
+66:33
+normalization method called spectral
+66:35
+normalization which we can't get into
+66:37
+um we've seen actually self-attention be
+66:39
+really important
+66:40
+for different types of applications
+66:42
+throughout the semester um we saw this
+66:44
+in transformers we saw this
+66:46
+also uh in other contexts and it turns
+66:48
+out the self-attention is also useful
+66:50
+for gans
+66:51
+so if we put self-attention into our big
+66:53
+gant models then we can train
+66:55
+even better conditional gam models on
+66:56
+imagenet so again these are all
+66:58
+conditional samples from the same dm
+67:00
+model but we're telling the generator
+67:02
+which category we wanted to generate
+67:04
+from a test time
+67:06
+and now here i think is the current
+67:08
+state of the art in gann technology
+67:10
+is the so called big gan paper from a
+67:13
+broken all that was just published
+67:14
+earlier this year in 2019
+67:16
+so these are all these are again
+67:18
+conditional samples these are generated
+67:20
+images
+67:20
+from from a conditional gan model that
+67:23
+was trained on imagenet
+67:25
+and now these are 500 and 512 images
+67:28
+that are all generated from the same
+67:29
+model but where we tell the generator
+67:30
+which category we want to generate at
+67:32
+test time
+67:33
+so i think if you want to re if you want
+67:35
+to understand all the latest and
+67:36
+greatest tricks to get your gans to work
+67:37
+really well
+67:38
+i think this is the paper to read right
+67:39
+now then of course
+67:42
+gans don't have to stop with images
+67:44
+there's some initial work on generating
+67:46
+videos
+67:47
+with gans um so this uh here on the left
+67:50
+are some generated videos from gans
+67:53
+where we're generating
+67:54
+48 frames of 64x64 images i'm using some
+67:58
+kind of uh
+67:58
+gan model and on the right we're
+68:00
+generating 128 by 128
+68:02
+images and only 12 frames so i think
+68:05
+this is maybe the next frontier in gan
+68:07
+technology
+68:08
+so hopefully we'll come back in 2020 and
+68:09
+like be able to see even more beautiful
+68:11
+videos like this
+68:13
+so then it turns out people want to use
+68:15
+gans to generate
+68:16
+more to condition on more types of
+68:18
+information than just labels
+68:20
+so there's been work on where we want to
+68:21
+we want to train models that are p of x
+68:23
+given y
+68:24
+where y is not just a category label but
+68:27
+it's some other type of information
+68:29
+so that y can be a whole sentence so
+68:31
+there's work that tries to input a
+68:33
+sentence
+68:34
+and then outputs an image using a gan
+68:36
+using some kind of conditional gan model
+68:39
+we can also have that conditioning
+68:40
+variable y be an image itself
+68:43
+so one example is image super resolution
+68:46
+so we're going to input a low resolution
+68:48
+image
+68:48
+as the conditioning variable y then have
+68:50
+the model output a realistic high
+68:52
+resolution image
+68:53
+um as the output x so then here the the
+68:56
+bicubic would be the input x which is
+68:58
+the input y which is a low resolution
+69:00
+input and then
+69:01
+the gan generator will then output this
+69:03
+uh this high resolution
+69:05
+up sampling of the image we can also do
+69:08
+image editing with gans
+69:09
+so we can uh train gans that convert
+69:11
+like uh
+69:12
+different types of image we can change
+69:14
+train gans that can for example
+69:16
+convert google street view images into
+69:18
+street view map images
+69:20
+or convert semantic label maps into real
+69:22
+images or convert sketches of handbags
+69:24
+into real handbags
+69:25
+and we can do all of these with some
+69:27
+kind of conditional gan formulation
+69:29
+a really famous example of this is this
+69:31
+so-called cyclogan work that is actually
+69:33
+able to train these translations in an
+69:35
+unpaired way which i think we don't have
+69:36
+time to get into
+69:38
+but what's really cool is they can sort
+69:39
+of train these gan models that can
+69:41
+convert
+69:42
+images of horses into images of zebras
+69:44
+using some kind of conditional gan
+69:46
+formulation
+69:47
+so then here the input y is the image of
+69:49
+a horse and the output x is the image of
+69:51
+a b
+69:52
+and is the image of a zebra and they're
+69:54
+able to train they found a very clever
+69:55
+way to train this thing
+69:57
+even when we don't have sort of paired
+69:58
+couples of zebra images and horse images
+70:02
+we could there's also work on converting
+70:04
+label maps to images
+70:06
+so here the input there's sort of two
+70:08
+inputs y
+70:09
+one is the layout of the scene that we
+70:11
+want on the top
+70:12
+so then like the blue is the sky the
+70:14
+green is the grass and the purple like
+70:16
+the the
+70:17
+the the maroon is the clouds and then on
+70:19
+the left is a second
+70:20
+input y that gives us the type of
+70:22
+artistic style that we want that image
+70:24
+to be rendered in
+70:26
+so then we can train again model that
+70:27
+then generates images
+70:29
+which match the layout given by the
+70:31
+semantic map
+70:32
+but also match the artistic style of the
+70:35
+the
+70:35
+input style images on the left so then
+70:38
+there's this is just so there's just a
+70:39
+whole wide world of work on different
+70:41
+types of models that we can build with
+70:42
+gans
+70:44
+then i'd also like to point out that
+70:45
+gans are not just for images you can
+70:47
+actually use gans for just
+70:48
+generating any type of data really so
+70:50
+this is a paper that i did last year
+70:52
+where we want to use gans to generate uh
+70:54
+predictions of where
+70:56
+people might want to walk in the future
+70:58
+so the input to the model
+70:59
+is some uh history of the previous few
+71:01
+seconds where
+71:03
+a group of people are walking and what
+71:05
+it tries to predict is where the people
+71:06
+will walk going into the future
+71:08
+and we can train this up as some kind of
+71:09
+conditional gann model
+71:11
+where the conditioning variable y is
+71:12
+kind of a pass to where people are
+71:14
+walking
+71:14
+and the generated data x is the future
+71:16
+where they will walk
+71:17
+and this needs to be uh realistic as
+71:19
+judge by the discriminator
+71:22
+so kind of the summary of gans is that
+71:24
+you know we're jointly training these
+71:26
+two networks the generator and the
+71:27
+discriminator
+71:28
+um and that under some assumptions um
+71:30
+the the generator learns to capture the
+71:32
+true uh
+71:33
+the true data distribution and then if
+71:35
+we kind of like zoom out this taxonomy
+71:37
+of generative models
+71:38
+now at this point we've seen these three
+71:40
+different we've seen of three different
+71:42
+uh types three very different flavors of
+71:44
+generative models
+71:45
+with neural networks so we've seen these
+71:48
+auto aggressive models that are going to
+71:49
+directly maximize the life
+71:50
+of the data we've seen these variational
+71:52
+models that are going
+71:54
+to jointly learn these latent variables
+71:56
+z together with the data x and maximize
+71:58
+this variational lower bound
+72:00
+and we saw these generative adversarial
+72:01
+networks which
+72:03
+uh give up totally on modeling pmx and
+72:05
+instead just want to
+72:07
+learn to draw samples and these gam
+72:09
+models as we've seen
+72:10
+have tons and tons of applications and
+72:12
+they can be used to generate
+72:14
+really really high quality images so
+72:16
+that's pretty much all we have to say
+72:17
+about generic models
+72:19
+and then next time we'll talk about
+72:22
+mechanisms for dealing with
+72:23
+non-differentiability
+72:24
+inside your neural network models that
+72:26
+will lead us to some discussion on
+72:27
+stochastic computation graphs
+72:29
+and i think we'll also touch a little
+72:30
+bit on reinforcement learning as well
+72:32
+so come back and come back on that and
+72:34
+hopefully get started your homework
+
+영어 (자동 생성됨)
+
+

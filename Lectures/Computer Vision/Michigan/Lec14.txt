@@ -1,0 +1,4934 @@
+﻿0:00
+all right welcome back to lecture 14. uh
+00:02
+today we're going to talk about a
+00:04
+visualizing
+00:04
+techniques for visualizing and
+00:06
+understanding what's going on inside
+00:07
+convolutional neural networks
+00:09
+um so this this title is actually a
+00:10
+little bit of a misnomer we're actually
+00:11
+going to talk about really
+00:12
+really two major topics today um one is
+00:15
+techniques for kind of peering inside of
+00:16
+neural networks and understanding what
+00:18
+it is that they've learned about the
+00:19
+data that we train them on
+00:20
+and then the second is um it turns out
+00:22
+that a lot of the techniques that you
+00:23
+use for visualizing and understanding
+00:25
+neural networks
+00:26
+can also be used for some fun
+00:27
+applications like deep dream and style
+00:29
+transfer so we're actually going to
+00:30
+cover on both of those topics in today's
+00:32
+lecture
+00:34
+so the last lecture that you heard from
+00:36
+me we talked about attention
+00:37
+um so we talked about how attention
+00:40
+could be this mechanism that we can add
+00:41
+into our current neural networks
+00:43
+to let them focus on different parts of
+00:45
+the input on different time steps
+00:47
+and then we generalize this notion of
+00:48
+attention to build this new
+00:50
+fundamental component that we could
+00:52
+insert into our neural network models
+00:54
+called self-attention and then and then
+00:56
+remember that we saw that
+00:57
+we could use self-attention to build
+00:59
+this new neural network model called the
+01:01
+transformer
+01:02
+that relied entirely on attention to uh
+01:04
+to process its inputs
+01:07
+and last week i hope you had a good time
+01:09
+with our guest lectures
+01:11
+so on monday you heard from luway on
+01:13
+vision and language
+01:14
+and on wednesday you heard from
+01:16
+professor prakash on adversarial machine
+01:18
+learning
+01:18
+so hopefully that was some really
+01:20
+exciting interesting stuff for you to
+01:21
+hear about
+01:22
+and especially the adversarial machine
+01:24
+learning i think uses some of the same
+01:25
+techniques that we're going to talk
+01:26
+about in today's lecture
+01:29
+um so before we move on is there any
+01:30
+sort of uh
+01:32
+questions about logistics stuff that we
+01:34
+need to talk about before we move on to
+01:35
+the content
+01:38
+okay very good so i think this is a
+01:42
+question that so at this point in the
+01:43
+class we've sort of learned how we can
+01:45
+build neural network models
+01:46
+to process lots of different types of
+01:48
+data um we know how we can build use
+01:50
+convolutional neural network models to
+01:51
+process images
+01:52
+we can use recurrent neural network
+01:54
+models to process sequences and we can
+01:55
+use transformer or cell potential models
+01:57
+to process uh sequences or even sets of
+01:59
+data
+02:00
+um but there's been this lingering
+02:02
+question that i think a lot of people
+02:03
+have asked me after class and even
+02:05
+during lectures as well
+02:06
+which is how do we tell what it is that
+02:08
+neural networks have learned once we've
+02:10
+trained them for some visual recognition
+02:11
+task
+02:12
+um so once we write down this big
+02:14
+convolutional neural network model
+02:16
+and we train it up on our big data set
+02:17
+um what are all these intermediate
+02:19
+features looking for inside of the
+02:20
+neural network
+02:22
+and how then then hopefully if we were
+02:24
+able to peer inside the neural network
+02:25
+and get a sense of what kind of things
+02:27
+that
+02:27
+different features different layers are
+02:29
+looking for then it might give us some
+02:30
+more intuition about maybe how it fails
+02:32
+or maybe
+02:33
+why it works or why it doesn't work so
+02:35
+today we're going to talk about various
+02:37
+techniques that people have used
+02:38
+to kind of peer inside this this depth
+02:41
+of this neural network and understand
+02:42
+what it is that's actually going on
+02:43
+inside of it
+02:45
+so i should preface this that it's all
+02:46
+sort of empirical we don't really have
+02:48
+super strong theory about exactly what's
+02:50
+going on in there
+02:51
+but we have a set of empirical
+02:53
+techniques that can help us gain some
+02:55
+intuition about the types of features
+02:56
+that these
+02:57
+layers are responding to so we've
+03:00
+actually seen
+03:01
+one technique already that we can use to
+03:03
+get some basic idea of what's going on
+03:05
+inside neural networks
+03:07
+and that's visualizing the the filters
+03:09
+at the first layer of the network
+03:11
+so if you remember way way back to the
+03:12
+linear classifier remember we had this
+03:14
+idea that the linear classifier was
+03:16
+learning a set of templates one template
+03:18
+for each class
+03:19
+and that the class scores that were
+03:20
+computed by our linear classifier
+03:22
+were simply the inner product of the
+03:24
+template that we learned for the class
+03:25
+and the input image and then when we
+03:27
+generalized and
+03:28
+moved on to neural networks and
+03:30
+convolutional neural networks
+03:32
+then this same idea the same notion of
+03:34
+template matching
+03:35
+carries forward as well so recall that
+03:38
+for a convolutional neural network
+03:39
+at the very first layer of the network
+03:41
+we learned this set of filters
+03:43
+where these set of filters are going to
+03:44
+slid around the input image and we take
+03:46
+it and at each point in the input image
+03:48
+we take an inner product between one
+03:50
+between each of the learned filters
+03:51
+and the and the rgb pixels of the input
+03:53
+image um so fitting along with this idea
+03:56
+of template matching
+03:57
+then we can actually gain some into we
+03:59
+can actually visualize the first layer
+04:01
+of the convolutional network
+04:02
+by simply visualizing those filters as
+04:04
+rgb images themselves
+04:06
+um and recall that the idea here is that
+04:09
+when we take an inner product between
+04:11
+the filter and the image then
+04:13
+when we try to visualize the image the
+04:15
+filter as an image
+04:16
+then an image which matches the filter
+04:18
+is going to give a very strong response
+04:19
+to that filter
+04:20
+so by visualizing these filters it gives
+04:22
+us some
+04:23
+some sense of what these very first
+04:25
+layers these first features in the
+04:27
+neural network is looking for
+04:29
+so here on the slide we're visualizing
+04:31
+we're doing exactly this and we're
+04:32
+visualizing the first
+04:33
+the convolutional filters at the very
+04:35
+first layer for four different
+04:37
+cnn models that were all pre-trained on
+04:39
+the imagenet data set
+04:40
+for image classification and what you
+04:43
+can see is that um
+04:44
+even though these different network
+04:46
+architectures like alexnet
+04:48
+whereas different different resnet
+04:49
+layers or a dense net these uh these
+04:51
+neural network architectures
+04:52
+as we've seen are quite different but
+04:55
+the filters that they tend to learn at
+04:56
+the first layer
+04:57
+are often very similar and we can see
+04:59
+that in these filters we often learn
+05:02
+edges oriented filters that look for
+05:04
+edges of different orientations
+05:06
+we see different filters that look for
+05:08
+different types of colors different
+05:09
+types of opposing colors is a very
+05:11
+common pattern to see in these filters
+05:13
+and if you recall all the way back to
+05:15
+the huble and weasel experiments on the
+05:17
+mammalian visual system
+05:19
+you remember that the mammalian visual
+05:21
+system also has
+05:22
+these cells that look for oriented edges
+05:24
+in the visual field of what we're
+05:26
+looking at
+05:27
+which is somewhat similar to these
+05:28
+filters that tend to be learned at the
+05:30
+first layer of convolutional networks
+05:32
+um so this this gives us some sense that
+05:34
+the very first layer of comb nuts are
+05:35
+looking for maybe different
+05:36
+different color different types of
+05:38
+colors and different types of oriented
+05:39
+edges
+05:40
+and you might wonder can we apply this
+05:42
+exact same technique
+05:44
+to higher layers in the convolutional
+05:46
+network
+05:47
+well we can but it's not very
+05:49
+informative right so
+05:51
+um if we here in this slide what we've
+05:53
+done is simply visualize
+05:55
+the weights of the so here we've trained
+05:58
+a three-layer convolutional network on
+06:00
+uh for cfar classification
+06:01
+um and for the very first layer we can
+06:03
+visualize the weights just as we've done
+06:05
+in the previous slide
+06:06
+and visualize them as little chunks of
+06:07
+rgb image but now the second
+06:10
+convolutional layer
+06:11
+right because if in in this little toy
+06:13
+network the first convolutional layer
+06:15
+has
+06:15
+16 filters each of spatial size 7x7
+06:19
+and now the second convolutional layer
+06:21
+um recall its input is the out is the
+06:23
+raylude output of the first
+06:25
+convolutional layer
+06:26
+so the second layer is looking at it
+06:28
+receives 16 input channels
+06:30
+and then has 20 convolutional filters
+06:32
+each of those 20 convolutional filters
+06:34
+would stretch over all of the all of the
+06:35
+16 input channels
+06:37
+so there's no really good way for us to
+06:39
+visualize that 16 channel
+06:41
+input image it just just doesn't really
+06:42
+make sense as an rgb image
+06:44
+so here what we've done instead to get
+06:46
+some really core sense of what's going
+06:48
+on in those filters
+06:49
+is um for each of the 20 output filters
+06:52
+for each of the 16 slices of that filter
+06:56
+we can visualize its 7x7 spatial extent
+06:58
+as a little grayscale image
+07:00
+and it's maybe tough to see on the slide
+07:02
+here but you can see there is a little
+07:04
+bit of spatial structure going on in
+07:05
+even these higher convolutional filters
+07:08
+um that they're maybe still looking for
+07:09
+kind of blobby patterns or edges
+07:11
+but now this is no longer looking for
+07:13
+edges or blobs in rgb feature space
+07:16
+this is now looking for blobs or edges
+07:18
+in the feature space that was produced
+07:19
+by the previous convolutional layer
+07:22
+so you can so with this kind of
+07:23
+visualization you can tell that maybe
+07:25
+something is going on with these higher
+07:27
+convolutional filters
+07:28
+but it doesn't really give you a strong
+07:29
+intuition for what exactly they're
+07:31
+looking for
+07:32
+so we're going to need to use some other
+07:33
+techniques to try to understand what's
+07:35
+going on
+07:35
+at other layers of the convolutional
+07:37
+network
+07:39
+so one way that we often try to
+07:41
+understand what neural networks is doing
+07:43
+is actually skipping these intermediate
+07:45
+convolutional layers and instead trying
+07:47
+to understand what's happening at the
+07:48
+very
+07:48
+last fully connected layer so if you
+07:51
+recall something
+07:52
+like the alexnet architecture terminates
+07:54
+and
+07:55
+has this fc7 layer that has a 4096
+07:59
+features that then are transformed with
+08:01
+a final linear transform to give us our
+08:03
+class scores for the 1000 classes in the
+08:05
+imagenet data set
+08:06
+um so one thing that we can try to do is
+08:08
+understand what is being represented by
+08:10
+this
+08:11
+4096-dimensional vector that is being
+08:13
+computed for each image
+08:14
+right because you know one one way to
+08:16
+think about this what a trained alex net
+08:18
+is doing
+08:18
+is that it takes our input image and
+08:20
+converts it into a 4096-dimensional
+08:22
+vector
+08:22
+and then applies a linear classifier on
+08:24
+top of that 4096 dimensional vector
+08:27
+so then we can try to visualize what's
+08:29
+going on by understanding what's
+08:30
+going on inside that 4096-dimensional
+08:33
+vector
+08:34
+so then what we can do is sort of take
+08:36
+our trained alexnet model
+08:37
+and then run it on a whole bunch of
+08:39
+images from the test set
+08:41
+um and then sort of record the 4096
+08:44
+dimensional vector that the cnn computes
+08:46
+for each of those images in the test set
+08:48
+and once we've collected this sort of
+08:49
+data set of images and their feature
+08:51
+vectors
+08:51
+then we can try to visualize them using
+08:53
+various techniques
+08:55
+so one one really interesting thing that
+08:58
+we can do is simply apply
+08:59
+uh nearest neighbors on top of this 4096
+09:02
+dimensional vector
+09:03
+so if you recall way back to assignment
+09:05
+two and some of the early lectures
+09:07
+we talked about applying these nearest
+09:09
+neighbor retrieval on top of the raw
+09:11
+pixel values
+09:12
+and that's these examples here on the
+09:14
+left that we know when you
+09:15
+apply a nearest neighbor retrieval on
+09:17
+top of raw pixel values
+09:19
+then you tend to retrieve other images
+09:21
+that contain very similar pixels but
+09:22
+maybe not of the same class or semantic
+09:24
+category
+09:25
+and now here in the middle instead what
+09:27
+we've done is we apply
+09:29
+nearest neighbor retrieval using not the
+09:31
+raw pixels of the image
+09:33
+but instead using these 4096
+09:34
+4096-dimensional vectors that are
+09:36
+computed by alexnet
+09:37
+and this gives us some sense for what
+09:39
+images are close to each other
+09:41
+in this feature space that is learned by
+09:43
+the classifier
+09:44
+and here we see some really interesting
+09:46
+stuff going on that if you look at these
+09:48
+examples of images that are retrieved
+09:50
+using nearest neighbors search on
+09:52
+with nearest neighbor on this last
+09:54
+dimensional this last
+09:56
+feature space we see that for example if
+09:58
+you look at the uh
+09:59
+the elephant here in the second row then
+10:01
+all of the nearest neighbors to this
+10:03
+element
+10:03
+elephant image are also images of
+10:05
+elephants
+10:06
+but the pixels of the retrieved
+10:08
+elephants could be very very different
+10:10
+right so the image that we're using to
+10:12
+query with kind of has the elephant on
+10:14
+the left side of the image
+10:15
+so the image has this kind of gray blob
+10:17
+on the left but now we're able to
+10:18
+retrieve images maybe if you look at the
+10:20
+third column
+10:21
+now this actually has the elephant on
+10:23
+the right side of the image the elephant
+10:24
+is a totally different color
+10:26
+and the background is a totally
+10:27
+different color which is really amazing
+10:29
+that means that somehow this 4096
+10:31
+4096-dimensional vector that has been
+10:33
+computed by alexnet
+10:34
+is somehow ignoring a lot of the
+10:36
+low-level pixel content of the image
+10:38
+and maybe it's encoding something like
+10:39
+elephantness somehow inside this vector
+10:42
+so that when we retrieve an image of an
+10:43
+elephant then we actually get other
+10:45
+images of elephants even though the raw
+10:47
+pixel values are quite different
+10:48
+um and maybe uh sort of fitting with a
+10:51
+halloween theme maybe you were
+10:52
+celebrating halloween last week
+10:54
+then in the second to bottom row we can
+10:55
+actually see that actually these 4096
+10:58
+dimensional features space computed by
+10:59
+alex nat
+11:00
+also kind of learns jack-o'-lantern-ness
+11:03
+and it can retrieve
+11:04
+other images of jack-o'-lanterns simply
+11:06
+by looking for nearest neighbors in this
+11:08
+4086 dimensional feature space
+11:11
+so oh yeah question how do you exactly
+11:13
+compare the
+11:14
+image with the other images and what
+11:16
+features we consider
+11:18
+for the image and the train set to class
+11:21
+that's why yes oh so so here um so the
+11:24
+question is how exactly do we compare
+11:25
+these images when doing nearest neighbor
+11:27
+um so here what we're doing uh maybe i
+11:29
+should have made this
+11:29
+more explicit so then we've got uh we've
+11:31
+got a one
+11:33
+with our query image then for the query
+11:35
+image we run it through the trained
+11:36
+alexnet classifier
+11:37
+and then extract the 4086 dimensional
+11:39
+vector at the last layer of the
+11:40
+classifier
+11:41
+and now that now without looking at this
+11:43
+this 4006 exponential vector for our
+11:44
+query image
+11:45
+then we also do is run our whole other
+11:48
+we run our whole test set through the
+11:49
+classifier as well
+11:50
+and record their 4096 dimensional
+11:52
+vectors and now we do
+11:54
+l2 nearest now we do the nearest
+11:56
+neighbor retrieval
+11:57
+using euclidean l2 distance on those
+12:00
+4096 dimensional feature vectors that
+12:02
+have been uh computed by
+12:03
+the trained classifier um so here we're
+12:06
+not actually
+12:06
+doing we're not using this for uh class
+12:09
+we're not using nearest neighbor for
+12:10
+classification like we did previously
+12:12
+instead here we're just using nearest
+12:13
+neighbor as a way to get a sense of what
+12:15
+types of images are considered nearby in
+12:17
+this feature space
+12:20
+so another kind of thing that we can do
+12:22
+to get a sense of what's going on in
+12:23
+this
+12:24
+uh in this feature space is to use some
+12:26
+kind of dimensionality reduction
+12:27
+algorithm
+12:28
+um so you know 4096 dimensional vector
+12:31
+4096 dimensional space is pretty high
+12:33
+dimensional
+12:33
+we're um cursed to live in this low low
+12:35
+dimensional three-dimensional space
+12:37
+so it's very difficult for our human
+12:38
+minds to understand 4086 dimensional
+12:40
+feature space
+12:41
+but think what we can do is apply some
+12:43
+dimensionality reduction algorithm
+12:45
+to reduce the dimensionality of those
+12:47
+vectors from 4096
+12:50
+down to two or three dimensions which is
+12:51
+something that our our minds can
+12:53
+actually wrap around
+12:54
+um so one simple algorithm that you may
+12:56
+have seen in other machine learning
+12:58
+classes is principal component analysis
+13:00
+or pca which is a linear dimensionality
+13:03
+reduction algorithm
+13:04
+that the idea is you want to preserve as
+13:06
+much of the structure of that high
+13:08
+dimensional feature space
+13:09
+while also projecting it linearly down
+13:10
+to two dimensions so then you could
+13:12
+apply these dimensionality reduction
+13:14
+algorithms
+13:15
+to this 4096-dimensional space giving a
+13:17
+sample of vectors from the training or
+13:19
+test set
+13:20
+and then visualize actually the
+13:21
+resulting vectors down in this
+13:23
+two-dimensional space
+13:25
+um so it turns out that uh there's
+13:26
+another kind of uh
+13:28
+you know in there's another kind of
+13:29
+dimensionality reduction algorithm it's
+13:30
+very popular in deep learning papers
+13:32
+um called t-sne that's uh t
+13:36
+t distributed stochastic neighbor
+13:37
+embeddings um the details i i don't
+13:39
+really want to go into here
+13:40
+but it's basically a non-linear
+13:42
+dimensionality reduction algorithm
+13:44
+that that inputs a whole set of vectors
+13:46
+in some high dimensional space
+13:48
+then computes a two-dimensional
+13:49
+projection of those vectors that tries
+13:51
+to maintain as much of the structure as
+13:53
+possible
+13:54
+as was present in the original high
+13:55
+dimensional space
+13:57
+so then here what this visualization is
+13:58
+showing is what we've what we what we're
+14:00
+doing is we're we've trained a cnn
+14:02
+classifier for digit recognition
+14:04
+that recognizes the 10 mnist digits from
+14:06
+zero to nine
+14:07
+um and now the final now that network
+14:09
+has some fully connected layer right
+14:11
+before the classifier
+14:12
+then what we've done is we take all the
+14:14
+test set we run all images in the test
+14:16
+set through our classifier
+14:18
+to get this this vector um this maybe
+14:20
+for i don't think it's fourth i don't
+14:22
+think it's 496 in this 4096 in this
+14:24
+example
+14:24
+but then you run each image in the test
+14:26
+set we get a vector then we apply this t
+14:28
+sne dimensionality reduction algorithm
+14:30
+to convert all of those vectors from the
+14:32
+test set images from
+14:33
+some high dimensional embedding space
+14:35
+down to two dimensions
+14:37
+and then um we actually visualize that
+14:39
+that now projects every point in the
+14:41
+test set
+14:42
+to some point in two-dimensional space
+14:44
+and now what we do is we take
+14:45
+our the image itself and plop it down at
+14:48
+that position in two-dimensional space
+14:50
+that was computed by this uh by this
+14:52
+dimensionality reduction algorithm
+14:53
+so i i don't think you can see it here
+14:55
+but if you uh maybe download the slides
+14:57
+and zoom in really
+14:58
+really big on this slide you can see
+14:59
+that each of these points here in these
+15:01
+in this diagram is actually a little
+15:02
+digit where the position of the digit in
+15:05
+2d space
+15:06
+is now some a visualization of the
+15:08
+overall structure of the
+15:09
+that was learned by this uh by this cnn
+15:11
+classifier
+15:13
+and what's amazing here is that actually
+15:15
+i told you that we were doing digit
+15:16
+classification with 10 digits
+15:18
+and you can see that this the digit that
+15:20
+this feature space tends to cluster into
+15:22
+these
+15:22
+10 regions that very roughly correspond
+15:25
+to the 10 digits
+15:26
+of the of the classification problem so
+15:29
+then again this gives us some idea that
+15:31
+the feature space that was learned by
+15:32
+this network
+15:33
+is somehow encoding the the identity of
+15:36
+the class
+15:37
+and maybe not the raw of pixel values so
+15:40
+we can another way we can do a similar
+15:42
+algorithm is not on this
+15:44
+this digit recognition problem but
+15:46
+actually for imagenet classification as
+15:48
+well
+15:48
+so uh here we've done something very
+15:50
+similar we've taken
+15:52
+we've trained first in alex net on
+15:53
+imagenet and then
+15:55
+extracted these 4096-dimensional vectors
+15:58
+for each uh
+15:58
+image in the test set and that and then
+16:01
+we apply a dimensionality reduction
+16:02
+algorithm
+16:03
+to lower the dimensionality from 4096
+16:06
+down to two dimensions while preserving
+16:08
+as much structure as possible
+16:10
+and now uh now that gives us every point
+16:12
+in the tests that
+16:13
+projected onto two-dimensional space and
+16:16
+then we actually visualize the image at
+16:17
+those points in two-dimensional space
+16:19
+um so it's here i i there's a really
+16:21
+high resolution
+16:22
+version of this image online that you
+16:24
+can check out but what's really cool
+16:26
+here is that it left
+16:27
+if you kind of zoom in on this image you
+16:29
+can see that different regions of the
+16:30
+space
+16:31
+now correspond to different sorts of
+16:33
+semantic categories
+16:34
+so like i think if you zoom in way at
+16:36
+the bottom lower left corner
+16:37
+here of this of this space you see
+16:40
+different flowers
+16:41
+and they kind of gradually transition
+16:43
+over into different dogs
+16:44
+over in the upper right hand corner you
+16:46
+can see things are kind of blue and
+16:47
+white
+16:48
+i think they have there's like different
+16:49
+boats or sky images in there
+16:51
+um and this is really kind of fun to
+16:53
+zoom in and to this uh this
+16:55
+visualization and kind of see this uh
+16:57
+space that the
+16:58
+that the neural network has learned and
+17:00
+just kind of
+17:01
+walk around in there and see what types
+17:03
+of images are considered close to each
+17:05
+other in this in this learned feature
+17:06
+space
+17:08
+so that gives us another so this idea of
+17:10
+extracting uh
+17:11
+vectors from the last layer of the
+17:13
+network and then applying different
+17:14
+types of
+17:15
+operations on these vectors again gives
+17:18
+us some way to
+17:19
+understand the feature space that has
+17:20
+learned that has been learned
+17:22
+in the last layer of this neural network
+17:26
+so there's another another kind of
+17:27
+technique we can use to understand
+17:29
+what things are looking for is this idea
+17:31
+of visualizing not the weights of the
+17:33
+neural network but the intermediate
+17:35
+convolutional activations
+17:37
+so here remember as we go through a
+17:39
+convolutional neural network
+17:40
+then at each layer of the network we end
+17:42
+up computing some activation volume
+17:45
+right say we've got a so for example in
+17:47
+an alex net
+17:48
+after the fifth convolutional layer then
+17:50
+we compute this uh this convolutional
+17:53
+volume
+17:53
+of spatial size 13 by 13 with 128
+17:57
+channels
+17:58
+which are then right those are then um
+18:00
+those are that means that there's a
+18:01
+hundred there were 128 filters
+18:03
+in this fifth convolutional layer of
+18:04
+alexnet um and that gives us a 13 by 13
+18:07
+grid
+18:08
+um over which we've computed the values
+18:10
+of each of those filters
+18:11
+so what one thing we can do is actually
+18:13
+visualize as images
+18:15
+each slight each 13 by 13 slice of that
+18:18
+of that activation volume
+18:20
+and then visualize that as a grayscale
+18:22
+image and the idea here is that things
+18:25
+very close to zero or
+18:26
+these are going through rayleigh so
+18:27
+actually many of them will be exactly
+18:29
+zero
+18:29
+but um where where these feature maps
+18:31
+are non-zero
+18:32
+then we can align it with the original
+18:34
+input image to get some sense of what
+18:37
+features
+18:37
+in the input image these different
+18:39
+convolutional filters might be
+18:40
+responding to
+18:42
+so here what we've done in this
+18:43
+visualization over here is
+18:46
+there's a there's a 128 different
+18:49
+different
+18:49
+slices of this activation volume each of
+18:52
+these slices corresponding to one of
+18:53
+those convolutional filters
+18:55
+and now we've selected one of these one
+18:57
+of the the outputs of one of these
+18:59
+filters in green here
+19:00
+and then visualize it over here on the
+19:02
+left side underneath the original input
+19:04
+image
+19:05
+so here you can see that the regions in
+19:07
+this 13 by 13 grid
+19:10
+that were turned on or activated by this
+19:12
+by this filter
+19:13
+actually somehow line up with this with
+19:15
+the with the human face in the input
+19:17
+image
+19:18
+so that gives us some sense that maybe
+19:20
+this one
+19:21
+filter inside this one layer of the
+19:23
+neural network has somehow learned to
+19:25
+respond to human faces or maybe human
+19:27
+skin tones it's hard to say
+19:28
+exactly but then what you can do is just
+19:31
+visualize these activation
+19:33
+these slices of activation at different
+19:35
+layers for different images
+19:37
+and that can give us give us some
+19:38
+intuition about what
+19:40
+different uh what these different
+19:41
+filters might be responding to
+19:43
+so the question is uh why are the
+19:45
+majority of these black
+19:46
+and i think that's uh due to the the
+19:48
+rayleigh non-linearity so remember that
+19:50
+when we have relu then anything negative
+19:52
+will get set to zero
+19:53
+and anything positive will be uh we'll
+19:55
+be left alone so that means that there's
+19:57
+actually a lot of
+19:58
+a lot of zeros in here i think um and
+20:00
+that means that the non-zero stuff is
+20:02
+actually uh pretty important and pretty
+20:03
+interesting
+20:05
+i think it also could be an artifact of
+20:06
+visualization um because exactly how you
+20:08
+choose to scale the outright because
+20:10
+the neural network is outputting sort of
+20:12
+arbitrary real numbers between zero and
+20:14
+plus infinity
+20:15
+um and then when we visualize the thing
+20:16
+we need to squash it down into zero 255
+20:18
+in some way
+20:19
+so the way that you choose to squash
+20:21
+those values down might also have some
+20:23
+effect on the overall brightness of the
+20:24
+images
+20:28
+so then kind of fitting along with this
+20:30
+idea another thing we can do is
+20:31
+not just sort of look at random images
+20:34
+and random filters
+20:35
+but we can try to find um what right
+20:38
+if we want we want to get some idea for
+20:40
+what is the the maximally activating
+20:41
+patch
+20:42
+that maximally activates different
+20:44
+filters inside the neural network
+20:46
+so then here like in this previous slide
+20:48
+we had this intuition
+20:49
+that this one filter inside this one
+20:51
+layer of the network
+20:52
+might be responding to faces so if we
+20:55
+wanted to test that hypothesis
+20:56
+one thing that we could do is um take
+20:59
+our whole training set
+21:00
+and then i'll run all of our training
+21:02
+set images to the uh or run of all of
+21:03
+our training center all of our test set
+21:05
+images through the network
+21:06
+and record for each uh for each image
+21:09
+the value of
+21:10
+the field of that one chosen filter in
+21:12
+that one chosen layer
+21:14
+and then we can right we know that
+21:16
+because this is a convolutional network
+21:18
+each element in that grid of feature in
+21:20
+that grid of activation
+21:22
+actually corresponds to some finite
+21:24
+sized patch in the input image
+21:26
+right um right give you great because if
+21:28
+you have like a three by three
+21:28
+convolution it depends on a three by
+21:30
+three chunk of the input image you stack
+21:31
+two by three two three by three
+21:32
+convolutions then it depends on a five
+21:34
+by five chunk and the input image and so
+21:36
+on
+21:36
+so then what we can do is um for our
+21:38
+chosen neuron in our chosen layer or our
+21:41
+chosen filter in our chosen layer in our
+21:42
+neural network
+21:43
+we run all of the training set or run
+21:45
+all the tests and images through the
+21:46
+network
+21:46
+and find the the patches of those
+21:50
+test set images that give the highest
+21:52
+responses for our chosen neuron
+21:55
+and then record those and then record
+21:57
+those patches so then that's what we've
+21:59
+done
+21:59
+here on the in these visualizations on
+22:01
+the right so
+22:02
+here each uh in the in the top grid
+22:05
+uh these are different neurons all from
+22:07
+one layer in the neural network
+22:09
+that has been i think trained on
+22:10
+imagenet and then each row here
+22:12
+corresponds to a different filter
+22:15
+in one of the one of our in our chosen
+22:17
+layer and now each column
+22:19
+each uh element in the row course is a
+22:21
+patch of a training image
+22:22
+that gave a very very high response to
+22:25
+that chosen filter in that chosen layer
+22:27
+in the trained neural network
+22:28
+so these are the maximally activating
+22:30
+patches of the test set images
+22:32
+that maximally activate our chosen
+22:34
+neuron inside the network
+22:35
+and then by visualizing those maximally
+22:37
+activating patches
+22:38
+we can get some some sense of what that
+22:40
+chosen neuron is looking for
+22:43
+so for example in this very top row here
+22:45
+we see that all of these
+22:47
+all these things look like snouts of
+22:49
+dogs i think
+22:50
+so maybe there's some like dog snout
+22:52
+detecting neuron that's somehow
+22:53
+somewhere deep in that network
+22:55
+or if you look at the the one two three
+22:58
+the fourth row in this top grid
+23:00
+then you can see that all of the
+23:01
+maximally activating patches are
+23:03
+actually
+23:03
+text or chunks of english text and these
+23:06
+text might be
+23:07
+might have different foreground
+23:08
+different background colors different
+23:10
+orientations
+23:11
+but somehow it looks like this this one
+23:13
+chosen filter somewhere deep inside this
+23:15
+network
+23:15
+is actually looking for text in
+23:17
+different colors and orientations
+23:19
+or in the bottom grid here we've done
+23:20
+the exact same thing but now um
+23:22
+run that same experiment for a deeper
+23:24
+layer in the neural network
+23:26
+and because we've done that experiment
+23:28
+for a deeper layer in the neural network
+23:29
+that means that each neuron value is
+23:33
+depends on a larger patch in the input
+23:35
+image so our
+23:36
+maximally activating patches for the
+23:38
+deeper layer are going to be bigger
+23:40
+um so then here if you look at the
+23:41
+bottom grid then some like the second
+23:43
+row
+23:44
+all of the maximally activating patches
+23:46
+are human faces
+23:47
+which is pretty interesting and these
+23:49
+faces have
+23:50
+sort of different skin colors and
+23:51
+different positions in the patch
+23:53
+but somehow it looks like this one
+23:55
+neuron or this one filter deep inside
+23:57
+the network
+23:58
+has somehow learned to identify human
+23:59
+faces
+24:01
+as a result of its training so that
+24:03
+gives us so this this idea of maximally
+24:05
+activating patches
+24:06
+gives us another technique for
+24:07
+understanding what is being
+24:09
+recognized by these intermediate layers
+24:11
+inside the network
+24:14
+so then another thing that we can try to
+24:17
+do to understand
+24:18
+what these networks are computing is to
+24:20
+ask which pixels in the input image
+24:23
+actually matter for the classification
+24:25
+problem so here what we're doing well
+24:27
+here what we do
+24:28
+is we're going right suppose here on the
+24:30
+left we've got this image of an elephant
+24:32
+and so and we then suppose that this
+24:34
+image of an elephant is correctly
+24:35
+classified as an elephant
+24:37
+by the trained neural network now what
+24:39
+we want to know is which pixels of this
+24:41
+input image
+24:42
+were actually important for the network
+24:44
+making the decision to classify it as an
+24:46
+element as an elephant
+24:48
+so now what we can do is we can take our
+24:50
+our elephant image
+24:51
+and then and then mask out some of the
+24:53
+pixels and replace the pixels of the
+24:55
+image
+24:56
+with some gray square or some square of
+24:58
+uniform color
+24:59
+equal to the imagenet mean or something
+25:00
+like that and now pass this masked image
+25:03
+through the neural network again and
+25:05
+that will compute some
+25:07
+of some updated score for uh what the
+25:09
+what the neural network wants to
+25:10
+classify this masked image as
+25:13
+and then we can repeat this procedure by
+25:15
+by shifting around that square mask
+25:18
+to a different position and then run the
+25:20
+run these different mask images to the
+25:22
+neural network
+25:23
+so then if we repeat this procedure for
+25:25
+for moving the mask around every
+25:27
+position in the network
+25:28
+and then again computing the probability
+25:31
+of elephant
+25:32
+for each position in the network then we
+25:34
+can map out this
+25:35
+saliency map that tells us which pixels
+25:38
+matter the most for classification
+25:42
+here in this image on the right here
+25:44
+what we've done is
+25:45
+for every position in the image we
+25:47
+imagine putting that mask at that
+25:48
+position
+25:49
+and then running the running that mask
+25:50
+image through and then the
+25:53
+this heat map the color of the heat map
+25:55
+corresponds to the probability of
+25:56
+elephant
+25:57
+so you can see that if we mask out if we
+26:00
+position our mask
+26:01
+over the over the elephant itself then
+26:03
+the predicted probability of elephant
+26:05
+drops a lot
+26:06
+which is sort of intuitive right that
+26:08
+means that somehow the neural network is
+26:09
+actually
+26:10
+looking at the right part of the image
+26:11
+when making its classification decision
+26:13
+um so that's uh that's encouraging and
+26:16
+now we've repeated this experiment again
+26:17
+for two other images on the slide
+26:19
+the top is a schooner does anyone know
+26:21
+what is a schooner does anyone know that
+26:23
+i guess it's a type of boat i don't
+26:25
+really know but
+26:26
+apparently this is the type of boat and
+26:28
+now if we mask out the pixels
+26:30
+corresponding to the boat
+26:31
+that's going to cause the neural
+26:33
+network's confidence in
+26:34
+schooner class go down a lot but if we
+26:36
+mask out the sky pixels for example
+26:39
+then the neural network doesn't really
+26:40
+care and it still is able to confidently
+26:42
+classify this as a schooner
+26:44
+so that that gives us another way to
+26:46
+understand what it is that neural
+26:47
+networks are doing
+26:48
+so now again we're not sort of looking
+26:50
+at what activates the intermediate
+26:52
+features
+26:53
+instead we were just trying to mutate
+26:55
+the input image
+26:56
+and see what parts of the input image
+26:58
+are being used by the neural network
+27:00
+right and like i think this is kind of
+27:02
+amazing like it didn't have to come out
+27:03
+this way
+27:04
+right like neural networks don't
+27:05
+actually know what part of the image is
+27:08
+the object and the background
+27:09
+so it could be the case that the neural
+27:10
+network is just like maybe it happens
+27:12
+that all schooners always occur like in
+27:15
+water of a particular color
+27:16
+and then it could classify as a schooner
+27:18
+by just looking at that particular color
+27:20
+of the water that it's in and not
+27:21
+looking at the boat itself right and
+27:23
+they're on
+27:23
+and if your data set has ways that
+27:25
+neural networks can cheat
+27:26
+and like look at the wrong parts but
+27:28
+still get the right wrong part of the
+27:30
+image but still get the right answer
+27:31
+they they tend actually will tend to
+27:33
+learn to cheat quite easily
+27:34
+um so this type of visualization lets us
+27:36
+kind of see whether or not they're
+27:37
+actually cheating
+27:38
+or whether whether or not they're
+27:40
+actually looking at the part of the
+27:41
+image that we think that they should be
+27:42
+looking at when making their decisions
+27:44
+was there question over here yeah the
+27:46
+question is is this uh is that does this
+27:48
+was this kind of thinking
+27:49
+some of the thought process that led to
+27:50
+adversarial examples um i think actually
+27:52
+yes it was
+27:54
+because uh you know it turned and to
+27:56
+kind of understand why
+27:57
+um so this technique that we've shown
+27:59
+here vm computing saline
+28:01
+via masking is actually like pretty
+28:03
+computationally expensive
+28:04
+right because we have to run a like a
+28:07
+forward pass
+28:08
+for each possible position of the mask
+28:10
+so computing saliency maps in this way
+28:11
+is fairly computational expensive
+28:14
+and there's another way that we can
+28:15
+compute saliency maps via back
+28:17
+propagation
+28:18
+right because um we know what we can do
+28:20
+is we know we can take our input image
+28:22
+which is this adorable dog
+28:24
+and then run the dog through the neural
+28:25
+network and compute probability of dog
+28:28
+and then during back propagation we can
+28:30
+compute the gradient of the dog score
+28:32
+with respect to the pixels of the input
+28:34
+image and that tells us
+28:36
+for every pixel in the input image if we
+28:38
+were to change that pixel a little bit
+28:40
+then how much would it affect the the
+28:42
+prop the dog's classification
+28:44
+score at the end of the network um and
+28:46
+now this is exactly this kind of image
+28:47
+gradient that you could use
+28:49
+uh to generate adversarial examples so i
+28:52
+think actually the thought process is uh
+28:53
+quite connected
+28:55
+and you can see that in this in this
+28:57
+example actually we've
+28:59
+i don't know if you can see with the the
+29:00
+contrast in the room here but uh there's
+29:02
+kind of a ghostly out in
+29:04
+here in the bottom we've actually
+29:05
+visualized this uh this gradient image
+29:08
+that shows for each pixel uh the
+29:10
+gradient of the
+29:11
+dog score with respect to the pixel um
+29:14
+and now
+29:14
+you can see that kind of maps out a
+29:16
+ghostly outline of the dog a little bit
+29:18
+which which again gives us some sense
+29:20
+that the pixels
+29:21
+that will change the classification
+29:23
+score the most are actually the pixels
+29:24
+inside the dog
+29:26
+and if we were to change some of the
+29:27
+pixels outside the dog then the
+29:28
+classification score would maybe not
+29:30
+change so much
+29:31
+so this again gives us some some idea
+29:33
+that the neural network is looking at
+29:34
+the right part of the image
+29:36
+we can repeat this not just for this dog
+29:37
+image but for different images and get
+29:40
+some
+29:41
+and get these different kind of saliency
+29:42
+maps for what these different uh
+29:44
+what the neural network is which pixels
+29:46
+of the of the image matter
+29:47
+when networks are classifying these
+29:49
+different images
+29:51
+so i should point out that i think these
+29:52
+examples are from the paper that
+29:54
+introduced this technique
+29:56
+and most real examples don't come out
+29:58
+this nice
+29:59
+um so you may have seen that if you've
+30:01
+done the homework so far
+30:02
+right because we asked you to implement
+30:04
+this on the homework and you may have
+30:05
+been surprised that your
+30:06
+results were not as beautiful as these
+30:08
+results from the paper
+30:10
+that probably does not mean you have a
+30:11
+bug that probably means that the authors
+30:13
+of the paper were somewhat judicious
+30:15
+in the examples they selected to put in
+30:16
+the paper so i think that's something to
+30:19
+be aware of but i think it's still a
+30:20
+pretty cool technique that you can uh
+30:22
+you can use to get some intuition about
+30:24
+what neural networks are learning
+30:26
+um so actually here there's kind of an
+30:28
+aside um
+30:29
+one thing that you it's supposed that
+30:31
+this idea of sailing team apps
+30:32
+actually works then one kind of cute
+30:34
+idea that we could do
+30:36
+is actually uh segment out the the
+30:39
+object in the image
+30:40
+even without any any uh any supervision
+30:43
+of this of this flavor so then you know
+30:46
+the image
+30:47
+here the we're maybe feeding this this
+30:49
+image of a grasshopper
+30:50
+to the neural network and then it
+30:51
+classifies it as grasshopper and now
+30:53
+what we want to do is sort of carve out
+30:55
+the exact
+30:55
+outline of that grass the pixels of the
+30:57
+grasshopper image
+30:59
+from uh from the input image so you
+31:01
+could try to kind of do that
+31:02
+using these saliency maps and using some
+31:04
+kind of image processing techniques
+31:06
+on top of the saliency maps that are
+31:08
+computed by these neural networks
+31:10
+and again and that kind of lets us take
+31:12
+a network that was trained for image
+31:14
+classification
+31:15
+and then use it in a very different way
+31:17
+to actually segment out the sections of
+31:19
+the input images that correspond to the
+31:20
+object categories
+31:22
+um although again i should point out
+31:24
+that exam real example
+31:25
+these these are kind of really nicely
+31:27
+chosen examples and this technique
+31:28
+maybe doesn't work as well in general as
+31:31
+you might want it to
+31:32
+okay so then this this kind of gave us
+31:34
+this idea of um
+31:36
+computing for each pixel using gradient
+31:38
+information now
+31:39
+um to compute for each pixel in the
+31:41
+image how much does changing that pixel
+31:43
+affect the final output score and this
+31:46
+turns out to be a really powerful idea
+31:47
+of using
+31:48
+gradient information on the images to
+31:51
+understand
+31:51
+what neural networks are doing so now we
+31:54
+can
+31:55
+take this to another level and not and
+31:58
+ask
+31:59
+not just which pixels of the image
+32:01
+affect
+32:02
+the final class score but now again we
+32:05
+want to return to this question of
+32:07
+what are intermediate features inside
+32:09
+the network looking for
+32:11
+and we can use gradient information to
+32:13
+help us answer this question as well
+32:15
+um so here what we can do is we can pick
+32:17
+some again we can pick some layer of the
+32:19
+neural network
+32:20
+and pick some filter inside the neural
+32:22
+network
+32:23
+and now what we can do is run the image
+32:26
+take an image take a training image or a
+32:27
+test
+32:28
+image run it through the neural network
+32:29
+and then back propagate
+32:31
+uh and then ask which pixels of the of
+32:34
+the input image
+32:35
+affect not the final class score but
+32:37
+affect this intermediate neuron value
+32:39
+instead
+32:40
+um right so then you could ask maybe
+32:42
+which which pixels of the input image if
+32:44
+i were to change them
+32:44
+would cause this uh this intermediate
+32:46
+neuron value to go up or down a lot
+32:49
+well the question is are these saliency
+32:50
+maps before training or after training
+32:52
+um definitely after training um so if
+32:54
+you try i i think if you try to compute
+32:56
+these cnc maps before training
+32:58
+you'll get some pretty bad garbage
+33:00
+although surprisingly i think they will
+33:02
+not be totally random even if you do it
+33:04
+before training
+33:05
+just because the convolutional struct
+33:06
+like convolution actually has a pretty
+33:08
+strong
+33:09
+regularizing effect on the functions
+33:10
+that are computed but i don't think
+33:12
+you'll get anything
+33:13
+so beautiful if you do this
+33:15
+visualization before training
+33:16
+it'll be uh probably quite random
+33:20
+right so then again we can apply the
+33:21
+same idea of using gradient information
+33:23
+to understand what these intermediate
+33:25
+features are looking for
+33:27
+so we take our input image of the
+33:28
+elephant run it through to some
+33:30
+intermediate layer
+33:31
+and then backprop not on the final score
+33:33
+but backprop on one of these
+33:34
+intermediate neuron values to say
+33:36
+which pixels of the input image are
+33:37
+going to affect this uh this output
+33:39
+this this intermediate neuron the most
+33:42
+and it turns out that for these
+33:44
+intermediate features um
+33:46
+using normal back propagation tends to
+33:48
+give kind of ugly results
+33:49
+so instead people do this kind of
+33:52
+horrible ugly hack called guided pack
+33:54
+propagation
+33:55
+that i think i don't fully understand
+33:56
+why it works but it tends to make the
+33:58
+images look prettier so we do it
+34:00
+but the idea with guided back
+34:02
+propagation is that you know normally
+34:04
+when you
+34:04
+forward propagate through a relu then
+34:06
+anything below zero
+34:08
+any any elements below zero are set to
+34:10
+zero and then when you back propagate
+34:11
+through a relu
+34:12
+then any upstream gradients in positions
+34:15
+of the input that were set to zero
+34:17
+are also set to zero right because on
+34:19
+you you take that same mask that you
+34:21
+used on the forward pass
+34:22
+and apply it to your upstream gradients
+34:24
+um so that's kind of back propagation
+34:26
+normal back propagation through a relu
+34:28
+so now in this idea of guided back
+34:30
+propagation
+34:31
+we're going to we're going to apply
+34:32
+we're also going to mask out
+34:34
+negative upstream gradients when we back
+34:36
+propagate through a relu
+34:38
+so that means we're going to uh when we
+34:39
+receive our upstream gradients when we
+34:41
+backpop through the relu we're going to
+34:42
+zero out
+34:43
+all the upstream gradients corresponding
+34:45
+to zero values of the input activations
+34:47
+and we're also going to zero out all
+34:49
+upstream gradients that are negative
+34:51
+so we're just going to eliminate all
+34:53
+negative upstream gradients and
+34:54
+like add this extra masking in the
+34:56
+backward pass
+34:58
+don't ask me why but this tends to make
+35:00
+images come out nicer when you do this
+35:02
+idea of backpropagation to
+35:03
+visualize images um so now this so now
+35:07
+when we apply this uh these guided back
+35:09
+propagation
+35:10
+to images then it lets us pick out the
+35:13
+pixels of the image
+35:14
+that were uh caught that were causing
+35:16
+that neuron value to be changed
+35:18
+to affect that neuron value um so here
+35:21
+on the left we're showing the same
+35:22
+visualization that we saw before
+35:24
+of maximally activating tests that
+35:26
+patches for
+35:27
+different neurons inside the network and
+35:29
+now on the right we've applied guided
+35:31
+back propagation
+35:32
+to say which pixels of these patch
+35:35
+actually affect the value of the neuron
+35:37
+um right so then remember on this
+35:38
+visualization from this from this maybe
+35:40
+top row
+35:41
+by kind of looking at these images our
+35:43
+human intuition was that these neurons
+35:45
+were kind of looking for
+35:47
+these these dog noses or eyes in these
+35:49
+patches
+35:50
+and now when we do guided back
+35:52
+propagation we see that indeed the
+35:54
+pixels corresponding to the interior of
+35:56
+those eyes
+35:57
+are indeed the ones that matter for this
+35:59
+uh for this neuron value
+36:01
+and similarly similarly for this text
+36:03
+neuron at the bottom it actually is
+36:04
+indeed the pixels of the text
+36:06
+that are causing this this neuron value
+36:07
+to change so that gives us some
+36:09
+additional intuition about what these
+36:11
+neurons are looking for
+36:14
+and we can apply that again to these
+36:15
+other deeper layers and get similar
+36:16
+intuitions
+36:17
+so then you can see our human face
+36:19
+neuron from before
+36:20
+is indeed looking at the pixels of the
+36:22
+human faces which is
+36:24
+encouraging to see okay so so far what
+36:28
+we've done is we've used gradient
+36:29
+information
+36:30
+to pick out pixels of test set images
+36:33
+that affect different values of the
+36:36
+neurons or of the class scores
+36:38
+but basically this is restricting us to
+36:40
+uh pick out
+36:42
+this is sort of restricting us to
+36:43
+patches or images that actually appear
+36:45
+in the test set
+36:46
+so now we could kind of take this idea a
+36:48
+step further
+36:49
+and ask um could we right so in guided
+36:52
+back propagation what we were doing
+36:54
+is we were taking a test set image and
+36:56
+then asking which pixels of that image
+36:58
+were responsible for causing neuron
+37:00
+values to be one or to be some value
+37:03
+and now we could actually take this a
+37:04
+step further and not restrict ourselves
+37:07
+to test to
+37:08
+test that images and instead ask among
+37:11
+all
+37:11
+possible images which what what image
+37:14
+would
+37:14
+maximally activate one of our neuron
+37:16
+values and now what we want to do
+37:18
+is is actually generate a new synthetic
+37:20
+image that would cause
+37:22
+one of our neuron values to be maximized
+37:25
+and we can do this using uh now gradient
+37:28
+a sent
+37:28
+on the pixels of the image itself right
+37:31
+so here what we're doing is
+37:33
+i star is an image that will maximally
+37:35
+activate some chosen neuron inside the
+37:37
+network
+37:38
+and now f i is the value of the image
+37:41
+of the value of the chosen neuron uh
+37:43
+when up when we run the network on that
+37:45
+image
+37:46
+and now ri is some regularizer that
+37:49
+forces the image that we're generating
+37:50
+to be uh to be
+37:52
+somehow natural and now this this kind
+37:55
+of what we're doing is this looks very
+37:56
+similar to the
+37:58
+the equation that we saw when we train
+37:59
+weights of a neural network
+38:01
+but now rather than training the weights
+38:02
+of a neural network instead we want to
+38:04
+train the image that will cause a
+38:07
+trained network to maximally activate
+38:08
+one of its in one of its intermediate
+38:10
+features
+38:11
+and now we can find this image using our
+38:13
+favorite gradient ascent algorithm
+38:15
+where we just kind of change the image
+38:17
+one bit at a time using gradient
+38:19
+information
+38:20
+so kind of the way this looks like is
+38:22
+that in order to generate an image via
+38:24
+gradient ascent
+38:25
+what we're going to do is initialize our
+38:26
+original image to zero or maybe random
+38:28
+noise or something like that
+38:30
+then we're going to run our image
+38:31
+through the network extract out the
+38:33
+value of our chosen neuron
+38:35
+back propagate uh to find the the pixels
+38:38
+of the
+38:39
+the image that would cause the neuron
+38:41
+value to change
+38:42
+and now make a small gradient step on
+38:44
+the image itself
+38:45
+and then repeat this over and over again
+38:47
+until we've generated some synthetic
+38:49
+image
+38:49
+that will cause that will cause that
+38:51
+chosen neuron value to be high
+38:54
+and now what's really important it turns
+38:56
+out right because you saw in the last
+38:57
+lecture that this looks very similar to
+38:59
+the procedure that we use for generating
+39:00
+adversarial examples
+39:02
+so it turns out that if you kind of run
+39:04
+this procedure uh
+39:05
+on its own you end up generating not
+39:07
+interesting images but instead
+39:08
+generating adversarial examples
+39:10
+so to get good results out of this it's
+39:12
+important to choose some kind of
+39:14
+regularizer
+39:15
+that will constrain our image that we're
+39:17
+generating in some way
+39:18
+and force our generated image to look
+39:20
+natural in some way
+39:21
+and now a really stupid way that we can
+39:24
+force the image to look natural
+39:25
+is just constrain its l2 norm of the
+39:27
+over of the overall image
+39:29
+so now if we do this what we're going to
+39:30
+do is we want to find images
+39:32
+that will maximize the class score for
+39:35
+one of the category labels on imagenet
+39:37
+and also have low l2 norm for the for
+39:40
+the entire generated image
+39:41
+and if we do that we end up generating
+39:43
+images that look something like this
+39:46
+uh yeah a question yes yes all of this
+39:48
+on fully trained networks
+39:49
+right right so the idea here is that we
+39:51
+want to fix the weights of the
+39:53
+we have a trained network we're going to
+39:54
+fix the weights of the trained network
+39:56
+and now we want to some we want to like
+39:58
+learn an image that would
+39:59
+cause the image to have the network
+40:01
+respond in a chosen way
+40:03
+um so we're going to fix the nates of
+40:04
+the weights of the network but we can
+40:06
+still back propagate through the network
+40:07
+to compute gradients on the image
+40:10
+and now if we do this procedure then we
+40:11
+can generate these images
+40:13
+that are images that we've invented from
+40:16
+scratch
+40:16
+that will cause the cause the network to
+40:18
+recognize them as our chosen class
+40:20
+so if you look at this example on the
+40:22
+upper left we've generated a novel image
+40:24
+that should be recognized
+40:26
+confidently as dumbbell and you can see
+40:28
+there actually is kind of some dumbbell
+40:30
+shapes going on in this thing
+40:32
+which is uh pretty exciting or if you
+40:34
+look over at the
+40:35
+this upper right hand image we're trying
+40:37
+to generate uh dalmatian
+40:39
+and you can see these kind of black and
+40:41
+white spotted patterns kind of popping
+40:42
+out
+40:43
+emergently and kind of generating from
+40:45
+scratch
+40:46
+this this dalmatian pattern that is
+40:48
+pretty exciting
+40:49
+um so right this gives us some idea that
+40:51
+maybe that when neural network is
+40:52
+looking for dalmatian
+40:54
+one of the key features that it's using
+40:55
+is just this kind of black and white
+40:57
+pattern that dalmatians have on their on
+40:59
+their code
+41:00
+um so this gives us some way to
+41:02
+visualize or understand
+41:04
+what features in the image that the
+41:06
+neural network is using to classify them
+41:10
+um so here we're looking at some more um
+41:11
+i like the goose example here
+41:13
+or the ostrich example here you can see
+41:15
+these ostriches kind of this this like
+41:17
+it's kind of inventing ostriches all
+41:18
+over the image that's giving this
+41:20
+sort of coarse overall ostrich shape
+41:24
+okay but now basically at this point
+41:26
+we've used a pretty stupid regularizer
+41:29
+that these images don't look very
+41:30
+natural we can kind of get some of these
+41:32
+coarse
+41:33
+shapes coming out of the image but they
+41:34
+don't look like super these images don't
+41:36
+look like super realistic
+41:38
+so what we can do instead is play around
+41:40
+with better regularizers
+41:41
+so there's a whole set of papers where
+41:43
+people try to invent
+41:45
+better natural image regularizers that
+41:47
+force our generated images to look more
+41:49
+natural
+41:50
+and these like these regularizers can
+41:52
+get kind of hacky um so
+41:53
+maybe just one flavor of a regularizer
+41:56
+is that um
+41:57
+rather than just penalizing the l2 norm
+41:59
+maybe we want to make sure the image is
+42:00
+smooth so we apply some
+42:02
+we apply some blurring and clipping of
+42:04
+the pixel values
+42:05
+inside the optimization loop somehow i
+42:07
+think the details are not super
+42:08
+important
+42:09
+the idea here is that if you hack around
+42:11
+with the image regularizer
+42:12
+you can generate images that look even
+42:14
+more realistic so now if we apply this
+42:16
+more sophisticated image regularizer to
+42:18
+the same idea of gradient ascent
+42:21
+now we generate images that look maybe
+42:23
+even more realistic
+42:24
+so now we generate these these flamingos
+42:26
+we can see these kind of pink
+42:27
+flamingo-like shapes kind of
+42:29
+emerging that are giving us some
+42:32
+generated image that will be highly
+42:33
+confident that
+42:34
+the network will be highly confident
+42:35
+these are flamingos
+42:38
+we can look at these uh these billiard
+42:39
+tables and kind of see these like pool
+42:41
+tables kind of emerging out of nowhere
+42:44
+and now this idea of using gradient a
+42:46
+sent plus image regularizers
+42:48
+we can apply this not just to right so
+42:50
+far we've applied this to
+42:52
+find images that maximally activate a
+42:54
+class one of the
+42:55
+class scores at the end of the network
+42:57
+we can also do the same thing to
+42:58
+visualize
+42:59
+to generate synthetic images that will
+43:01
+maximally activate
+43:02
+interior uh interior neurons inside the
+43:05
+network as well
+43:07
+so here um you can see that maybe in
+43:09
+layer five there's some nut
+43:11
+there's some layers that look for these
+43:13
+kind of like spider-like patterns
+43:14
+or look for these kind of eye like
+43:16
+patterns or maybe down on layer three
+43:19
+there's um some neurons that look for
+43:20
+these kind of green blobs or red blobs
+43:22
+in the input image
+43:23
+so this gives us another technique that
+43:25
+we can use to general to understand what
+43:27
+these intermediate features are looking
+43:29
+for
+43:30
+and there's a like i said there's a
+43:32
+whole sort of cottage industry of papers
+43:33
+that
+43:34
+try to invent better and better natural
+43:36
+image regularizers to make these types
+43:37
+of visualizations look better
+43:39
+so there's another kind of regularizer i
+43:41
+don't want to go into at all here
+43:43
+that kind of makes images look better or
+43:46
+one of my favorites um right so this is
+43:48
+this idea of multi-faceted visualization
+43:50
+you can
+43:51
+now generate images that look even more
+43:53
+realistic using a more sophisticated
+43:55
+natural image regularizer
+43:57
+people go really crazy on this thing so
+43:59
+now here we're using a really really
+44:01
+really fancy natural image regularizer
+44:03
+that's actually based on a generative
+44:04
+adversarial network that we'll talk
+44:06
+about maybe in a few lectures but now
+44:08
+these are kind of
+44:08
+images that we've invented from scratch
+44:11
+that will be highly recognized as the
+44:12
+target category
+44:14
+and will be uh and should be natural or
+44:16
+realistic
+44:18
+so now these there's this kind of this
+44:19
+like toaster image emerging from scratch
+44:21
+that is now a synthetic image that has
+44:23
+been generated via gradient ascent
+44:25
+but will be uh recognized as toaster by
+44:28
+the neural network
+44:31
+now when i read papers like this i
+44:32
+always feel like there's kind of a weird
+44:34
+tension in these papers because the
+44:36
+original point of this kind of research
+44:38
+direction
+44:38
+was to understand what neural networks
+44:40
+were actually looking for and i feel
+44:42
+like
+44:42
+the more we put more intense image
+44:44
+regularizers on the thing
+44:46
+kind of the more we lead ourselves
+44:48
+astray
+44:49
+like the the the smarter an image
+44:51
+regularizer we put on the thing
+44:52
+then the further away we get from what
+44:54
+the network is actually looking for
+44:55
+um so somehow when when i look at images
+44:57
+like this
+44:59
+it's really hard for me to say like how
+45:00
+much of this is due to this is what the
+45:02
+network is actually looking for
+45:03
+versus how much have we just like used a
+45:05
+really really smart
+45:06
+natural image regularizer to force us to
+45:08
+generate natural images
+45:10
+so for me personally even though these
+45:12
+images maybe look more beautiful
+45:14
+i kind of like the results that use very
+45:16
+simple image regularizers
+45:18
+i think that gives us maybe a more pure
+45:20
+sense of what is the raw
+45:22
+the features and images that these
+45:23
+networks are looking for
+45:25
+so i think you should maybe not get too
+45:27
+led astray by these examples that look
+45:28
+super beautiful
+45:31
+okay so then i think you already talked
+45:32
+about adversarial examples right so what
+45:34
+happens if you have no regularizer
+45:36
+whatsoever
+45:36
+um then of course you end up with
+45:38
+adversarial examples um so then i i
+45:40
+think you you talked you heard about
+45:42
+this in depth
+45:42
+from our guest lecture last week but you
+45:44
+know we can start from an image
+45:46
+of one class like an african elephant
+45:48
+and then use gradient ascent
+45:49
+on the class score of another class and
+45:51
+then cause
+45:52
+and then sort of imperceptibly change
+45:54
+the pixels of the image
+45:56
+to cause it to be confidently
+45:58
+confidently classified
+45:59
+as another class so then here we've
+46:01
+taken this image of an african elephant
+46:03
+and now changed it just a little bit and
+46:05
+now it's classified very very
+46:07
+confidently as koala
+46:09
+or we've taken this schooner image even
+46:11
+though we still don't know what a
+46:12
+schooner is
+46:13
+and then classified it very confidently
+46:14
+as an ipod which maybe we do know what
+46:16
+it is and it's not this
+46:18
+um and of course uh this these were very
+46:21
+very tiny imperceptible differences uh
+46:22
+that were used to generate these
+46:23
+adversarial examples
+46:26
+okay so now another kind of uh idea that
+46:29
+we can now another thing that we can do
+46:30
+using this idea of gradient ascent and
+46:32
+using image gradients to
+46:34
+understand what's going on in networks
+46:36
+is this idea of feature inversion
+46:38
+so here what we can do is given an image
+46:40
+we can extract given a given a test that
+46:42
+image
+46:42
+we're going to extract its feature
+46:44
+representation at some layer of the
+46:45
+network and then set that feature
+46:46
+representation aside
+46:48
+now what we want to do is use gradient
+46:49
+descent to generate a new image
+46:52
+which matches that feature which has the
+46:54
+same feature representation as that
+46:55
+feature we've set aside
+46:57
+so what we're trying to do is kind of
+46:58
+like invert the feature representation
+47:00
+that has been computed by the neural
+47:01
+network um and there's kind of a lot of
+47:04
+maybe
+47:04
+math on the slide but it's very like
+47:06
+it's very simple it's the same idea of
+47:07
+gradient descent that we've been looking
+47:08
+at before so here what we're going to do
+47:11
+is we're going to our loss function is
+47:13
+now whether
+47:14
+our set aside feature of the original
+47:16
+image and the feature representation of
+47:18
+our generated image are the same
+47:19
+in some l2 sense and then plus some
+47:22
+image regularizer
+47:24
+and this will give us some sense of
+47:26
+what's going on or what's being
+47:27
+recognized at
+47:29
+what what kind of information is being
+47:30
+preserved or thrown away at different
+47:32
+layers of the neural network
+47:34
+so then here is a visualization of this
+47:36
+idea using feature inversion or feature
+47:39
+reconstruction
+47:40
+from different layers of a trained vgg
+47:42
+network
+47:43
+so here on the left we're showing our
+47:44
+original input image y
+47:47
+and now this this first column relu 2 2
+47:49
+what we've done is we've taken our image
+47:51
+y
+47:52
+extracted the relu two two features from
+47:54
+the vgg network
+47:55
+and then run feature inversion to
+47:57
+synthesize an image from scratch
+47:58
+that will have the same relu two two
+48:00
+features as y
+48:02
+so when we do this procedure you see
+48:03
+that the images we generate by inverting
+48:06
+relu 2
+48:07
+look pretty much identical to the
+48:08
+original image y which means that
+48:10
+basically all of the image information
+48:13
+is still it is still captured by these
+48:15
+low-level relu 2-2
+48:16
+features but now as we go up in the
+48:18
+network maybe up to relu43
+48:20
+now if we try to invert these relu 4 3
+48:23
+features
+48:24
+we see that some information has been
+48:25
+lost that now this the sort of the
+48:28
+overall
+48:28
+shape or structure of the images are
+48:31
+still preserved
+48:32
+but somehow the low level texture and
+48:34
+color information
+48:35
+has sort of been lost once we go to
+48:37
+these relu four three
+48:38
+layers and if we go all the way up to
+48:40
+relu five three
+48:42
+we can see that basically all of the
+48:44
+local color and texture information has
+48:45
+been lost
+48:46
+but kind of the global structure of
+48:48
+these image of these uh the elephant and
+48:50
+the fruit
+48:50
+is still visible so that gives us um
+48:53
+some sense that maybe the low layers of
+48:54
+the neural network
+48:55
+really preserve most of the information
+48:57
+about the image and then the further we
+48:59
+go off the network the more in the more
+49:00
+information is thrown away
+49:02
+about those raw input images
+49:05
+okay so now that we've kind of used
+49:06
+these all these gradient techniques to
+49:08
+peer into trained networks it turns out
+49:10
+we can use a lot of these same
+49:11
+techniques to now have some fun
+49:14
+so one idea is this uh this project from
+49:16
+google from a couple years ago
+49:18
+called deepdream so the idea in
+49:20
+deepdream is that
+49:21
+we want to take an existing image and
+49:23
+then amplify
+49:24
+whatever features were present in the
+49:26
+original image so what we're going to do
+49:28
+is take our original input image
+49:30
+um run it through the cnn extract
+49:32
+features at some layer of the network
+49:34
+and now set the gradient of the layer
+49:36
+equal to the activation values
+49:38
+themselves
+49:38
+and now back propagate and update the
+49:40
+image and what this will do
+49:42
+is um basically whatever features were
+49:44
+recognized by the neural network
+49:46
+we want to change the image to cause
+49:48
+those features to be activated even more
+49:49
+strongly
+49:51
+and so basically this is also equivalent
+49:53
+to maximizing
+49:54
+the the l2 norm or is somehow equivalent
+49:57
+to maximizing some some
+49:59
+uh l2 sense of the features of that
+50:01
+layer
+50:03
+the code for this is relatively simple
+50:04
+um but we also need to use a couple
+50:06
+image regularizers to get good results
+50:09
+um in this they used again a couple
+50:11
+natural image regularizers to get a more
+50:12
+beautiful outputs
+50:14
+so then the way that this works is if
+50:16
+you start with deep dream and uh
+50:18
+start with this this image of a
+50:19
+beautiful sky and then run
+50:21
+deep dream to then we're going to run
+50:23
+this deep dream algorithm
+50:24
+to amplify existing features um whatever
+50:27
+features are going to be recognized in
+50:29
+this image we want to amplify them
+50:30
+and now modify the image to cause
+50:32
+features those recognized features to be
+50:34
+amplified
+50:34
+so if we after we run deep dream on some
+50:37
+layer of the network
+50:38
+we get some output like this so here
+50:41
+what what we've done is basically
+50:42
+um we've we've run deep dream on a
+50:45
+relatively low layer of the network
+50:47
+so then that layer of the network was
+50:48
+maybe recognizing different types of
+50:50
+edge information
+50:51
+in the clouds and now for each of those
+50:53
+edges
+51:07
+sort of nice swirly edge effect artistic
+51:09
+edge effect applied to the input image
+51:12
+so this is what happens if we apply the
+51:13
+deep dream at a relatively low layer of
+51:15
+the neural network
+51:16
+and we kind of know that we are kind of
+51:17
+already know that low layers of neural
+51:19
+networks are maybe looking for edge
+51:20
+information
+51:21
+um if we and we had this idea that
+51:23
+higher layers and neural networks were
+51:24
+looking for maybe more abstract concepts
+51:26
+and images
+51:27
+so now if we apply deep dream to some
+51:29
+higher layer in the neural network
+51:30
+we get maybe some output like this so
+51:33
+now you can see that um
+51:34
+now there's like whole structures being
+51:36
+emerged from this input image
+51:38
+that the neural network is kind of like
+51:39
+looking up at the clouds and then kind
+51:41
+of inventing stuff for itself that it
+51:43
+sees up in the clouds
+51:44
+um so if you look at these uh neural if
+51:47
+you look at the pattern
+51:48
+there's actually some common patterns
+51:49
+that show up a lot in these deep dream
+51:50
+images
+51:52
+so there's this kind of admiral dog over
+51:54
+here on the left there's this
+51:56
+pig snail over here this camel bird or
+51:58
+this one on the right is this dog fish
+52:00
+that kind of has a
+52:00
+head of a dog and then the tail of a
+52:03
+fish
+52:04
+um so these are kind of like pat if you
+52:06
+look at a lot of deep dream images
+52:07
+you'll see a lot of these uh these
+52:08
+patterns show up over and over again
+52:10
+so if you look at this i think you'll
+52:11
+see a lot of kind of like mutant dogs
+52:13
+and mutant birds all kind of like crazy
+52:15
+uh
+52:15
+psychedelic animals um so now
+52:19
+if you if you run deep dream for even
+52:20
+longer then you start to deviate even
+52:22
+further and further from the original
+52:24
+input image
+52:25
+so you if you kind of run deep stream
+52:26
+for a very long time um and kind of do a
+52:28
+multi-scale and do some other stuff
+52:30
+you can generate these like very crazy
+52:32
+images from scratch that are kind of
+52:34
+like the neural network dreaming for
+52:35
+itself
+52:36
+um images that will cause its
+52:38
+intermediate features to be highly
+52:39
+activated
+52:40
+um so i think uh this is an example of a
+52:43
+deep dream image that was trained
+52:44
+using a network that was trained on
+52:46
+imagenet and you know we know that
+52:47
+imagenet is a data set of objects
+52:49
+but it turns out if we train a an image
+52:53
+classifier not on imagenet
+52:54
+but on another data set of different
+52:57
+types of scenes
+52:58
+then we get deep dream images that look
+53:00
+very different
+53:01
+so now these are images that were
+53:02
+generated from scratch using this deep
+53:04
+dream algorithm
+53:05
+um using a cnn classifier that was
+53:07
+trained on images of different types of
+53:09
+places or different types of scene
+53:11
+categories
+53:12
+and you can see that there's these sort
+53:13
+of fantastical structures just emerging
+53:16
+from scratch
+53:17
+that are being generated using this uh
+53:19
+using this deep dream algorithm
+53:22
+so this was uh this was really amazing
+53:23
+when when this when this first came out
+53:25
+um
+53:26
+when some folks at google published this
+53:27
+a couple years ago everyone was like
+53:29
+holy cow this is amazing we can use
+53:30
+neural networks to generate these like
+53:31
+crazy pieces of artwork and that was
+53:33
+very exciting
+53:34
+so it turned out that there's actually
+53:36
+uh more cool stuff that we
+53:38
+more interesting ways that we can use
+53:39
+neural networks to generate cool
+53:41
+interesting images um but to show
+53:44
+to give you another example well we need
+53:46
+to take a detour into some non-neural
+53:48
+network
+53:49
+uh ideas so here's there's this very
+53:52
+classical idea
+53:53
+in uh computer graphics there's this
+53:55
+task of texture synthesis
+53:57
+so now with texture synthesis what we
+53:59
+want to do is input some little image
+54:01
+patch
+54:01
+giving some regular texture and then we
+54:03
+want to generate some
+54:05
+text some some output image which is
+54:07
+maybe much much larger
+54:08
+but kind of still matches the local
+54:10
+texture statistics of the input image
+54:12
+and there's some classical algorithms
+54:14
+for doing this it turns out that we can
+54:16
+actually use some nearest neighbor type
+54:17
+algorithms
+54:18
+to do texture synthesis pretty with
+54:21
+pretty decent results
+54:22
+so now i don't want to go into the
+54:24
+details of this algorithm here
+54:26
+um but these are papers from 1989 and
+54:28
+2000 so these are no neural networks
+54:30
+here this is kind of like nearest
+54:31
+neighbor retrieval on raw pixel values
+54:34
+but it turns out we can actually do like
+54:35
+pretty good texture synthesis
+54:38
+using no neural networks and just like
+54:40
+pixel values
+54:41
+as long as our textures are simple so
+54:44
+here using these kind of traditional
+54:45
+approaches to these traditional graphics
+54:47
+algorithms
+54:48
+we can do texture synthesis on these
+54:50
+like green scales or on these bricks
+54:52
+or here we're doing it on a printed text
+54:54
+and now we can generate new images that
+54:56
+kind of match the spatial texture of the
+54:58
+input
+54:59
+but are much bigger and much more
+55:00
+interesting but now of course because
+55:02
+this is a class about neural networks
+55:04
+you we need to say um actually how can
+55:06
+we solve this texture synthesis problem
+55:08
+using neural networks so there was a
+55:11
+really
+55:12
+nice paper that came out a few years ago
+55:14
+that showed how we can use a similar
+55:16
+idea
+55:17
+of gradient a sent on pixels through
+55:19
+trained neural networks
+55:21
+to solve this task of texture synthesis
+55:23
+as well
+55:24
+so here the idea is that um it's similar
+55:27
+to this idea of feature inversion right
+55:29
+remember in feature inversion
+55:30
+we had some original some some input
+55:32
+image and we wanted to generate
+55:34
+a novel image that matched the features
+55:35
+of our input now we want to use a
+55:37
+similar idea to generate
+55:39
+textures but but now what is a texture
+55:42
+a texture is something that doesn't we
+55:44
+don't want it to match the exact pixels
+55:45
+of the input image
+55:46
+we want it to match the overall spatial
+55:48
+structure of the uh
+55:50
+match kind of the local texture features
+55:51
+of the input image but not care about
+55:53
+the the
+55:53
+the spatial structure so then what we
+55:55
+want to do is we
+55:56
+use this construction called a gram
+55:58
+matrix which is a way to capture
+56:00
+local texture information from cnn's
+56:03
+while throwing away all the spatial
+56:04
+information
+56:06
+so how does this work well what we do is
+56:08
+we choose some layer of the neural
+56:09
+network
+56:09
+and then run our our our texture image
+56:12
+our target image through the network
+56:14
+and that extracts this feature volume of
+56:16
+maybe height by width by number of
+56:17
+channels is the three-dimensional
+56:19
+feature volume
+56:20
+that is computed by some convolutional
+56:21
+layer of the network
+56:24
+and now what we want to do is we take
+56:26
+two of these c-dimensional feature
+56:27
+vectors
+56:28
+from two different points in space and
+56:30
+now compute their outer product
+56:32
+and now their outer product is a c by c
+56:34
+matrix and this c by c matrix
+56:36
+gives on all of the element wise
+56:38
+products between these two feature
+56:40
+vectors
+56:40
+that we took out from two places in the
+56:42
+input image
+56:44
+and now what we want to do is use the
+56:45
+same construction um and repeat it
+56:47
+across
+56:48
+all possible blue and red pairs right so
+56:50
+for each
+56:51
+pair in for each pair in the input image
+56:54
+we want to compute this outer product
+56:56
+and then we want to average this outer
+56:58
+product over all of the pairs
+57:00
+in this input volume and now if we do
+57:03
+this
+57:03
+this gives us a c by c matrix giving
+57:06
+actually the unnormalized covariance
+57:08
+between the feature vectors
+57:09
+computed by the image computed by this
+57:12
+neural network
+57:13
+so now this c by c matrix is called the
+57:15
+gram matrix
+57:17
+and now it's a c by c matrix and it has
+57:20
+basically thrown away all of the spatial
+57:21
+information
+57:22
+from this uh from this neural network
+57:25
+feature representation
+57:26
+but it has somehow kept or what what the
+57:29
+information being captured in this gram
+57:30
+matrix
+57:31
+is which pairs of features in this seed
+57:34
+of these c filters in the layer which of
+57:37
+these pairs of filters tend to activate
+57:39
+together
+57:39
+or tend to activate not together right
+57:42
+so this this gram matrix tells us
+57:43
+something about which features are
+57:45
+correlated with each other
+57:46
+in the input image and by the way we can
+57:49
+officially compute the scram matrix
+57:51
+using some reshaping and matrix
+57:52
+multiplication
+57:54
+and now the idea is that this gram
+57:55
+matrix is somehow a descriptor which is
+57:57
+telling us
+57:58
+which features tend to co-occur at
+58:00
+different positions in the image
+58:02
+but it throws away all of the spatial
+58:04
+structure of the input image
+58:06
+so now the idea is that we can use use
+58:08
+uh perform texture synthesis using
+58:10
+neural networks
+58:11
+by trying to match the gram matrix of
+58:13
+some target image
+58:14
+using gradient ascend so now the way
+58:17
+that this works is we can use
+58:19
+uh compute texture synthesis using
+58:21
+neural networks
+58:23
+using this very simple gradient ascent
+58:25
+algorithm to match gram matrices
+58:27
+so the way that this works is step one
+58:28
+we're going to pre-train a cnn on
+58:30
+imagenet or some other data set
+58:32
+step two we're gonna have we're gonna
+58:34
+have some target texture image that we'd
+58:36
+like to synthesize
+58:36
+a new image from which is this rock this
+58:39
+image of rocks in this example
+58:40
+we're going to run that image through
+58:42
+the neural network and compute
+58:44
+these these gram matrices for each for
+58:47
+each layer inside the neural network and
+58:50
+then we're going to initialize our
+58:51
+generated image from scratch
+58:53
+run our generated image through the same
+58:55
+neural network and again
+58:56
+compute the gram matrices for the
+58:58
+generated image at each layer of this
+59:00
+neural network
+59:02
+and now our loss and now our loss
+59:03
+function here is the
+59:05
+the weighted sum of the euclidean
+59:07
+distances between the
+59:08
+the gram matrices of our original
+59:10
+texture image and the gram matrices of
+59:12
+the image that we're synthesizing
+59:14
+um so then that then basically we were
+59:17
+just comparing all the gram matrices
+59:19
+from these two images and using that to
+59:21
+compute a scalar loss
+59:23
+and then once we have that scalar loss
+59:24
+we can back propagate into the pixels of
+59:26
+the image that we're generating we can
+59:28
+get a
+59:28
+the gradient with this of that loss with
+59:30
+respect to the image that we're
+59:31
+generating
+59:32
+and then make a gradient step on the
+59:33
+image that we're generating and now
+59:34
+repeat this over and over again
+59:36
+and hopefully generate some and now
+59:38
+hopefully our generated image
+59:39
+will we've hopefully generated some
+59:41
+image that has the same gram matrices
+59:43
+as uh this original input image that we
+59:46
+started from
+59:48
+and now if we do this it actually works
+59:49
+pretty well and now with this this idea
+59:52
+of neural texture synthesis
+59:53
+by matching gram matrices actually lets
+59:56
+us
+59:56
+synthesize novel images that kind of
+59:59
+match the same
+60:00
+texture of an input image but look sort
+60:02
+of very different in spatial structure
+60:04
+so um here in the top row we're showing
+60:06
+different uh different images that we're
+60:08
+starting from
+60:09
+and now underneath we're showing um
+60:11
+generating images
+60:13
+by matching gram matrices at different
+60:15
+layers of our pre-trained neural network
+60:18
+so you can see that if we match if we
+60:19
+generate images that match gram matrices
+60:21
+at a very low layer
+60:23
+then we tend to capture these like very
+60:25
+low level uh
+60:26
+patches of color and as we additionally
+60:29
+match gram matrices from higher and
+60:31
+higher layers in the neural network
+60:32
+we can see that we're now generating
+60:34
+novel images
+60:36
+that kind of match the overall texture
+60:38
+of our input image
+60:39
+but have very different spatial
+60:41
+structures
+60:42
+so this was a pretty exciting result
+60:44
+that got a lot of people
+60:46
+pretty excited that now we're able to
+60:47
+generate novel images that uh actually
+60:49
+look quite realistic
+60:50
+and are able to synthesize textures of
+60:53
+from pretty broad a variety of input
+60:55
+images
+60:57
+and now someone had some some really
+60:59
+brilliant person
+61:00
+um had the idea of what if we set our
+61:04
+texture
+61:04
+we do texture synthesis but we set the
+61:07
+texture image
+61:08
+to be a piece of artwork and now we're
+61:11
+actually going to do
+61:12
+two things jointly we want to combine
+61:14
+this idea of feature reconstruction
+61:16
+with this idea of texture synthesis and
+61:19
+this actually
+61:20
+is a beautiful matching right because
+61:22
+now what we want to do is we want to
+61:23
+synthesize an image
+61:24
+that matches the features of one image
+61:27
+and also matches the grand matrices of
+61:29
+another image
+61:30
+and now we saw from this feature
+61:32
+reconstruction example that when you
+61:34
+recon when you try to invert relatively
+61:36
+high
+61:37
+features from relatively high layers of
+61:38
+a neural network then it tends to keep
+61:40
+the overall coarse
+61:42
+spatial structure of the input image but
+61:43
+it ignores all the all the
+61:45
+all the texture and color information
+61:47
+and we see that when we perform gram
+61:49
+matrix matching
+61:50
+then it throws away all the spatial
+61:51
+structure but it actually preserves a
+61:53
+lot of the texture and color information
+61:56
+so when you combine these two ideas
+61:57
+together you actually get something very
+61:59
+magical
+62:00
+so here what we want to do is this this
+62:02
+algorithm of neural style transfer
+62:04
+that is we're going to generate an image
+62:06
+that matches the
+62:08
+the the the features of one image called
+62:10
+the content image
+62:11
+and matches the gram matrices of another
+62:13
+image called the style image
+62:14
+and now we can use gradient a sent to
+62:17
+match both of these things jointly
+62:18
+and now generate a novel image that
+62:20
+matches the features
+62:22
+matches the features of one and the
+62:23
+grand matrices of the other
+62:25
+and now this uh this sort of lets us
+62:27
+generate novel images in this artistic
+62:29
+style
+62:30
+of an input style image
+62:33
+and the way that this works is sort of
+62:34
+gradient ascent through this uh this
+62:36
+pre-trained network
+62:38
+and now what's interesting is because
+62:39
+this is a gradient ascent procedure
+62:41
+we're kind of starting the image from
+62:43
+some random initialization
+62:44
+and then performing gradient steps over
+62:46
+time that are going to gradually change
+62:49
+the image bit by bit
+62:50
+to generate this novel image that
+62:51
+matches the features of one and the gram
+62:53
+matrices of the other
+62:55
+so this visualization shows the progress
+62:57
+of gradient ascent over many iterations
+62:59
+as we kind of converge to this final
+63:01
+output
+63:03
+so this this idea of neural style
+63:04
+transfer is something that i've actually
+63:06
+worked on quite a lot
+63:07
+um so i have an implementation of this
+63:09
+neural style transfer algorithm
+63:11
+um from a couple years ago that's
+63:12
+actually predates pytorch so i did it in
+63:14
+lua it was that's what we did back in
+63:17
+the day
+63:18
+um and these are some example outputs of
+63:19
+this neural style transfer algorithm
+63:21
+where we're transferring uh we're using
+63:23
+this content image of this
+63:25
+uh this this street scene and then rent
+63:27
+re-rendering it in the artistic style
+63:29
+of these different artistic images and
+63:32
+now you can actually there's a lot of
+63:33
+knobs you can tune inside this style
+63:36
+transfer algorithm
+63:37
+so because i told you that we're doing a
+63:39
+joint reconstruction of the
+63:40
+trying to match the features of one and
+63:42
+the gram matrices of the other
+63:44
+you can actually trade off between how
+63:45
+much do you want to reconstruct features
+63:47
+versus reconstruct gram matrices and as
+63:50
+we kind of trade off between those two
+63:52
+objectives using some scalar waiting
+63:53
+term
+63:54
+then on the left when you put a lot of
+63:56
+weight on the the feature reconstruction
+63:58
+then you tend to reconstruct the feature
+63:59
+image very well and on the right
+64:01
+if you set the the grand matrix uh
+64:04
+reconstruction term to be very high
+64:05
+then it kind of throws away all the
+64:07
+spatial structure and gives us just uh
+64:09
+just garbage
+64:10
+um so by the way this is brad pitt being
+64:12
+rendered in the style of picasso
+64:14
+and on the right it's like super picasso
+64:16
+and on the on the left it's like super
+64:17
+brad pitt
+64:20
+um so another knob we can tune here is
+64:22
+actually we can we can change the scale
+64:24
+of the features
+64:25
+that are that we generate that we that
+64:27
+we capture from the style image
+64:28
+by resizing the style image before we
+64:30
+send it to the neural network to compute
+64:32
+the gram matrices
+64:33
+um so here on the left if we make this
+64:35
+if so here we're rendering uh
+64:37
+the the golden gate bridge in the style
+64:39
+of van gogh's starry night
+64:41
+and here on the left if we make the
+64:42
+style image very large then we tend to
+64:44
+capture these these big
+64:45
+artists these big aggressive brush
+64:47
+strokes that van gogh uses in his
+64:49
+paintings
+64:50
+and if we set the style image to be very
+64:51
+small then instead we're going to
+64:53
+transfer
+64:54
+larger scale features from the style
+64:55
+image in this case the kind of stars
+64:58
+from the starry night from from the
+65:00
+starry night photo
+65:02
+so another fun thing we can do is
+65:03
+actually do multiple style images
+65:05
+so here we actually are going to jointly
+65:08
+match two different gram matrices
+65:10
+from from two different pieces of
+65:11
+artwork so now here we can uh
+65:14
+generate a novel style image that is
+65:16
+trying to
+65:17
+render an image jointly in a style of
+65:19
+starry night
+65:20
+and of the screen or kind of any other
+65:22
+arbitrary artistic combination that you
+65:24
+can think of
+65:25
+and here the here the way that we do
+65:26
+this is we just
+65:28
+have our target grand matrix be a
+65:30
+weighted combination of gram matrices
+65:32
+coming from the two different style
+65:33
+images
+65:35
+so another fun thing you can do with
+65:37
+this is that if you're kind of very
+65:38
+careful with your implementation
+65:39
+and you have a lot of gpus with a lot of
+65:41
+gpu memory you can run this thing on
+65:43
+very high resolution images
+65:45
+um so here here's a nearly 4k image of
+65:48
+stanford i think i need to fix this to
+65:50
+be a michigan image
+65:52
+but uh okay well we'll fix that for the
+65:54
+next time
+65:55
+but we can take this a very high
+65:57
+resolution of an image of stanford
+65:59
+and then run it in the style of
+66:02
+starry night and sort of capture all
+66:04
+these very high resolution
+66:05
+uh interesting artistic features from
+66:07
+the style image
+66:08
+um or we can run it not in the style of
+66:11
+van gogh
+66:12
+but in the style of um uh kanden
+66:16
+kandinsky and get this sort of very
+66:17
+beautiful output result
+66:20
+okay but now a very fun thing we can do
+66:22
+is actually do style transfer
+66:24
+and deep dream at the same time
+66:28
+so then what we can do is we can get
+66:30
+stanford with starry night
+66:32
+with all the psychedelic dog mutant dog
+66:34
+mutant dog things coming out
+66:36
+so this is like kind of a nightmare but
+66:38
+uh you can do it
+66:41
+okay so now this idea of neural style
+66:43
+transfer got a lot of people really
+66:45
+excited when you kind of see images like
+66:46
+maybe not this this one's terrifying but
+66:48
+um but like people saw images like this
+66:50
+and it was like holy cow this is really
+66:51
+cool
+66:52
+um this is a thing that we might want to
+66:53
+actually deploy out there in the world
+66:56
+but the problem is that this style
+66:57
+transfer algorithm is super slow
+66:59
+that because we're doing this iterative
+67:01
+process of gradient ascent
+67:02
+to generate any one of these images you
+67:04
+need to take many many gradient steps
+67:06
+um doing many many four backward passes
+67:08
+through a bgg network
+67:09
+um so to kind of put this in perspective
+67:12
+one of these high resolution images i
+67:13
+generated on i think
+67:15
+four gpus and it took like half an hour
+67:18
+so
+67:18
+that's gonna not scale if you wanna push
+67:20
+this thing out in production
+67:23
+yeah question um professor um i was just
+67:26
+wondering um maybe not for general
+67:29
+production but what if somebody wants
+67:30
+like
+67:31
+their their portrait in the style of
+67:33
+like a renaissance painter you know
+67:36
+oh so actually renaissance painters
+67:37
+don't work too well with this algorithm
+67:39
+um so this algorithm tends to capture
+67:42
+kind of color and texture patterns
+67:44
+so it tends to work really well with
+67:45
+like impressionist painters
+67:47
+um but like renaissance painters are
+67:49
+really about realism and that
+67:50
+those tend not to get captured super
+67:52
+well by this algorithm
+67:54
+okay so this is a problem style trends
+67:55
+are really cool but it's super slow
+67:57
+um takes a lot of gpus so um whenever
+68:01
+as a deep learning practitioner when
+68:02
+you're presented with a problem
+68:04
+your instinct should be to train another
+68:05
+neural network to solve the problem for
+68:07
+you
+68:07
+um so uh actually there's this great
+68:10
+paper
+68:10
+from johnson at all that that um
+68:14
+that shows how you can train a neural
+68:16
+network to
+68:17
+perform this style transfer algorithm
+68:20
+for you
+68:20
+so the idea is that we're going to have
+68:22
+uh have this this one
+68:24
+feed forward network that's going to
+68:25
+input the content image
+68:27
+and then output the stylized result and
+68:29
+when training this thing it's going to
+68:31
+maybe take a while to train
+68:32
+but after it's trained then we can just
+68:34
+break away this feed forward network
+68:36
+and use it on and now it'll just stylize
+68:38
+images for us in a single forward pass
+68:41
+um so now this this fast neural style
+68:43
+transfer algorithm
+68:45
+is now fast enough to run real time um
+68:47
+and this algorithm actually got pushed
+68:49
+out to production
+68:50
+um by pretty much all the big companies
+68:52
+so snapchat had this as a filter at one
+68:54
+point
+68:54
+uh google had this as a filter at one
+68:56
+point uh facebook messenger had this as
+68:58
+a filter at one point
+69:00
+so once style transfer was actually fast
+69:02
+enough to run in real time
+69:03
+then it actually got got deployed by
+69:05
+everyone so that was super cool
+69:07
+and there was there's a bunch of apps on
+69:08
+the app store that you can now find that
+69:10
+can do these style transfer effects
+69:12
+um on your smartphone um so you can
+69:14
+download those and play around with them
+69:17
+so um actually to kind of bring this
+69:18
+back a little bit you remember these
+69:20
+different normalization methods that we
+69:21
+talked about many lectures ago
+69:23
+batch normalization layer normalization
+69:25
+instance normalization group
+69:26
+normalization
+69:27
+well it turns out that one of these
+69:29
+instance normalization was actually
+69:31
+originally developed
+69:32
+for the task of fast of real-time style
+69:35
+transfer
+69:36
+so it turns out that actually using
+69:38
+instance normalization
+69:39
+inside these style transfer networks is
+69:41
+actually really important for getting
+69:43
+high quality results
+69:44
+from this fast neural style transfer
+69:46
+algorithm
+69:47
+so that's that's where instance
+69:48
+normalization comes from
+69:51
+so um there's kind of a downside here
+69:53
+which is that so far this
+69:54
+fast neural style transfer algorithm
+69:56
+only trains one network
+69:58
+for each different artistic style and
+70:00
+now if you're like
+70:01
+facebook and you want to ship these
+70:02
+shift lots of different styles out in
+70:04
+your app then you'd have to deploy lots
+70:05
+and lots of different networks and that
+70:07
+would be expensive
+70:08
+um so then some other folks figured out
+70:10
+how to train
+70:11
+one neural network that i could apply
+70:13
+lots of different styles
+70:15
+and there's actually kind of a the way
+70:16
+that they do it is actually kind of cool
+70:18
+the the idea is we're going to use this
+70:20
+new neural network layer
+70:21
+called uh conditional instance
+70:23
+normalization what that means is that
+70:25
+remember in
+70:26
+in something like batch normalization or
+70:28
+instance normalization
+70:29
+we're going to learn these scale and
+70:31
+shift parameters that um we apply
+70:33
+after we do the normalization step so
+70:35
+now um with conditional instance
+70:37
+normalization
+70:38
+what we're going to do is learn a
+70:40
+separate scale and shift parameter
+70:42
+for each different artistic style that
+70:44
+we want to apply all of the
+70:45
+convolutional layers in the network will
+70:47
+have the same weights for all the styles
+70:49
+and we'll just learn different uh
+70:50
+different scale and shift parameters
+70:53
+for each style that we want to learn to
+70:54
+apply and it turns out that just simply
+70:56
+learning different scale and shift
+70:58
+parameters inside the
+70:59
+these instance normalization layers um
+71:01
+gives the network enough
+71:02
+flexibility to represent uh to apply
+71:04
+different style transfer effects
+71:06
+using a single feed forward network so
+71:08
+then once we do this then it turns out
+71:10
+not only can a single neural network
+71:12
+apply lots of different styles
+71:13
+it can also blend different artistic
+71:15
+styles at test time
+71:17
+by using weighted combinations of these
+71:18
+learned scale and shift parameters
+71:22
+so that gives us so that gives us kind
+71:23
+of a brief overview of different ways
+71:25
+that we can
+71:26
+both understand what's going on inside
+71:29
+neural networks
+71:30
+we talked about mechanisms like using
+71:32
+nearest neighbors dimensionality
+71:33
+reduction
+71:34
+maximal patches and saliency maps to
+71:36
+understand what's going on inside neural
+71:37
+networks
+71:38
+and we saw how a lot of these same ideas
+71:40
+of gradient ascent
+71:41
+could be used not only to aid our
+71:43
+understanding of neural networks but
+71:44
+also to generate some some fun images
+71:46
+so hopefully you enjoy looking at those
+71:48
+psychedelic dogs
+71:50
+so come back next time and we'll talk
+71:51
+about object detection
+
+영어 (자동 생성됨)
+
+

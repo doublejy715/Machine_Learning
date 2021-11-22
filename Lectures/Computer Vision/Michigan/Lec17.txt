@@ -1,0 +1,4178 @@
+﻿00:00
+so welcome back to lecture 17 that's a
+00:02
+prime number it's very exciting and
+00:04
+today's lecture we're gonna talk about
+00:05
+3d vision so then the last two lectures
+00:08
+we had really done this kind of world
+00:10
+world whirlwind tour of a bunch of
+00:11
+different tasks in computer vision where
+00:13
+we wanted to not only identify objects
+00:16
+and images but really localize what
+00:19
+parts of images correspond into the
+00:20
+different objects that we recognized so
+00:22
+we talked about this wide array of
+00:24
+different types of tasks and computer
+00:26
+vision including semantic segmentation
+00:28
+object detection instant segmentation
+00:30
+and we talked about others like key
+00:31
+point estimation that are there also not
+00:33
+on the slide but the whole the the last
+00:37
+two lectures basically have been a
+00:38
+whirlwind tour of different ways that
+00:40
+you can predict the 3d the the
+00:42
+two-dimensional shape or the
+00:43
+two-dimensional structure of objects
+00:45
+that appear in images and these have a
+00:48
+lot of really useful real-world
+00:49
+applications so these are types of
+00:52
+computer vision tasks that actually get
+00:53
+used a lot in practice out there in the
+00:55
+world but it so happens that the world
+00:58
+we live in is actually not
+01:00
+two-dimensional right the world that we
+01:02
+live in is actually free dimensional so
+01:04
+then there's a whole separate research
+01:06
+area which is how can we add this third
+01:09
+dimension to this third spatial
+01:11
+dimension to our neural network models
+01:12
+and now build neural network models that
+01:15
+can not just operate on two-dimensional
+01:17
+data but somehow push into this third
+01:18
+dimension and understand the 3d
+01:20
+structure of the world and the 3d
+01:21
+structure of different types of data and
+01:23
+that's going to be the topic of today's
+01:25
+lecture is how can we add three
+01:27
+dimensional information into different
+01:29
+types of neural network models so we're
+01:32
+gonna focus on two categories of 3d
+01:35
+problems today one is the task of
+01:37
+predicting 3d shapes from single images
+01:39
+so here we're going to want to input
+01:42
+some single RGB image on the left and
+01:44
+then output some some representation of
+01:46
+the 3d shape of the objects in that
+01:48
+image and the second and and here for
+01:51
+this task of 3d shape prediction we're
+01:53
+using the 3d data as the output of the
+01:55
+neural network model so then the input
+01:57
+is still going to be our favorite two
+01:59
+dimensional image representations that
+02:00
+we've used many many times before but
+02:02
+now the output of the model will somehow
+02:04
+be a three dimensional representation of
+02:06
+the objects and but but sometimes you
+02:09
+might not want to produce three
+02:11
+dimensional outputs from your neural
+02:12
+neural network models instead it's also
+02:15
+it's also a common thing that you might
+02:17
+want to ingest or input three
+02:19
+dimensional information into your neural
+02:21
+network models and then perform maybe
+02:23
+some classification decision or some
+02:25
+segmentation decision based on a 3d
+02:27
+input data so that's what we're gonna
+02:30
+focus on today is sort of how can we
+02:31
+structure our neural networks to both
+02:33
+predict different sorts of 3d
+02:35
+information as well as ingest different
+02:37
+sorts of 3d information and I should and
+02:40
+and and for both of these problems we'll
+02:41
+focus on the fully supervised task so
+02:44
+for all the tasks we talked about today
+02:45
+we'll assume that we have access to a
+02:47
+training set that has I'll maybe the
+02:49
+input image and the corresponding 3d
+02:50
+shape or the 3d shape and the
+02:52
+corresponding semantic label that we
+02:54
+want to predict so everything today will
+02:56
+make this a fully supervised assumption
+02:57
+that we have access to this full
+02:58
+training set to supervise everything you
+03:00
+want to predict but I should point out
+03:03
+that that this is just really scratching
+03:04
+the surface of what types of topics are
+03:06
+possible in 3d computer vision and it's
+03:09
+really sort of impossible to do proper
+03:12
+justice to this topic in just a single
+03:14
+lecture so instead we'll have to just
+03:16
+point out on one slide that there's a
+03:18
+lot more to 3d computer vision than just
+03:21
+these sort of shape prediction or shape
+03:23
+classification types of problems and
+03:25
+what's really interesting about maybe 3d
+03:27
+computer vision is that this is one area
+03:29
+where there's actually a lot of non deep
+03:31
+learning methods that are still alive
+03:32
+and well and still very important to
+03:34
+know about and that's because there's a
+03:36
+lot of there's a lot of geometry
+03:38
+involved in actually the 3d structure of
+03:40
+objects and 3d structure of the world so
+03:42
+there's a whole different there's a
+03:43
+whole large set of types of tasks that
+03:45
+people work on in 3d computer vision
+03:47
+that we just don't have time to talk
+03:48
+about today but to give you a sense one
+03:50
+thing you might want to do is maybe like
+03:52
+this this this concept of structure for
+03:54
+motion where you maybe want to input a
+03:56
+video sequence that's a sequence of 2d
+03:58
+image frames and now you want to predict
+04:00
+or reconstruct the the trajectory of the
+04:02
+camera through the 3d world through the
+04:04
+video sequence and there's a whole
+04:06
+that's just maybe one flavor of a type
+04:08
+of problem that you can do in computing
+04:10
+computer vision that's sort of just
+04:11
+beyond the scope of what we have time to
+04:13
+talk about in a single lecture so I just
+04:15
+want to give you that context that
+04:16
+there's a lot more to the world of 3d
+04:17
+vision then we're going to talk about
+04:18
+today but today we'll just focus
+04:21
+these these two particular problems of
+04:22
+supervised sheet prediction and then
+04:25
+maybe super bad shape classification so
+04:28
+in any kind of questions on this sort of
+04:29
+preamble about 3d computer vision before
+04:31
+we really dive into these different
+04:33
+types of models alright so then if we're
+04:40
+going to talk about 3d shape prediction
+04:41
+and 3d shape classification then I've
+04:45
+been a little bit cagey here with this
+04:46
+term 3d shape so here that that's kind
+04:49
+of a loose ill-defined term but in
+04:51
+practice there's a lot of different
+04:52
+types of representations that people use
+04:54
+to model 3d shapes and 3d information so
+04:57
+we're going to structure this by talking
+04:58
+about these different five different
+05:00
+types of 3d shape representations that
+05:02
+people work with often in practice that
+05:04
+all have their different sort of pros
+05:05
+and cons and we'll see how each of these
+05:08
+five different types of 3d shape
+05:09
+representations can be processed or
+05:11
+predicted with neural network models so
+05:15
+and then if these are cartoon graphics
+05:17
+of these three shape representations or
+05:18
+maybe not super clear by the out at the
+05:20
+outset hopefully by the end you'll
+05:21
+understand that each of these five these
+05:23
+five little cartoon pictures that we've
+05:25
+shown here are all sort of meant to
+05:26
+represent different representations of
+05:28
+the same underlying 3d shape so the
+05:31
+first representation to talk about is
+05:33
+that of the depth map so a depth map is
+05:36
+conceptually a very simple 3d shape
+05:38
+representation and basically what a
+05:40
+depth map does is it assigns to each
+05:43
+pixel in an input image it assigns the
+05:45
+distance from the camera to that pixel
+05:48
+right because each pixel in the image
+05:50
+corresponds to some object out there in
+05:52
+the real world and now a depth map tells
+05:54
+us for each pixel in the image what is
+05:56
+the distance like in meters between the
+05:58
+camera and that that position out there
+06:01
+in the real world that the pixel is
+06:02
+trying to represent and then this is
+06:05
+some than a traditional RGB image that
+06:09
+we're used to working with would be
+06:10
+maybe a height by width grid of pixel
+06:13
+values where each pixel value gives us
+06:14
+the color of a pixel and now the depth
+06:16
+map is just a similar 2d grid where now
+06:18
+the value of the pixel is not the color
+06:20
+it's just this depth in meters of that
+06:23
+pixel and then it's very common to
+06:25
+actually combine together an RGB image
+06:27
+and then add on this fourth channel of
+06:29
+information giving the depth information
+06:31
+and that would be an RGB image
+06:33
+and sometimes these RGB images are
+06:35
+actually called to play 5d images
+06:38
+because they're not like real full 3d
+06:40
+because one of the one of the cons one
+06:42
+of the trade offs of these def image is
+06:44
+is that they can't they can't capture
+06:46
+the structure of occluded objects right
+06:49
+because say that in this maybe this
+06:51
+example here there's actually part of
+06:53
+the bookcase that's occluded by the
+06:55
+couch in the top image but now the depth
+06:57
+map doesn't have any 3d representation
+06:59
+for the portion of the bookcase which is
+07:01
+behind the couch instead this this RGB D
+07:04
+or depth map representation only is able
+07:07
+to represent the visible portions of the
+07:09
+image so for that reason we sometimes
+07:11
+think of it as a slightly less powerful
+07:13
+powerful or less general 3d
+07:16
+representation which we encapsulate by
+07:18
+just calling it maybe two point five D
+07:19
+to mean that it's not fully 3d but one
+07:22
+reason why this depth map type of data
+07:24
+is very important is that is that we can
+07:26
+actually capture depth map data with
+07:29
+various types of raw 3d sensors so
+07:32
+something like the Microsoft Kinect that
+07:33
+you may have been familiar with actually
+07:35
+uses a form of structured light to
+07:37
+estimate these these depth images
+07:39
+directly using some some fancy sensor
+07:41
+tricks or if you look at something like
+07:44
+the the face ID sensor on an iPhone then
+07:46
+that's also capturing some kind of depth
+07:48
+image because it's projecting out these
+07:50
+infrared dots and then able to use that
+07:52
+that information to estimate the depth
+07:54
+at each pixel of the image that it
+07:56
+captures so these definite information
+07:58
+these understanding how to work with
+08:00
+these depth map images is super
+08:02
+important because this is actually a
+08:03
+type of 3d data that we can just capture
+08:05
+from the world using raw using actual
+08:07
+sensors and then it turns out actually
+08:10
+trying to then one one task that you
+08:12
+might want to try to do is to try to
+08:13
+input a vanilla RGB image and then given
+08:18
+an RGB image try to predict this depth
+08:20
+channel that is try to predict for every
+08:22
+pixel in the input image what is this
+08:24
+distance from the pixel to the object
+08:26
+out in the world but that but that pixel
+08:28
+is covering and it turns out that we can
+08:30
+actually that this is the architecture
+08:33
+that we could use to predict this is
+08:34
+actually something that we saw a lot in
+08:36
+last lecture and that's this idea of a
+08:38
+fully convolutional network so if you
+08:40
+recall in the last lecture when we
+08:42
+talked about this this task of semantic
+08:43
+segmentation there we wanted to predict
+08:46
+for every pix
+08:46
+in the input image what was the the
+08:48
+semantic category label of the pixel and
+08:50
+there we saw that using some kind of
+08:52
+fully convolutional network with some
+08:54
+pattern of down sampling and up sampling
+08:56
+inside the network was a useful neural
+08:59
+network architecture that let us make
+09:00
+one prediction per pixel and we can
+09:02
+reuse that exact same type of
+09:04
+architecture now for predicting these
+09:06
+depth maps so then in order to maybe
+09:08
+predict the def map from a single image
+09:09
+you would input your RGB image to some
+09:11
+fully convolutional network the final
+09:13
+convolutional layer of that network
+09:15
+would have maybe one filter or one
+09:17
+output channel that where then the
+09:19
+output of that love that one filter
+09:20
+would these would be interpreted as that
+09:23
+depth that we're trying to predict and
+09:25
+then we would train this thing using
+09:27
+some kind of loss function that compares
+09:29
+for every pixel of the predicted depth
+09:30
+and we look at the corresponding pixel
+09:32
+or the ground truth depth and try to
+09:34
+compare them and then well obviously we
+09:36
+want our pretty good depth to be the
+09:37
+same as the the ground truth depth or do
+09:40
+we it turns out that that's actually not
+09:43
+quite possible with with 3d vision and
+09:46
+the reason is this fundamental problem
+09:49
+that we run into with 3d representations
+09:51
+which is the problem of scale depth
+09:53
+ambiguity so here
+09:56
+what right we you if you're looking at a
+09:57
+single image you can't really tell the
+09:59
+difference between a large object that's
+10:01
+very far away and a close object that's
+10:04
+very close to you so in particular if we
+10:06
+had this image of a cat and if you were
+10:08
+looking at a cat that was like right in
+10:09
+front of your eye versus a cat that was
+10:11
+twice as large and two times as far away
+10:13
+from you they would look exactly the
+10:15
+same they would project the exact same
+10:17
+image onto the retina onto your onto
+10:19
+your retina and your eye or onto the the
+10:21
+sensor in any kind of digital camera and
+10:23
+for that reason that that this the
+10:26
+overall the absolute scale and the
+10:28
+absolute depth is actually ambiguous
+10:30
+from a single 2d image so as a result of
+10:33
+this scaled so whenever you're working
+10:35
+with any kind of 3d representation or
+10:37
+3ds prediction problem it's always
+10:39
+important to think about this this
+10:41
+potential problem of scale depth and big
+10:43
+Uwe T and then it's often the case that
+10:46
+we need to actually change something in
+10:48
+the structure of our neural network
+10:49
+model in order to deal with this problem
+10:51
+of scale depth contiguity so I don't I
+10:55
+don't want to walk through the math here
+10:56
+in input in concrete detail but it turns
+10:58
+out that there's a very clever
+10:59
+loss function that we can use for this
+11:02
+depth prediction problem that is
+11:03
+actually scale invariant and what I mean
+11:06
+by that is that suppose that our neural
+11:08
+network predicted a ground truth depth
+11:10
+that was correct up to some constant
+11:13
+scaling factor of the true depth right
+11:17
+like maybe our network just predicted
+11:19
+the depth all of the predicted depths
+11:20
+from our network were like one half of
+11:22
+what they were supposed to be from the
+11:23
+drug from the ground truth well then
+11:25
+this scale invariant loss function would
+11:28
+still assign zero loss to that situation
+11:30
+the only thing that it cares about is
+11:32
+somehow that there's the way that you'll
+11:35
+get zero loss with this with this loss
+11:36
+function is that if there exists a
+11:38
+scalar that you can multiply your
+11:40
+predictions by and then match the ground
+11:42
+treat perfectly then in that case you
+11:44
+get zero loss but this log function does
+11:46
+not actually penalize a global global
+11:49
+office of a global multiplicative offset
+11:51
+in scale and there's some clever math
+11:54
+behind this loss function and see
+11:56
+exactly why that works and how that
+11:57
+works out I suggest you look at look
+11:59
+into this 2014 NURBS paper that's
+12:01
+referenced on the slide and that will
+12:03
+walk you through the mathematical
+12:04
+details of exactly how this scale
+12:06
+variance is achieved with this
+12:07
+particular mathematical form so then
+12:11
+there's actually another very related 3d
+12:14
+shape representation that is very
+12:15
+similar in spirit to this idea of RGB D
+12:18
+or def images and that's the idea of a
+12:21
+surface normal map or surface normal
+12:23
+image and here I'm just like with a
+12:25
+depth image what we wanted to do is
+12:27
+assign to each pixel the distance in
+12:29
+meters between the pixel and the object
+12:31
+out there in the world what a surface
+12:32
+normal what a surface normal
+12:34
+representation will do is assign to each
+12:37
+pixel we want to know what is the
+12:38
+orientation of the surface of that
+12:41
+object out there in the world so then
+12:43
+for every pixel that we would as we
+12:45
+would have a some unit vector if for
+12:47
+each pixel that tells us the orientation
+12:48
+of the surface for the pics for that for
+12:50
+the object that that pixel is showing
+12:52
+and it's typical to represent or draw
+12:54
+these 3d normal map of these normal map
+12:56
+images using RGB colors so here these
+13:00
+are for this particular example this
+13:01
+image on the right is showing a normal
+13:04
+map version of this image on the left so
+13:07
+here blue represents may be pointed up
+13:09
+so you can see that the floor and the
+13:11
+top of the bed is all kind of colored
+13:13
+to mean that that's but those normal
+13:14
+vectors are pointing up red is kind of
+13:17
+pointing kind of pointing this way to
+13:20
+say that maybe the side of the bed is
+13:21
+kind of pointing this way and then green
+13:23
+is pointing the other way so if you look
+13:24
+at the cabinet's you can see that
+13:26
+they're colored green and the exact
+13:27
+mixture between RGB it tells us the
+13:29
+exact orientation of the of the surface
+13:32
+normal at every point in the image and
+13:34
+now we can imagine predicting these
+13:36
+surface normals using a very similar
+13:37
+technique right we can just take our RGB
+13:39
+image run it through a fully
+13:41
+convolutional net work and now predict
+13:42
+at the output of three channel image
+13:44
+that tells us what is this what is this
+13:47
+three dimensional vector at every
+13:48
+position in the input image and now the
+13:51
+loss function here we want to compare
+13:53
+the angles between two vectors so we can
+13:55
+use a dot a per pixel dot product
+13:58
+normalized by the by the by the norms of
+14:00
+the vectors in order to have our loss
+14:02
+function these it be something like the
+14:04
+related to the angle of between the
+14:06
+vectors in that our network is
+14:07
+predicting and that is a present in the
+14:09
+ground truth so this is so it actually
+14:12
+turns out that you can actually train
+14:14
+one joint network that does both
+14:16
+semantic segmentation and surface normal
+14:19
+estimation and depth estimation and you
+14:21
+can actually train one network that will
+14:23
+input a single RGB image and then
+14:25
+predict for you all of those things all
+14:27
+in a single forward pass so that's
+14:29
+that's kind of one so that's a fairly
+14:31
+conceptually simple or 2d representation
+14:34
+but I think it's actually pretty useful
+14:35
+in practice for a lot of different
+14:36
+applications because once you have a
+14:38
+depth map and once you have a surface
+14:39
+normal that actually gives you quite a
+14:41
+lot of information about the 3d
+14:43
+structure of the image that you're
+14:44
+looking at but of course the the
+14:46
+drawback of these surface normal or a
+14:49
+three-point or of these def map
+14:51
+representations is that they can't
+14:52
+represent occluded parts of the image so
+14:55
+if we want to have a more complete 3d
+14:56
+representation of our 3d scenes we need
+14:59
+to move on and consider other types of
+15:00
+3d shape 3d shape representations so
+15:05
+then the next 3d shape representation
+15:07
+that we can think about is a voxel grid
+15:09
+now a voxel grid is conceptually very
+15:14
+very simple great so what is going on in
+15:17
+a box of grid is we're just going to
+15:19
+represent the 3d world as some 3d grid
+15:22
+and within each cell of the grid we want
+15:25
+to have have it
+15:26
+turned on or off to say whether or not
+15:27
+that that cell in the grid is occupied
+15:29
+so this is basically like a Minecraft
+15:31
+representation of the world right that
+15:34
+because you know the whole world we're
+15:36
+assuming the world is built from blocks
+15:37
+and then there's some so there's some
+15:38
+identifiers or some some property at
+15:40
+each grid cell in the world and now this
+15:43
+these voxel representations are
+15:45
+conceptually pretty easy to think about
+15:47
+and pretty straightforward to think
+15:48
+about and it's sort of basically like
+15:51
+the mass representation that we use in
+15:53
+NASCAR CNN for representing foreground
+15:56
+or background of an object except
+15:58
+extended into 3d so you can imagine that
+16:00
+all of the similar machinery that we use
+16:02
+for processing may be two-dimensional
+16:03
+occupancy grids in NASCAR CNN or for
+16:06
+segmentation we can use similar sorts of
+16:08
+machinery to represent these and 3d
+16:10
+voxel occupancy grids but now a big
+16:13
+problem with voxel representations is
+16:15
+that you actually need to use a very
+16:17
+high box'll resolution if you're going
+16:19
+to capture the very fine details of the
+16:21
+objects in the scene so as an example if
+16:24
+you look at this chair there's actually
+16:25
+a lot of sort of very fine detail over
+16:27
+the part of the chair where you might
+16:28
+put your hand there's actually a very
+16:30
+subtle curvature there that looks like
+16:31
+to be very comfortable to rest your hand
+16:33
+on but if you look at the box or
+16:34
+representation on the right you can see
+16:36
+that it's very blocky and a lot of this
+16:38
+really fine-grained geometry of the
+16:39
+chair has been lost as we move from sort
+16:42
+of a raw like the actual input image to
+16:44
+some Vox live representation of the
+16:46
+scene and to actually recover these very
+16:48
+fine details we would need to use a very
+16:50
+very high box'll resolution and that
+16:51
+could be computationally expensive but
+16:54
+it turns out that actually processing
+16:57
+voxel represent halo processing voxel
+16:59
+grids is fairly conceptually simple
+17:02
+right so suppose that we were given a
+17:05
+voxel grid as input like we received as
+17:08
+input this voxel representation of the
+17:10
+chair on the right and now our task was
+17:12
+to classify these different voxel grids
+17:14
+and say is this grid the shape of a
+17:16
+chair or is an airplane or is a couch or
+17:18
+something else well if we wanted to do
+17:21
+this kind of classification of a voxel
+17:23
+grid we can use a very familiar sort of
+17:26
+3d convolutional network neural network
+17:28
+architecture the difference is that now
+17:30
+we need to use 3d convolution or
+17:32
+three-dimensional convolution as our
+17:33
+basic building block so here the input
+17:35
+to those two such a 3d convolutional
+17:37
+neural network would be on this
+17:39
+raw box'll this raw voxel model this raw
+17:42
+voxel grid telling us for every point in
+17:44
+3d space is that voxel occupy or not
+17:46
+occupied and now every layer of the
+17:48
+model would be some 3d convolution
+17:50
+operation where now our convolutional
+17:53
+kernel is some little three-dimensional
+17:55
+cube that we're going to slide over
+17:57
+every point in 3d space over the
+17:59
+previous feature map compute inner
+18:00
+products and that will give us a scalar
+18:02
+output at the next layer so now you can
+18:04
+imagine building up three-dimensional
+18:06
+convolutional neural networks that are
+18:08
+very similar in structure to the
+18:09
+familiar 2d convolutional neural
+18:10
+networks that we've seen many many times
+18:12
+before so you can build up maybe on
+18:14
+several layers of 3d convolution
+18:16
+followed by maybe a couple fully
+18:17
+connected layers or some kind of global
+18:19
+global average pooling layer and then
+18:21
+finally go to some classification layer
+18:23
+and basically all of the types of neural
+18:25
+network architectures that we're
+18:27
+familiar with working with for
+18:28
+two-dimensional images you can imagine
+18:30
+porting them over into three into these
+18:31
+3d voxel grids a fairly straightforward
+18:33
+way
+18:33
+oh yeah so to explain the input
+18:41
+dimension a little bit so here the the
+18:44
+one is the feature that the so we have
+18:46
+now at every stage of the network it's a
+18:47
+four dimensional tensor so we have three
+18:49
+spatial dimensions and one channel or
+18:52
+feature dimension so for the for the
+18:54
+input to the network it's a voxel grid
+18:56
+so there's three spatial dimensions of
+18:59
+30 by 30 by 30 and then for the input to
+19:01
+the network we have one feature at every
+19:03
+point in that voxel grid which is
+19:05
+whether or not that voxel is occupied
+19:07
+but now as we move along the
+19:09
+convolutional mountain as we move
+19:10
+through the 3d ComNet then we will still
+19:13
+have three spatial layer three spatial
+19:15
+dimensions at each edge at each layer
+19:18
+but now we might have a whole feature
+19:20
+vector at every point in that 3d grid
+19:22
+which gives us a 4d tensor so if you
+19:24
+look at the second layer in this network
+19:26
+the it's a it's a 48 by 13 by 13 by 13
+19:29
+spatial grid
+19:30
+well the 13 by 13 by 13 is the is a
+19:33
+spatial size and that within every point
+19:35
+of that grid we have a 48 dimensional
+19:37
+vector which means that this this layer
+19:40
+was produced using a 3d convolution
+19:42
+operator that had 48 filters because
+19:45
+each one of our three dimensional
+19:47
+filters is now going to give rise to a
+19:49
+full cube with one scalar value at every
+19:51
+point and the
+19:52
+and then we need to stack up those cubes
+19:54
+to give us a four dimensional tensor is
+19:57
+that does that clarify the the
+19:58
+dimensions a little bit of these
+19:59
+networks yeah yeah so then the input
+20:02
+would be some binary tensor it just says
+20:05
+whether every point in space is occupied
+20:07
+or not occupied although maybe if you
+20:09
+had some other type of information like
+20:12
+maybe if you were literally trying to
+20:13
+work on Minecraft then you might
+20:15
+actually have like the block type at
+20:17
+every at every position in space which
+20:19
+you might represent as like an integer
+20:20
+or something like that or a some one hot
+20:22
+representation but for the if your
+20:24
+fridge was representing raw 3d shapes
+20:26
+then the input you would usually be some
+20:27
+to some binary representation just to
+20:29
+say whether or not each point in space
+20:30
+is occupied oh yeah but the kernel does
+20:37
+not need to be binary so typically on
+20:40
+only the input that this network would
+20:41
+be binary and everything else would all
+20:43
+be real value it just like it has been
+20:44
+in all the applications we've seen so
+20:46
+far so the kernels would be real valued
+20:48
+and each of these intermediate eacher
+20:49
+layers would be real valued it's just
+20:51
+the input is going to be forced to be a
+20:53
+binary in this case okay so then the
+20:59
+next task you might want to do with
+21:01
+voxels is actually predict voxels from
+21:03
+an input image so in this previous case
+21:06
+we're sort of assuming we receive voxels
+21:08
+as input and then we want to classify
+21:09
+them or make some some prediction on
+21:11
+input boxes a related task is say we
+21:14
+receive an input image and now we want
+21:16
+to predict a voxel grid that gives the
+21:19
+3d shape of that input image so now the
+21:21
+input on the left is our is our familiar
+21:23
+three dimensional tensor giving two
+21:25
+spatial dimensions and one RGB Channel
+21:27
+dimension and now all the way out at the
+21:29
+other side on the right we need to
+21:31
+somehow end up with a 4 dimensional
+21:32
+tensor that has three spatial dimensions
+21:34
+and one channel dimension giving us the
+21:36
+occupancy probability at every point in
+21:39
+the voxel grid so then we need some
+21:41
+architecture that lets us sort of move
+21:42
+add an extra spatial dimension somewhere
+21:44
+inside the model and then assuming we
+21:47
+had some way to convert the spatial
+21:49
+dimensions in the right way then the
+21:51
+output we could imagine training this
+21:52
+thing with some cross entropy loss
+21:54
+because ultimately maybe we predict a
+21:56
+occupancy probability or occupancy score
+21:59
+for every point in the voxel grid and
+22:01
+then we compare that with our binary
+22:03
+occupancies that we have in our graph
+22:04
+truth and you could imagine training
+22:06
+this thing with a softmax or a logistic
+22:08
+regression type of type of binary of
+22:10
+classification loss but now as for the
+22:12
+network architecture one fairly common
+22:15
+way to predict voxel grids would be to
+22:17
+actually bridge the gap between 2d
+22:20
+between 3-d and 4-d tensors using a
+22:22
+fully connected layer so what we can
+22:25
+imagine is processing our input image
+22:27
+with a familiar 2-dimensional CNN and
+22:30
+then at the end of a 2-dimensional CNN
+22:32
+we would have a three dimensional tensor
+22:34
+that has two spatial dimensions by H and
+22:36
+W and one channel or feature dimension C
+22:39
+and then you could imagine flattening
+22:42
+this this this three dimensional tensor
+22:44
+into a into a big vector and then having
+22:46
+a couple fully connected layers and then
+22:48
+from the output of the fully connected
+22:50
+layers we could sort of reshape them
+22:52
+back into a four dimensional tensor so
+22:54
+then this then we could sort of use
+22:55
+these these fully connected layers in
+22:57
+the middle to sort of add an extra
+22:59
+spatial dimension between our
+23:00
+three-dimensional input and the four
+23:02
+dimensional output that we want to
+23:03
+predict and then once we've got this
+23:05
+initial three dimensional output then
+23:07
+you can imagine doing some
+23:08
+three-dimensional convolution with sort
+23:10
+of three dimensional spatial up sampling
+23:12
+on the right-hand side of the figure in
+23:15
+order to go from this this 3d
+23:17
+representation with small spatial
+23:18
+dimensions up to a 3d representation
+23:20
+with the large number of spatial
+23:22
+dimensions that we finally want to
+23:23
+predict at the output of the network and
+23:25
+you can imagine that this that now this
+23:27
+the second half of the network would
+23:29
+have sort of 3d analogs of all the
+23:31
+different uncool Anor or up sampling
+23:33
+operations that we talked about in last
+23:35
+lecture in the context of semantic
+23:37
+segmentation so this is a fairly
+23:40
+straightforward way to deal with
+23:42
+predicting 3d voxel information but it
+23:45
+turns out that this is this this type of
+23:46
+architecture is very computationally
+23:48
+expensive because actually these 3d
+23:51
+convolutions any kind of 3d convolution
+23:53
+operation is going to be extremely
+23:55
+extremely computationally expensive
+23:57
+right because um the number of receptive
+24:00
+fields is now going to scale cubically
+24:02
+with the with the spatial size of the of
+24:05
+the feature map of the feature grid
+24:07
+which means that the the computational
+24:09
+cost of performing 3d convolutions is
+24:11
+very very high compared to the cost of
+24:13
+doing 2d convolutions so as a result
+24:16
+sometimes people try to put
+24:18
+box of 3d voxel grids using only 2d
+24:22
+convolutions and this is sometimes
+24:24
+called a voxel tube representation um
+24:27
+and here the idea is that our input
+24:30
+image is going to be a three dimensional
+24:32
+tensor with three channel dimensions and
+24:34
+two spatial dimensions and then we're
+24:37
+going to go through some two dimensional
+24:38
+convolutional Network where at every
+24:40
+point in our two-dimensional
+24:41
+convolutional Network we will still have
+24:43
+two spatial dimensions and to end one
+24:46
+channel dimension but now the very last
+24:48
+layer of our of our network will be very
+24:50
+special and say that we want to predict
+24:53
+a voxel
+24:54
+output voxel grid of size V cross V
+24:57
+cross V then for the last layer in our
+25:01
+2d CNN we will arrange the spatial
+25:03
+convolutions such that the 2d spatial
+25:06
+size of the final layer of our of our 2d
+25:08
+CN n will be V cross V and then we the
+25:11
+the number of output channels or output
+25:14
+filters of the final tunic of the final
+25:17
+2d convolution will have will be the
+25:19
+filters or V channels of the last two
+25:22
+deconvolution and now at the very end of
+25:24
+the network then we will play a bit of a
+25:26
+trick where we will in where the output
+25:28
+of the convolution will have sort of
+25:30
+literally had two spatial dimensions and
+25:32
+one channel dimension but when computing
+25:35
+the loss we will interpret that laughs
+25:37
+that that channel dimension as actually
+25:39
+the depth dimension of the of the output
+25:42
+tensor and if you by kind of using this
+25:44
+this this voxel to representation it
+25:47
+lets us predict voxel representations
+25:49
+using only 2d convolutions which is much
+25:52
+more computationally efficient and this
+25:54
+is called a voxel to representation
+25:56
+because it has this interpretation that
+25:58
+we're doing to deconvolution that looks
+25:59
+at the input image and then for the
+26:01
+final layer of the convolution it's sort
+26:03
+of predicting a tube along the channel
+26:04
+dimension that gives us a whole a whole
+26:06
+a whole tube of voxel probabilities or
+26:09
+voxel outputs as the channel outputs of
+26:12
+our final 2d convolutional layer so is
+26:16
+that maybe this these these two
+26:18
+different approaches of 3d convolution
+26:20
+and voxel to representations clearer for
+26:22
+predicting voxel outputs yeah that's a
+26:25
+good question so the question is do we
+26:27
+sacrifice anything when we move from
+26:28
+this from this 3d convolution model to
+26:31
+this box will to
+26:32
+what representation model and what we
+26:34
+lose is actually translational
+26:36
+invariance in the Z dimension right so
+26:39
+one proper one one nice property of
+26:41
+convolutions is that they don't sort of
+26:43
+care about the position in space where
+26:45
+the inputs are located right so suppose
+26:47
+that we were trying to do two to
+26:49
+deconvolution and recognize a cat then
+26:51
+recognizing a cap in the upper left hand
+26:52
+at a corner and lurking as a cat in the
+26:54
+lower right hand corner should be
+26:56
+exactly the same because if we're
+26:57
+sliding two-dimensional filters over the
+26:59
+image then when our whatever our cap
+27:00
+filters can intersect the cat then
+27:02
+they'll fire cat features but now if
+27:06
+we're 3d CNN we would also get sort of
+27:08
+three dimensional spatial invariants but
+27:10
+if there was some particular 3d
+27:11
+structure in the input data that could
+27:14
+occur at any point in 3d space then we
+27:16
+could imagine having a 3d kernel but is
+27:18
+now invariant to three arbitrary 3d
+27:20
+translations of the input but when
+27:24
+you're using a box with two
+27:24
+representation that's not the case
+27:26
+because now suppose that you wanted
+27:29
+different versions we wanted to be able
+27:31
+to represent somehow in the model
+27:32
+different shifts over in the Z dimension
+27:34
+then you would actually need to learn
+27:36
+separate convolutional 2-d convolutional
+27:38
+filters to represent each possible
+27:40
+offset in the Z dimension so basically I
+27:43
+think what you're giving up with this
+27:44
+voxel to representation is um
+27:46
+translational invariance or
+27:47
+translational translational acrobatics
+27:49
+in the Z direction but you still would
+27:51
+good translational equivariance in the
+27:52
+XY plane so I think that's what you're
+27:54
+giving up here okay but then a big
+27:58
+problem with voxel representations is
+28:01
+that they take a lot of memory so we
+28:03
+already noted that in or if we wanted to
+28:06
+represent the very fine-grained details
+28:08
+or fine-grained fine grain structure of
+28:10
+objects then we would need to use a very
+28:14
+high resolution voxel grids and it turns
+28:16
+out very high resolution voxel grids
+28:17
+take a very lot of memory and GPUs don't
+28:20
+actually have enough memory to work with
+28:22
+very high resolution voxel grids so as
+28:24
+an example suppose we wanted to
+28:26
+represent a voxel grid that was 1024 by
+28:29
+1024 by 1024 and then because this is a
+28:32
+neural network within each cell of the
+28:34
+voxel grid we wants to have a 32-bit
+28:36
+floating-point number that represents
+28:37
+the the the occupancy probability or the
+28:40
+occupancy score for every point in this
+28:42
+high dimensional voxel grid well then
+28:44
+I'm just restoring this this 3/2
+28:46
+ten sir would take almost four gigabytes
+28:48
+of memory and that's not counting all of
+28:51
+the convolutional layers that we would
+28:52
+need to use in order to actually predict
+28:54
+this high-resolution voxel grid so as a
+28:57
+result of this very high memory
+28:58
+requirements of voxel grid's on people
+29:00
+just don't just dismiss not possible or
+29:03
+not feasible to use sort of naive voxel
+29:05
+grids at very high spatial resolutions
+29:07
+but there are some tricks that people
+29:09
+sometimes play in order to scale voxel
+29:12
+representations up to higher spatial
+29:13
+resolutions so one trick is to sort of
+29:16
+use a multiverse a kind of multi
+29:18
+resolution voxel grid and one way to do
+29:21
+this is this idea called an ox tree so I
+29:23
+don't really want to go into too much
+29:25
+detail here but the idea is that we're
+29:27
+going to kind of represent a voxel grid
+29:28
+where some kind of multiple resolutions
+29:31
+so we will be able to capture the course
+29:34
+through facial structure of the object
+29:35
+using some low resolution voxel grid
+29:38
+maybe a thirty-two cubed and then we can
+29:40
+represent maybe the we can fill in the
+29:41
+fine details by turning on a sparse
+29:44
+subset of numbers of box'll cells at
+29:47
+higher spatial resolutions like 64 cubed
+29:49
+or 128 cubed and now implementing these
+29:52
+things gets quite tricky because you
+29:54
+need to deal with kind of mixing
+29:56
+multiple resolutions and now using
+29:57
+sparse representations of these voxel
+29:59
+grids so in the implementation of these
+30:01
+types of structures is a bit non-trivial
+30:03
+but if you can manage that
+30:05
+implementation hurdle then you can
+30:07
+actually excuse this kind of tricks to
+30:08
+scale box or representations of the
+30:11
+fairly high spatial resolutions another
+30:14
+trick that I thought was kind of cute is
+30:16
+this idea of a nested shape layer which
+30:18
+is kind of like these these nested
+30:20
+matroyshka Russia and dolls so the idea
+30:23
+is that rather than representing this
+30:24
+like full 3d shape as a dense voxel grid
+30:27
+instead we kind of are gonna represent
+30:29
+the shape of the object from the
+30:31
+inside-out so we're going to have some
+30:33
+kind of like coarse outer layer and then
+30:36
+some negative minus some negative voxels
+30:38
+that are inside might plus some more
+30:40
+positive box holes minus another layer
+30:42
+of negative box holes and then we don't
+30:45
+actually have to and we can represent
+30:46
+all of these things sparsely we don't
+30:47
+have to represent the full voxel grid in
+30:50
+a dense way we just kind of represent it
+30:52
+as this sum and difference of a couple
+30:54
+different a sparse voxel layers so this
+30:56
+is another way that people are able to
+30:57
+scale box or representations to
+30:59
+higher spatial resolutions okay but then
+31:03
+so that's kind of the voxel grid
+31:05
+representation and that's that's
+31:07
+actually one that gets used quite a lot
+31:09
+in practice now another kind of really
+31:12
+interesting 3d shape representation is
+31:14
+that up an implicit surface so with the
+31:17
+idea with an implicit surface is that we
+31:20
+want to represent our 3d shape as a
+31:22
+function and what we're going to do is
+31:25
+learn some function that inputs the
+31:27
+court some coordinate in 3d space and
+31:30
+what it's going to output is the
+31:32
+probability that that position that
+31:34
+arbitrary through position in 3d space
+31:36
+is either occupied or not occupied by
+31:39
+the object and then rat so then we
+31:42
+rather than kind of trying to fill so
+31:44
+with a voxel grid what we're kind of
+31:45
+doing is sampling such a function at
+31:48
+some finite set of points in 3d space
+31:50
+and then storing those samples to the
+31:52
+function in some explicit grid
+31:53
+representation but now with an implicit
+31:55
+function we're kind of just using some
+31:58
+mathematical function itself to
+32:00
+represent these these 3d shapes
+32:02
+implicitly so then we could then sample
+32:04
+from this function at arbitrary put
+32:06
+points in 3d space and it should be able
+32:08
+to tell us whether or not arbitrary
+32:10
+positions in 3d space are either inside
+32:12
+or outside the object and then the
+32:15
+actual of the exterior surface of that
+32:17
+object would be represented as the level
+32:19
+set of points in 3d space where that
+32:21
+occupancy probability is equal to 1/2
+32:24
+and then we can kind of represent this
+32:26
+representation visually on the left here
+32:28
+where now this implicit function the
+32:31
+color of each position in space sort of
+32:33
+gives on what the value of this implicit
+32:36
+function would be if we were to have
+32:38
+evaluated it at that point in space
+32:40
+where blue were corresponds to values
+32:42
+very close to 1 and red corresponds to
+32:45
+value is very close to zero and then
+32:46
+this white region in the middle is where
+32:48
+the we actually have this level set of
+32:50
+1/2 that represents the actual surface
+32:52
+of the 3d shape you'll also sometimes
+32:55
+see this called a signed distance
+32:56
+function where the idea is that we this
+32:59
+dysfunction is giving us Euclidean
+33:01
+distance from the point in 3d space to
+33:03
+to the surface where that distance is
+33:06
+maybe positive or negative depending on
+33:07
+whether the point is inside or outside
+33:09
+the object but these are basically sort
+33:11
+of equivalent representations
+33:13
+just a question of whether we whether
+33:14
+the output of this function is between
+33:16
+zero and one
+33:17
+or between minus infinity and infinity
+33:18
+but otherwise there they're sort of
+33:20
+equivalent and now of course whenever
+33:23
+you see a very complicated function that
+33:25
+you might want to represent or learn
+33:27
+what we're going to do is just like
+33:29
+learn this function as a neural network
+33:31
+so then what we're going to do is learn
+33:33
+a neural network that inputs a 3d
+33:35
+coordinate and then outputs a
+33:37
+probability to say whether that 3d
+33:39
+coordinate is actually inside or outside
+33:41
+the shape and then you can imagine
+33:44
+training such a function by having some
+33:46
+some data some data set of samples from
+33:48
+your 3d shape and then training it to
+33:51
+classify these coordinates as being
+33:53
+either inside or outside the 3d shape
+33:54
+and now if we actually wanted to extract
+33:57
+some explicit shape representation from
+33:59
+this learned function then what we can
+34:02
+imagine doing is kind of sampling that
+34:04
+learned function at some grid of points
+34:06
+in space and then the function would
+34:08
+tell us whether each one was inside or
+34:10
+outside and then for the bount then we
+34:12
+could imagine going back and resampling
+34:13
+the function now at new points that are
+34:16
+kind of on the boundary of the inside or
+34:18
+outside then you can imagine sort of
+34:20
+going back and iteratively resampling
+34:22
+new points from this learn implicit
+34:24
+function toward actually extract some
+34:26
+explicit representation of the boundary
+34:28
+of the shape that the implicit function
+34:29
+represents but of course um this is
+34:32
+actually this actually has a lot of sort
+34:34
+of hairy implementation details as well
+34:36
+as you might imagine and the exact
+34:38
+procedure of how you hook up these
+34:39
+architectures and how you connect image
+34:41
+information into these to these SDF
+34:44
+neural network functions or how you
+34:46
+actually what is the exact algorithm for
+34:47
+extracting a 3d shape from a trained SDF
+34:50
+these are all sort of complicated
+34:52
+details that I don't really want to get
+34:54
+into I just thought that this is a kind
+34:56
+of interesting way to represent 3d
+34:58
+shapes because we're sort of
+34:59
+representing the shape implicitly as the
+35:02
+values computed by a learned function
+35:04
+whereas most of the other
+35:05
+representations that we use are kind of
+35:07
+explicitly representing the shape of the
+35:09
+object using some some some primitives
+35:12
+in 3d space so I think this is an
+35:14
+interesting 3d shape representation to
+35:17
+be aware of okay so then the the next 3d
+35:21
+shape representation to think about is
+35:23
+the the point cloud representation
+35:25
+so here a point cloud representation is
+35:28
+basically saying we're going to
+35:30
+represent a 3d shape as a set of points
+35:34
+in 3d space where the set of points in
+35:37
+3d space are going to somehow cover the
+35:39
+surface of that 3d shape that we want to
+35:42
+represent so for example if we wanted to
+35:45
+represent this this airplane here as a
+35:47
+plainclothes n tation then we might
+35:49
+represent it as the set of points in 3d
+35:50
+space that all kind of were many many
+35:53
+points on the surface of the airplane
+35:55
+representation so one sort of nice
+35:58
+property about point cloud
+36:01
+representations is that they're somehow
+36:03
+more adaptive compared to voxel grid
+36:05
+representations so we saw that if we
+36:07
+wanted to use a voxel grid to represent
+36:10
+3d shapes of with very fine details and
+36:12
+with high fidelity then you would need
+36:14
+to use a very very high boxful
+36:16
+resolution but now with a 3d point cloud
+36:18
+representation you can imagine that we
+36:21
+can represent fine details of 3d shapes
+36:23
+by varying the density of the point
+36:26
+cloud at different points in space so
+36:28
+for a point cloud representation like
+36:29
+for the the four parts of the object
+36:31
+that require very fine detail like maybe
+36:34
+the tips of the wings or the the the
+36:36
+tail fins of this airplane you can
+36:38
+imagine putting more points there to
+36:40
+just represent those fine details
+36:42
+whereas other parts of the object like
+36:44
+maybe the fuselage of the plane that
+36:45
+don't have as much fine structure you
+36:47
+can imagine having maybe allocating
+36:48
+fewer points on that part of the object
+36:50
+to represent it with with less fidelity
+36:53
+so that means that even if you have a
+36:55
+fixed finite number of points to
+36:57
+allocate or your your 3d shapes then you
+36:59
+can position those those points out in
+37:01
+space in different ways to more flexibly
+37:03
+or adaptively represent areas of high
+37:05
+and low detail of the shapes you want to
+37:07
+represent but sort of one one downside
+37:11
+with 3d point cloud representations is
+37:13
+that you need to do some kind of
+37:15
+post-processing if you actually want to
+37:17
+extract out some actual 3d shape to
+37:19
+visualize and that's kind of clear even
+37:21
+from this visualization that we're
+37:23
+showing on the screen because um
+37:25
+mathematically this point cloud
+37:26
+representation each of our points are
+37:28
+infinitesimally small but there's no way
+37:30
+that we can actually visualize these
+37:32
+infant pestilent infant testimony small
+37:34
+points so even just to visualize a point
+37:36
+cloud representation we can
+37:38
+I need to inflate the points to some
+37:39
+finite ball size and then render these
+37:41
+balls so that's what we're showing on
+37:43
+the screen here um so that means that
+37:45
+this this raw point cloud representation
+37:47
+is something that we can't really work
+37:49
+with for a lot of applications in order
+37:51
+to actually represent any kind of dance
+37:52
+to your application we might need to do
+37:54
+some post-processing on the point cloud
+37:56
+to convert it into some other format or
+37:58
+some other representation for us to
+37:59
+render or visualize or work with but
+38:02
+that said this point code representation
+38:03
+is still a very useful thing to work
+38:05
+with in neural networks and this is
+38:07
+actually a very common representation
+38:08
+that's used for example in maybe
+38:12
+self-driving car applications so for a
+38:14
+self-driving car they actually have this
+38:15
+aw this spinning lidar sensor that's uh
+38:17
+that's on the roof of the car and then
+38:19
+it actually collects this point cloud
+38:20
+representation of the environment around
+38:22
+it so then for any kind of self-driving
+38:24
+car application you need like kind of
+38:27
+the raw data that the system is
+38:28
+ingesting is some point cloud
+38:30
+representation of the world around it
+38:32
+and that's maybe and then what was then
+38:34
+it's sort of important that we are able
+38:36
+to build neural network models that can
+38:37
+ingest these raw Planck load
+38:39
+representations and then make some some
+38:41
+decision based on raw point cloud inputs
+38:44
+so then one kind of neural network
+38:46
+architecture that people often use for
+38:49
+ingesting point cloud inputs is this
+38:52
+so-called point net architecture so here
+38:56
+this is kind of a simplified version but
+38:59
+what we want to do is input a set of
+39:00
+three points so that one so then our
+39:02
+input is going to be a point cloud with
+39:04
+P points and each of those points will
+39:07
+have an XYZ position in 3d space and now
+39:10
+we want to input this set of points as
+39:12
+input to the network and then we maybe
+39:14
+want to make some classification or
+39:16
+regression decision based on the this
+39:19
+point cloud input so maybe one thing we
+39:21
+might want to do is classify what is the
+39:23
+the category of the shape that is being
+39:25
+represented by this input point cloud so
+39:28
+then once then we need some kind of
+39:30
+neural network architecture that can
+39:31
+input a set of points and then output
+39:34
+some classification score but what's
+39:37
+interesting here is that we don't want
+39:39
+the order of the points in the cloud to
+39:40
+matter right this this point cloud is
+39:42
+really a set of 3d points and then the
+39:44
+order that the points are represented in
+39:46
+memory actually should not matter so
+39:48
+what that means is that our operation to
+39:51
+this
+39:51
+like the transformer that we talked
+39:53
+about several lectures ago that we want
+39:55
+the operations performed by our neural
+39:57
+network to be invariant or equivariance
+39:59
+to the order of the points that are
+40:01
+represented so then one way that we can
+40:04
+do this is this this point net
+40:06
+architecture so here what we're going to
+40:08
+do is train a little Eva's have a little
+40:11
+MLP a multi-layer perceptron a fully
+40:13
+connected neural network that is going
+40:15
+to input the 3-dimensional coordinate
+40:18
+and then go through several fully
+40:19
+connected layers and then finally output
+40:21
+a feature of dimension D and then we can
+40:24
+run this of this fully connected network
+40:26
+independently on each point in the cloud
+40:28
+and that will then give us some feature
+40:30
+vector for every point in the cloud and
+40:32
+then and then if and then this this then
+40:36
+if we had point clouds with varying
+40:38
+numbers of inputs and we could imagine
+40:39
+just running this NLP independently on
+40:42
+point clouds with arbitrary numbers of
+40:44
+points and then once we've used this
+40:46
+display connected network to extract a
+40:48
+feature vector for every point in the
+40:50
+cloud then we can use a Mac spooling
+40:52
+operation to do some max pooling over
+40:55
+all of the points in the cloud and that
+40:57
+will collapse these these people in the
+41:00
+cloud down to a single feature dimension
+41:02
+a feature vector of dimension D and then
+41:04
+this single feature vector of dimension
+41:06
+D we could then imagine going back to
+41:08
+using it to some other fully connected
+41:10
+network to eventually output our final
+41:13
+class scores or class probabilities and
+41:15
+because this max pulling up because the
+41:17
+max function doesn't care what order its
+41:20
+inputs were in then this architecture
+41:22
+doesn't care what order the points were
+41:25
+represented on the input tensor so that
+41:27
+means that this this this architecture
+41:28
+is really operating on sets of input
+41:30
+points um so it's quite appropriate for
+41:32
+dealing with these point cloud
+41:33
+representations and this is actually um
+41:36
+maybe a quite a simplified version of a
+41:38
+point out architecture so in practice
+41:39
+you might imagine vert so this is kind
+41:41
+of doing one layer of global aggregation
+41:43
+across all the points but in more
+41:45
+complicated versions of this
+41:46
+architecture what you could imagine
+41:47
+doing is taking this pooled vector and
+41:50
+then concatenate it again to all of the
+41:52
+vectors of the points in the cloud and
+41:54
+then doing more independent MLPs and
+41:56
+then more pooling and kind of iterating
+41:58
+this procedure of independent operation
+42:00
+on the feature vectors of the points
+42:02
+pooling across the points and then
+42:04
+concatenate
+42:04
+pulled vector back back to the feature
+42:07
+vectors of the points and that you could
+42:09
+imagine sort of more complicated
+42:10
+variants of this type of architecture
+42:11
+but this is sort of very commonly used
+42:14
+for processing point cloud inputs now
+42:17
+another thing we might want to do is
+42:18
+generate point cloud outputs so here
+42:21
+what we might want to do is input an RGB
+42:24
+image and then output a point cloud
+42:26
+representing the 3d 3d shape of the of
+42:28
+the point the 3d shape of the object so
+42:30
+then what we could imagine doing is kind
+42:32
+of hooking up some three to some neural
+42:34
+network architecture that is now
+42:36
+spitting out some 3d point clouds that
+42:39
+give the 3d shape and maybe we can skip
+42:42
+over the exact details of this
+42:43
+architecture because I think the
+42:45
+interesting point about generating point
+42:46
+clouds is that we need some kind of loss
+42:48
+function that is able to compare our
+42:51
+predicted the point cloud that our
+42:52
+network predicted and the point cloud
+42:54
+that we should have predicted and now
+42:56
+this is kind of a new thing that we
+42:57
+haven't really seen before because we
+42:59
+need to write down a loss function that
+43:00
+operates on two sets and tells us how
+43:02
+similar is this point cloud does these
+43:04
+two sets the one that we predicted and
+43:05
+the one that we should have predicted
+43:07
+and then of course this loss function
+43:09
+needs to be differentiable so we can
+43:10
+back propagate through it and use it to
+43:11
+train the network
+43:12
+well one function that we often use to
+43:15
+compare point clouds is called the the
+43:17
+chamfer distance and it has this
+43:19
+particular mathematical form but I think
+43:20
+it's maybe easier to understand if you
+43:22
+walk through it visually so here the
+43:24
+idea is that we're going to input on two
+43:26
+sets of points the the orange points and
+43:29
+the blue points and now the chamfer
+43:31
+distance should tell us how different
+43:32
+are these two sets of points so there
+43:35
+are two terms in this loss function so
+43:37
+the first one what we're going to do is
+43:39
+for each blue point we're going to find
+43:41
+its nearest neighbor orange point and
+43:43
+then we're going to compute the
+43:45
+Euclidean distance between each blue
+43:47
+point and its nearest neighbor orange
+43:48
+point and then we're going to sum up
+43:50
+those those distances across all of the
+43:51
+blue points and that will be this first
+43:53
+term in the loss function and then the
+43:55
+second term will do something kind of
+43:56
+equivalent so for each blue point we
+43:59
+will now find sorry for each orange
+44:01
+point we will now find its nearest
+44:03
+neighbor blue point and then compute
+44:05
+that distance to its nearest neighbor
+44:07
+and then sum of all of those distances
+44:08
+and now our chamfered unmeant our final
+44:11
+chamfer loss will then be the sum of
+44:12
+these two sort of nearest neighbor
+44:14
+matching loss functions and now you can
+44:17
+see that the only
+44:18
+possible way to get this to drive this
+44:20
+chapter loss to zero is if the two point
+44:22
+clouds coincide perfectly that is if
+44:25
+every orange point is exactly on top of
+44:27
+some blue point and vice versa
+44:29
+that's the only way that we can achieve
+44:30
+a zero loss but of course because of
+44:33
+this nearest neighbor operation the
+44:35
+order of the two points in the clouds
+44:36
+does not matter so that's exactly so
+44:39
+then this this chamfer loss function is
+44:40
+somehow is somehow matching the L to
+44:42
+nearest neighbor distance between two
+44:44
+sets of points in 3d space so then we
+44:47
+can imagine using this chamfer loss
+44:48
+function to to train our neural network
+44:51
+that's predicting point clouds so then
+44:53
+we could have the point cloud that's
+44:54
+predicted by our model and then the the
+44:56
+point cloud from the ground truth data
+44:58
+set that we should have predicted and
+44:59
+then compute this chamfer distance
+45:01
+between them and the back propagate
+45:02
+through everything to Train it the
+45:03
+weights of the network so that gives us
+45:07
+our our point cloud 3d shape
+45:08
+representation and the final one is the
+45:11
+the mesh representation of 3d triangle
+45:14
+meshes so here a 3d triangle mesh is
+45:17
+actually a very commonly used
+45:18
+representation in computer graphics if
+45:21
+you've ever taken like a graphics or a
+45:22
+rendering rendering class and here what
+45:24
+we're going to do is represent the 3d
+45:26
+shape as a set of vertices in 3d space
+45:28
+which is basically a point cloud
+45:29
+representation but now in addition to
+45:31
+this set of points in 3d space we're
+45:33
+also going to have a set of triangular
+45:35
+faces that are triangles with vertices
+45:37
+on the point cloud and then this will
+45:40
+give this will basically let represent
+45:42
+the 3d certain 3d shape of the object
+45:44
+not as a set of points in space but as a
+45:46
+as a set of triangular faces throughout
+45:48
+interconnected through per distance so
+45:51
+this is also sort of adaptive because we
+45:53
+can have sort of bigger or smaller
+45:54
+triangles at different points in the
+45:56
+model and it's also very useful for
+45:59
+computer graphics because it gives us
+46:01
+this explicit representation of the
+46:03
+surface of the object and what this
+46:05
+means is that we can also sort of
+46:06
+interpolate arbitrary data over the
+46:08
+surface of a triangle mesh using
+46:10
+something like very central coordinate
+46:11
+interpolation but the exact details of
+46:14
+that don't matter what that means is
+46:15
+that for example if we had maybe if we
+46:18
+attached data at each vertex like a
+46:20
+color or a normal vector or a texture
+46:22
+coordinate or some other piece of data
+46:24
+at each vertex then you could sort of
+46:26
+interpolate those pieces of data over
+46:28
+the triangular faces of the triangle
+46:30
+mesh so that would sort of ladder
+46:32
+represent this sort of extension of our
+46:35
+finite samples of data over this entire
+46:37
+3d surface in 3d space and that's for
+46:40
+example of how we often render 3d
+46:42
+textures in in computer graphics engines
+46:44
+so for all those reasons I think this
+46:46
+this 3d mesh representation is really
+46:48
+nice especially as for for graphics II
+46:50
+type applications but actually on
+46:52
+processing pretty Ramesh's with neural
+46:54
+networks there's kind of a non-trivial
+46:56
+operation you need to sort of invent a
+46:58
+lot of new structures to process meshes
+47:00
+with they're all networks so there was a
+47:03
+very nice paper presented by some folks
+47:06
+at EC that last year in 2018 that have I
+47:10
+think a lot of really cool ideas for
+47:11
+processing meshes with neural networks
+47:13
+this was called pixel to mesh because
+47:16
+what they wanted to do was input a
+47:17
+single RGB image on left and then output
+47:20
+a triangle mesh giving the full 3d shape
+47:23
+of that about object in the image and
+47:25
+they had maybe three four key ideas for
+47:28
+processing meshes with inside of a
+47:30
+neural network that I thought were quite
+47:31
+interesting so the first is the idea of
+47:34
+iterative mesh refinement so ultimately
+47:37
+we want to build a neural network that
+47:38
+is able to output or emit a triangle
+47:41
+mesh representing a 3d shape but it's
+47:43
+sort of difficult to invent trade 3d
+47:46
+meshes from scratch in in the
+47:47
+differentiable way so instead what we're
+47:49
+going to do is sort of input some in
+47:52
+some initial template mesh to the neural
+47:54
+network and then throughout processing
+47:56
+of the neural network what it's going to
+47:57
+do is deform that initial template mash
+47:59
+it to give our final mesh output so then
+48:02
+what we're going to do is sort of input
+48:04
+to the network this on sphere initial
+48:06
+sphere or initial ellipsoid mesh that
+48:08
+gives us some initial positions for all
+48:10
+the vertices and some set of triangular
+48:12
+faces over those vertices and then we're
+48:14
+going to then iteratively refine the
+48:17
+positions of those vertices so then in
+48:19
+the first stage of processing will
+48:20
+process that input mesh in some way see
+48:23
+how much does that initial mesh match
+48:24
+the image and then move the vertices
+48:27
+around in 3d space to give some updated
+48:29
+or refined version of that triangle mesh
+48:31
+then given that refined triangle match
+48:33
+rule again somehow compare it to the
+48:35
+input image see how much does it match
+48:37
+the input image and then again move each
+48:39
+of the vertices a little bit in order to
+48:41
+further refine the exact structure of
+48:43
+the 3d mesh to be output
+48:44
+and you can imagine going through
+48:45
+several stages of this and hopefully by
+48:48
+the end you'll be able to output a 3d
+48:50
+triangle mesh that matches the geometry
+48:52
+of the input image very nicely
+48:54
+so that's the first sort of interesting
+48:56
+useful idea for processing triangle
+48:58
+meshes with neural networks the second
+49:01
+is that we need some kind of neural
+49:03
+network layer that can operate over mesh
+49:06
+structured data and the way that we do
+49:08
+that is using an operator called graph
+49:09
+convolution so we're very familiar with
+49:12
+two-dimensional and three-dimensional
+49:13
+convolution right the idea with normal
+49:16
+2d convolution is that we have some grid
+49:19
+of feature vectors and that at the input
+49:21
+and then the output we're going to
+49:23
+compute a new grid of feature vectors
+49:24
+and every feature vector in the output
+49:26
+grid is going to depend on some local
+49:28
+receptive field or a local neighborhood
+49:30
+of the features in the input grid and
+49:32
+then we're going to slide that same
+49:34
+function over every point in the grid to
+49:36
+compute all of our feature vectors in
+49:37
+the output now with graph convolution
+49:39
+it's going to be very similar but sort
+49:41
+of extending not to two dimensional or
+49:43
+three dimensional spatial grids
+49:44
+but instead to arbitrary graph structure
+49:46
+data so what we're going to do is that
+49:49
+the input to a graph convolution layer
+49:51
+will be a graph and a feature vector
+49:54
+attached to every vertex of the graph
+49:56
+and now the output of the graph
+49:58
+convolution layer we want to compute a
+50:00
+new feature vector for every vertex in
+50:03
+the graph and the the output feature
+50:05
+vector for a vertex should depend on a
+50:09
+local receptive field of the feature
+50:11
+vectors in the input graph to the graph
+50:13
+convolution layer so then we can use
+50:16
+this particular mathematical formalism
+50:18
+up here at the top that lets us compute
+50:21
+a new output feature vector F prime I
+50:23
+for vertex VI that's going to depend
+50:26
+both on the input feature vector F I as
+50:29
+well as the the all of the neighboring
+50:31
+feature vectors F J that are all the
+50:33
+neighbors in the graph to that feature
+50:35
+vector F I and the way that we do this
+50:37
+as we all maybe this is sort of a lot of
+50:38
+different low-level ways that you can
+50:40
+implement graph convolution there's a
+50:41
+lot of different papers showing exactly
+50:43
+did slightly different architectures for
+50:44
+this thing but they all share this
+50:46
+similar intuition that we want to
+50:47
+compute the output feature vector in a
+50:49
+way that depends on sort of the local
+50:51
+neighborhood of feature vectors in the
+50:52
+integrand and then we're going to apply
+50:54
+this same function to every vertex in
+50:57
+the graph and sort of slide
+50:58
+/ convolutional e and begin with this
+51:00
+and this is sort of we think of this as
+51:02
+a convolution because we're sort of
+51:04
+sliding this function over every vertex
+51:05
+in the graph to compute our output
+51:07
+feature vectors and then just like image
+51:10
+convolution can be applied at test time
+51:12
+to arbitrary grids of arbitrary sizes
+51:14
+well then a single graph convolution
+51:17
+layer can operate on graphs with
+51:19
+arbitrary numbers of vertices an
+51:20
+arbitrary topology or connectivity
+51:22
+patterns at test time then we can use
+51:24
+sort of 1:1 neural network layer that
+51:27
+can process our graphs of arbitrary
+51:28
+topology so then in order to process
+51:31
+triangle meshes with graph convolution
+51:33
+where the main body of a network is now
+51:36
+going to be a graph convolutional
+51:37
+Network where we stack up many many of
+51:39
+these graph convolution layers so then
+51:42
+in the inside the body of this network
+51:43
+we will always attach a feature vector
+51:46
+at every vertex in the mesh and now at
+51:49
+every layer of graph convolution it's
+51:51
+going to update or compute a new feature
+51:53
+vector for every vertex in the mesh in a
+51:56
+way that sort of depends on local
+51:57
+neighborhoods of the input of the
+52:00
+neighbors in the mesh to all of the to
+52:01
+each vertex where the neighbors are sort
+52:03
+of along the edges as indicated by the
+52:05
+faces and you can imagine stacking up
+52:07
+many many graph convolution layers to
+52:10
+now update or to now process feature
+52:12
+vectors and propagate them along the
+52:13
+edges of this mesh so I thought this was
+52:15
+again a very nice way to process mesh
+52:18
+structure data with come up with with
+52:20
+some kind of neural network structure
+52:22
+but now the problem is that I said that
+52:25
+our initial task here was to input an
+52:27
+RGB image and then output the triangle
+52:30
+mesh so we need some way to actually mix
+52:32
+in image information into this graph
+52:34
+convolutional Network so that brings us
+52:36
+to I think the third really cool idea
+52:38
+that this pixel too much paper had and
+52:40
+that's this idea of getting vertex
+52:42
+aligned features so here what we want to
+52:44
+do is for every vertex in the mesh we
+52:48
+want to get some kind of feature vector
+52:49
+from the image that represents the kind
+52:52
+of visual appearance of the image at
+52:54
+that put at that spatial position of the
+52:56
+vertex so then what we can do is take
+52:58
+our input image and then run it through
+53:00
+a 2-dimensional CNN and that will give
+53:02
+us some 2-dimensional grid of image
+53:04
+features that we've seen many many times
+53:05
+and now what we can do is if we
+53:08
+understand the in the camera intrinsic
+53:10
+or the then what we can do is take our
+53:13
+3d triangle mesh and then project the
+53:16
+vertices of the mesh onto the image
+53:17
+plane using kind of a 3d to 2d
+53:19
+projection operator and that will take
+53:22
+every three that will take every 3d
+53:24
+position of each vertex out in space and
+53:26
+now project it down onto the image plane
+53:28
+and now for each of those projected
+53:30
+vertex locations we can use bilinear
+53:33
+interpolation to sample a feature vector
+53:35
+from our image from our convolutional
+53:38
+neural network features that now gives
+53:40
+us a feature vector for each vertex that
+53:43
+is all perfectly aligned to the position
+53:45
+in the image plane where that feature
+53:47
+vector projects and this idea of been
+53:49
+this bilinear interpolation is basically
+53:52
+the same that we saw last lecture in the
+53:54
+ROI align operator in NASCAR CNN but
+53:56
+here rather it was C so here we still
+53:58
+want to kind of sample on feature
+54:00
+vectors and arbitrary positions in the
+54:02
+2d image plane but rather than sort of
+54:04
+sampling them at a regularly spaced grid
+54:06
+like we did in the ROI align operator
+54:08
+instead what we want to do now is sample
+54:11
+a feature vector at every point in the
+54:13
+image plane for all the projected vertex
+54:15
+positions and that will allow us to mix
+54:17
+in image information into our graph
+54:19
+convolutional Network okay so then the
+54:23
+final thing that we need to figure out
+54:24
+with processing graphs is what is our
+54:27
+loss function so then we're going to
+54:30
+have our model predicts own 3d triangle
+54:32
+mesh and we have some ground truth the
+54:34
+3d triangle mesh and we need some loss
+54:35
+function that now compares 3d triangle
+54:37
+meshes and tells us how similar our
+54:39
+predicted mesh was to the ground truth
+54:41
+mesh but the problem here is that we can
+54:44
+actually represent the exact same 3d
+54:45
+shape using different triangle meshes
+54:47
+and when I and as an example here we
+54:50
+could represent a square using a try
+54:52
+using two big triangles or using four
+54:55
+small triangles and both of these
+54:57
+different not represent Asians and
+54:58
+represent the exact same shape and
+55:00
+somehow we want our loss function to be
+55:02
+invariant to the particular way that we
+55:04
+represent the shape using triangles we
+55:06
+just want the the loss function to
+55:08
+depend on the underlying shape itself
+55:10
+and not the particular way that we
+55:11
+decide to carve it up into triangles so
+55:14
+the the idea to get around that is
+55:16
+actually our loss function we have we
+55:18
+have actually seen though we already
+55:20
+seen the answer so what we're going to
+55:21
+do is going to take our meshes convert
+55:24
+them
+55:24
+two point clouds by sampling points
+55:26
+along the interior of the of the mesh
+55:29
+and then use our chamfer distance to
+55:31
+compare these these two point clouds and
+55:34
+in practice what we're going to do is
+55:36
+sample points from the ground truth mesh
+55:38
+on the right sample points from the
+55:40
+predicted mesh on the left and then
+55:42
+compare these two point cloud
+55:43
+representations using this chamfer loss
+55:45
+that we've already seen but of course
+55:47
+the problem here is that for the ground
+55:49
+truth mesh on the right you can imagine
+55:51
+doing those that sampling off line and
+55:53
+sort of sampling all those points and
+55:54
+cashing them to disk but now to in order
+55:57
+to two sample points on the left from
+55:59
+our prediction now we need to in order
+56:00
+to do that we actually need to do this
+56:02
+sampling operation online so that's sort
+56:04
+of a difficult implementation to do and
+56:07
+then also we need to be able to back
+56:08
+propagate through this sampling
+56:09
+operation on the left if we're going to
+56:11
+do this to do this online I'm gonna
+56:13
+turns out there is a way to sort of back
+56:15
+propagate through the sampling operation
+56:16
+in a nice way that you can check out
+56:18
+this ICML 20:19 paper to see the exact
+56:20
+details ok so then once we've seen all
+56:23
+of these four key ideas that gives us
+56:25
+some that gives us a Mac a way that we
+56:27
+can operationalize a neural network that
+56:29
+can input an RGB image and then output a
+56:31
+triangle mesh that represents the 3d
+56:33
+shape of that image right then we're
+56:35
+going to use iterative refinement we're
+56:36
+going to use graph convolution at
+56:38
+several points in this graph convolution
+56:40
+Network we're going to mix in image
+56:41
+information using vertex align features
+56:43
+and we'll train the thing using a
+56:44
+chamfer loss function so that gives us
+56:47
+our four 3d shape representations
+56:49
+there's actually a couple more issues
+56:52
+they need to deal with when when dealing
+56:53
+with 3d shapes but maybe we won't go
+56:56
+into full detail on these so we need
+56:58
+some some metrics to compare 3d shapes
+57:01
+actually tell whether our models are
+57:02
+working well we saw in 2d we can use
+57:05
+intersection over union to compare
+57:07
+bounding boxes we can actually use a
+57:09
+similar type of intersection over Union
+57:11
+to compare 3d shapes but it turns out
+57:14
+that I'm actually intersection over
+57:15
+union of 3d shapes is maybe not as
+57:17
+meaningful or useful as a metric as we
+57:19
+might like so another metric we can use
+57:22
+to compare 3d shapes is this chamfer
+57:24
+distance that we've already seen so one
+57:26
+way to compare 3d shapes is to sample
+57:28
+point clouds from each of our different
+57:29
+shape representations and then compare
+57:31
+them using a chamfer distance and but
+57:34
+the problem with the chamfer distance is
+57:36
+that because it relies on this kind of
+57:38
+l to distances and it's very sensitive
+57:40
+to outliers so if you look at these
+57:42
+these two examples here this this this
+57:46
+this one example unlit on the left has
+57:48
+very different chamfer distances to
+57:50
+these two examples on the right on
+57:51
+because of this l2 nature of the loss
+57:54
+function so as a result I think a better
+57:57
+loss function for sure come for
+57:58
+comparing 3d shapes is to use an f1
+58:01
+score which also operates on point
+58:03
+clouds so this is sort of similar to the
+58:06
+the chamfer loss in that we will take
+58:08
+our to 3d shape representations and
+58:10
+sample point clouds from them and then
+58:12
+compare the two 3d shapes as point
+58:14
+clouds so what we're going to do is
+58:16
+maybe we've got our predicted point
+58:18
+clouds in orange here and our ground
+58:20
+truth point cloud point clouds in blue
+58:22
+and then we can compute the precision
+58:24
+that is the fraction of the predicted
+58:27
+points that were actually correct
+58:28
+and when I say correct that means that
+58:30
+yeah a predicted point is counted as
+58:32
+correct if it is within some some
+58:35
+threshold radius of a ground truth point
+58:37
+so then for this example we kind of
+58:39
+imagine expanding out a sphere around
+58:41
+each of our predicted points and then if
+58:42
+some growing truth point falls within
+58:44
+that sphere then the predicted point is
+58:46
+counted as true so then the precision in
+58:48
+this example it would be 3 over 4
+58:50
+because 3 of our 4 predicted orange
+58:52
+points somehow our correct and have a
+58:54
+blue point fall within that within the
+58:56
+radius then we can go the other way and
+58:58
+compute the recall which is what
+59:00
+fraction of the ground truth points were
+59:02
+hit with a predicted point within some
+59:04
+radius and then here for this example
+59:07
+the recall would be 2/3 because two out
+59:10
+of the three that doesn't seem right it
+59:13
+actually looks like they're all hit no
+59:15
+they're not because the one the lower
+59:16
+right doesn't quite hit they just sort
+59:17
+of barely touching right um so then of
+59:19
+these three blue points on two of them
+59:21
+are hit with over the predicted point
+59:22
+within the radius and the third one is
+59:23
+not so recall is 2/3 and the f1 score is
+59:27
+this is this is this a geometric mean of
+59:30
+the of the of the precision and the
+59:33
+recall so in this case would be point
+59:35
+seven so this is a number between zero
+59:36
+and one and the only way we can get one
+59:38
+is if both the precision and the recall
+59:39
+are 1 and this f1 score is sort of a
+59:43
+nicer metric for comparing 3d shapes
+59:44
+because it's more robust to outliers so
+59:47
+I think that this is the the best roll
+59:49
+like sort of the nicest metric we have
+59:51
+right now for comparing 3d shapes okay
+59:55
+so another thing you need to deal with
+59:56
+worry about when you're working with 3d
+59:58
+shapes is actually the camera coordinate
+60:00
+system that you're working with because
+60:02
+now cameras and these camera systems get
+60:04
+kind of complicated once you're working
+60:06
+in 3d so there's one so that so suppose
+60:09
+we're working on this task where we're
+60:11
+going to input input an image and then
+60:13
+we want to output a pretty shape
+60:14
+representing the 3d shape of that input
+60:16
+image now one up and then we have to
+60:19
+answer the question what is the
+60:21
+coordinate system that we're going to
+60:22
+use to represent the 3d shape out in 3d
+60:25
+space well one option is to use a so
+60:27
+called canonical coordinate system and
+60:29
+what this means is that we sort of for
+60:32
+the object for each object category we
+60:34
+kind of fix canonical directions of
+60:36
+front and left and up and running and
+60:38
+and down so for example if we're maybe
+60:40
+training a network to predict 3d shapes
+60:42
+of chairs then we say that the plus Z
+60:44
+Direction is maybe always the front of
+60:46
+the chair and the plus y direction is
+60:48
+always the up is always going up normal
+60:51
+to the to the seat of the chair and then
+60:53
+plus ax is always to the right another
+60:55
+option is to predict in View coordinates
+60:57
+so this would be to use a 3d coordinate
+61:00
+system for the target that is aligned to
+61:03
+the input image and this would be
+61:04
+another option for representing the
+61:06
+three the the coordinate system of the
+61:08
+3d shapes and we're trying to predict
+61:09
+that and actually if you read a lot of
+61:11
+papers in detail I think a lot of people
+61:13
+use view coordinates just because it's
+61:15
+sort of easier to implement because
+61:17
+these 3d models are kind of stored on
+61:19
+disk and some canonical coordinate
+61:20
+system you could just kind of load them
+61:21
+up in disk and then predict the
+61:22
+coordinate system that they're stored
+61:23
+with natively so I think a lot of people
+61:26
+use these canonical coordinates for a
+61:28
+lot of in practice but I think view
+61:31
+provide but in but there's a problem
+61:33
+with canonical coordinates which is that
+61:35
+it means that the features of your
+61:36
+outputs are no longer properly aligned
+61:38
+to the features of your inputs whereas
+61:41
+if you use a view coordinate system that
+61:43
+means that the position of your the
+61:45
+feature is corresponding to each thing
+61:47
+that you output are going to be better
+61:49
+aligned to the original input that you
+61:51
+process as input so for this reason I
+61:53
+think it's preferable to make
+61:55
+predictions in View coordinates there's
+61:57
+actually some been some some research
+62:00
+that backs this up so here it is
+62:02
+experiment where they see that if you
+62:04
+train two networks that are identical
+62:06
+but one is in view coordinates and one
+62:07
+is in canonical coordinates then the
+62:09
+network in canonical coordinates tends
+62:11
+to overfit to the training shapes that
+62:13
+it sees during training whereas networks
+62:16
+that are trained in view coordinates
+62:17
+tend to generalize better at test time
+62:19
+to either novel 3d shapes or to novel
+62:22
+object categories so for those reasons I
+62:24
+think it's maybe preferable in most
+62:25
+scenarios to make predictions in you
+62:27
+coordinates so then if we're as soon as
+62:30
+kind of an example what that looks like
+62:32
+is that if we're going to make view
+62:34
+centric voxel predictions then what that
+62:37
+means is that this voxel 2
+62:39
+representation that we talked about for
+62:41
+predicting voxels becomes very natural
+62:43
+because now we're going to maybe for
+62:46
+each we for every aligned appropriate
+62:48
+position in the input image we need to
+62:50
+predict an aligned tube of occupancy of
+62:52
+box occupancies
+62:53
+which then is sort of natural to process
+62:56
+with this 2d voxel tube convolution
+62:58
+representation that we talked about ok
+63:01
+so the way all states that maybe cover a
+63:02
+couple of the datasets that people often
+63:04
+use for these tasks one is shape that
+63:07
+right because we're all very familiar
+63:09
+with image net an image net was this
+63:10
+like you know a large-scale data set of
+63:12
+images that led to keep learning
+63:13
+revolution and blah blah blah and
+63:15
+because of the because of image that was
+63:17
+so successful then like everyone wanted
+63:18
+to build a data set and call it
+63:19
+something that so then we have shape net
+63:22
+which is supposed to be like the image
+63:23
+net of 3d shapes so then shape net is
+63:26
+actually a fairly large scale it gives
+63:28
+about fifty thousand of 3d CAD models or
+63:31
+3d mesh models spread across 50
+63:33
+different categories and then it's
+63:36
+common to render these 3d CAD models
+63:38
+from a variety of different viewpoints
+63:39
+to actually generate a fairly large data
+63:41
+set of maybe around a million images so
+63:43
+it's fairly similar in it to image that
+63:45
+in scale in terms of images but because
+63:48
+um because it's kind of synthetic right
+63:50
+because these objects are just like
+63:51
+isolated CAD models they're not real
+63:53
+images they're not they don't have real
+63:54
+context to them so they're kind of it's
+63:57
+kind of nice for playing around with
+63:59
+with 3d representations but it's not
+64:01
+it's not a realistic data set another
+64:04
+data set that I like a lot is this pix
+64:06
+3d data set from some people at MIT
+64:07
+which actually has real-world images and
+64:10
+it actually has 3d mesh models of
+64:12
+furniture that are aligned to pixel wise
+64:14
+to the input images
+64:15
+and the way they collected this was
+64:17
+quite ingenious because it turns out
+64:19
+that um people loved shop at IKEA and
+64:21
+when people buy IKEA furniture they love
+64:24
+to go online and say like hey look at my
+64:26
+new IKEA bed model like whatever and it
+64:29
+then let you can just like Google the
+64:31
+IKEA model number and then get a lot of
+64:32
+images that show you like this exact bed
+64:34
+in a lot of different rooms and then it
+64:37
+turns out that IKEA actually publishes
+64:39
+3d mesh models of their furniture so
+64:42
+then what they can do is download all
+64:43
+these 3d mesh models from Ikea um go on
+64:45
+Google Image Search and search google
+64:47
+for a bunch of images of the specific
+64:49
+IKEA models and then pay people to align
+64:52
+the the IKEA models to the input images
+64:54
+so that's like pretty cool I thought
+64:56
+that was very clever way to collect a
+64:57
+data set and because of that it means we
+65:00
+actually get like real world images with
+65:01
+like lots of like cluttered messy
+65:03
+bedrooms and stuff that show this
+65:05
+show-off like different types of IKEA
+65:07
+furniture in sort of cluttered real
+65:09
+world scenarios ok so then that finally
+65:12
+brings us to this mesh our CNN
+65:17
+architecture that we teased in the last
+65:19
+lecture so here we're basically
+65:20
+combining all of the detections - all of
+65:23
+the detection pipeline that we built up
+65:25
+in the previous lectures but now in
+65:27
+addition which then we want to input a
+65:28
+real-world RGB image detect all the
+65:31
+objects in the image and then for each
+65:33
+detected object emit a full 3d triangle
+65:35
+mesh to give us the 3d shapes of each of
+65:37
+those detected objects and the way that
+65:40
+this works is that it's basically as we
+65:42
+said last time all the detection stuff
+65:44
+is basically NASCAR CNN and then the 3d
+65:47
+shape prediction part is sort of a blend
+65:49
+of all of these 3d shape prediction
+65:51
+methods that we've talked about in this
+65:53
+lecture so one of the things that we do
+65:56
+in mesh our CNN is actually use a hybrid
+65:58
+3d shape representation we ultimately
+66:01
+want to predict a mesh so we liked this
+66:04
+idea of mesh deformation from from pixel
+66:06
+to mash but the problem with mesh
+66:08
+deformation is that it constrains the
+66:11
+topology of 3d shapes that you can
+66:13
+output because if you recall this idea
+66:15
+of 3d mesh deformation is that the model
+66:17
+was going to input some initial 3d mesh
+66:19
+and then it was going to reposition all
+66:21
+the vertices in order to give our final
+66:22
+output mesh but this only works if the
+66:25
+if the the model the the shape
+66:27
+the output has the same topology as that
+66:30
+initial 3d mesh shape so for example it
+66:33
+means that there's no possible way to
+66:34
+deform like if you take in a topology
+66:36
+class you know there's no way that you
+66:37
+can continuously deform a sphere into a
+66:40
+doughnut so then there's there's just
+66:41
+it's just fundamentally impossible to
+66:43
+input this like a lip side or spherical
+66:46
+mesh and then deform it to predict a
+66:47
+doughnut output so that's kind of a
+66:49
+fundamental limitation with this idea of
+66:51
+iterative refinement but it turns out
+66:54
+that these other other things that these
+66:56
+other shape representations we've talked
+66:57
+about today actually do not suffer from
+66:59
+this so basically what we're going to do
+67:01
+is we want to overcome this limitation
+67:03
+of limited topologies of this this
+67:06
+iterative refinement method by first
+67:08
+making coarse voxel Pradesh predictions
+67:10
+converting the voxel predictions to a
+67:12
+mesh and then using iterative refinement
+67:13
+from there so basically the pipeline is
+67:16
+that given an input image will do all
+67:18
+the 2d object recognition stuff that
+67:20
+we're familiar with from NASCAR CNN this
+67:22
+is going to be this these are P ends and
+67:24
+then for each RPN we're going to regress
+67:26
+boxes and then have a second stage it's
+67:27
+gonna do our classification and our
+67:29
+instant segmentation and that's going to
+67:31
+give us these these boxes for the
+67:32
+detective and use images in the scene
+67:34
+then for each detected detected image
+67:36
+we're going to use a voxel tube
+67:38
+representation a voxel tube network in
+67:41
+the second stage of the the NASCAR scene
+67:43
+and pipeline to predict a course voxel
+67:45
+representation of the 3d of of each of
+67:48
+each shape and then we'll convert each
+67:50
+of those predicted voxel representations
+67:52
+into some blocky mesh representation and
+67:55
+then use that blocky mesh representation
+67:57
+as the initial mesh to use to go along
+68:00
+for iterative refinement but then allows
+68:02
+us to finally output for each detected
+68:05
+in it for each detected object I'll put
+68:07
+this this high fidelity mesh
+68:09
+representation and then our results is
+68:12
+like basically we could predict things
+68:14
+with holes like that that's the big
+68:17
+thing right because because we're going
+68:18
+through this intermediate box or
+68:20
+representation it allows us to output
+68:22
+meshes that have sort of arbitrary
+68:24
+topology so if you look at so these are
+68:27
+some example results where the top row
+68:29
+shows our input RGB image the middle row
+68:31
+shows examples from this iterative
+68:34
+refinement approach that is going to
+68:36
+deform from a sphere for initial sphere
+68:38
+or mesh and you can
+68:40
+because it's it just can't get rid of
+68:42
+holes in objects so for this example of
+68:45
+like the the chair on the left it seems
+68:47
+like the network kind of knows that
+68:48
+there should be a hole there so it kind
+68:50
+of pushes the vertices all the way from
+68:51
+the hole but it just can't delete that
+68:53
+face so it just has no way to actually
+68:55
+properly model the holes in these
+68:56
+objects whereas on in our in our in our
+68:59
+results because we go through this
+69:00
+initial course box or representation
+69:02
+then the voxel representation can be
+69:04
+used to model the initial holes in the
+69:06
+object and then the meshes can be used
+69:08
+to refine and give us this very
+69:09
+fine-grained outputs there's a slight
+69:12
+problem though which is that if we train
+69:14
+only with the chamfer loss we actually
+69:16
+get really ugly results so we actually
+69:18
+find that we need to use some
+69:20
+regularization term that encourages the
+69:22
+result the generated meshes to be less
+69:24
+degenerate and more visually pleasing um
+69:26
+so the way that we do that is that in
+69:28
+addition to minimizing the chamfer loss
+69:29
+between the predicted mesh and the
+69:31
+ground truth mesh then we also minimize
+69:33
+the l2 norm of each edge in the mesh and
+69:37
+it turns out to this relatively simple
+69:38
+regularizer
+69:39
+let's the model predict now very well
+69:41
+structured meshes and the results is
+69:44
+that now we can predict these full
+69:46
+triangle meshes we can input these
+69:47
+real-world images on the Left we can
+69:49
+detect the objects in the images and
+69:51
+then predict these these output 3d mesh
+69:54
+mesh models that give very fine-grained
+69:56
+3d shapes for each of the detected
+69:58
+objects and you can see that they
+70:00
+actually represent not only the visible
+70:02
+portion of the object but also the
+70:04
+invisible back sides of the objects and
+70:06
+from this bookshelf example on the upper
+70:09
+left hand here you can see that we can
+70:11
+represent it we can output these 3d
+70:12
+meshes with very complicated topology
+70:14
+with a lot of different holes so that's
+70:16
+a kind of nice nice result and then you
+70:19
+know because this is built on top of an
+70:21
+object detection framework then it can
+70:22
+actually detect many many objects per
+70:24
+scene but of course it doesn't work
+70:26
+perfectly so and actually another kind
+70:29
+of nice feature of this architecture is
+70:31
+that it actually predicts it does what
+70:33
+we call a modal prediction so that means
+70:35
+that it predicts not only the visible
+70:37
+parts of objects but also the occluded
+70:39
+or the invisible parts of all of all the
+70:41
+objects so if you for example if you
+70:43
+look at the image on the left you can
+70:45
+see that like part of the couch is
+70:47
+actually occluded by the dog's head but
+70:49
+our prediction on the right we actually
+70:51
+predicts the full we actually predict
+70:53
+the 3d
+70:53
+of the couch even in the port even in
+70:56
+the region of the image without were
+70:57
+though where the couch was covered up at
+70:59
+the dogs head
+71:00
+um so that's that's called a mobile
+71:02
+prediction and that's actually a bit a
+71:03
+little thing that's something like
+71:04
+Nascar Sina usually will not do and
+71:07
+notice that we don't predict the dog
+71:08
+because IKEA doesn't sell dogs and then
+71:12
+there's another it's also kind of
+71:14
+interesting to look at the failure modes
+71:15
+here and what's an interesting failure
+71:17
+mode is that we see that places where
+71:19
+the 2d recognition fails are also places
+71:22
+where 3d recognition tends to fail so
+71:25
+here if you look at the predicted
+71:26
+segmentation mask for the bookcase you
+71:28
+see that the regions of the image where
+71:30
+we miss the segmentation mask are also
+71:32
+the regions of the image where we miss
+71:34
+on the predicted mesh so that makes me
+71:37
+think that maybe improvements in 2d
+71:39
+recognition could also lead to future
+71:41
+improvements in a 3d recognition so
+71:45
+that's then to kind of a recap where we
+71:47
+got today we talked about these two
+71:49
+fundamental problems of understanding 3d
+71:52
+shapes of neural networks which was
+71:53
+predicting 3d shapes from edges or maybe
+71:56
+classifying 3d shapes and we had kind of
+71:58
+a very fast walk over of how you can
+72:00
+represent all these different types of
+72:02
+3d record 3d shape representations using
+72:05
+neural networks and that's that's kind
+72:07
+of where we ended off today and
+72:08
+basically today was about adding a third
+72:10
+spatial dimension to our on their own
+72:11
+networks and now next time we'll talk
+72:13
+about videos which is like adding a
+72:15
+temporal dimension to our neural
+72:16
+networks so it'll be a different way
+72:18
+that we can extend our neural networks
+72:19
+to it to an extra dimension so come back
+72:21
+next time I'll learn about that
+
+영어 (자동 생성됨)
+
+

@@ -1,0 +1,4312 @@
+﻿00:00
+okay welcome back today we are we're on
+00:02
+lecture twelve and today we're going to
+00:04
+talk about a new species of neural
+00:05
+network called a recalled recurrent
+00:07
+neural networks so before we talk about
+00:09
+recurrent neural networks I wanted to
+00:11
+back up and remember we had this slide
+00:13
+from a couple lectures ago where we were
+00:15
+talking about hardware and software and
+00:17
+this was kind of our TL DR conclusions
+00:19
+about pi torque versus tensor flow and
+00:22
+if you'll recall kind of my biggest
+00:23
+gripes with PI torch as of that lecture
+00:26
+we're that it didn't have good TPU
+00:28
+support for a googol specialized tensor
+00:30
+processing unit hardware and it did not
+00:32
+have good support for exporting your
+00:33
+train models onto mobile devices like
+00:36
+iOS and Android devices well since that
+00:39
+lecture
+00:39
+hayah torch has actually released a new
+00:41
+version 1.3 and two of the biggest
+00:43
+features in the new version of Pi torch
+00:45
+actually address these two big concerns
+00:47
+that I had with PI torch so PI torch 1.3
+00:50
+now offers some experimental mobile API
+00:52
+that theoretically makes it really easy
+00:54
+to export your models and run them on
+00:56
+mobile devices which seems awesome and
+00:58
+there's now also experimental support
+01:00
+for teep running PI torch code on Google
+01:03
+TP use which also seems really cool so I
+01:06
+just thought it's it's nice to keep you
+01:08
+guys up to date when things change in
+01:10
+the field of deep learning as you can
+01:12
+see things are changing even within the
+01:14
+scope of one semester and some of our
+01:15
+earlier lecture content becomes outdated
+01:17
+even just a week or two later sometimes
+01:19
+but we're gonna so this is the new PI
+01:22
+torch version 1.3 we're gonna continue
+01:24
+sticking with version 1.2 for the rest
+01:26
+of this quarter unless colab silently
+01:28
+updates to 1.3 on us again
+01:30
+which may happen I don't know so these
+01:33
+are really cool new features but like I
+01:34
+said this was just released so it's
+01:36
+gonna take a little bit of time I think
+01:38
+before we see whether or not these these
+01:39
+new features are really as awesome as
+01:41
+they're promised to be so then kind of
+01:45
+stepping back to last lecture remember
+01:47
+the last two lectures we've been talking
+01:48
+about all these nuts and bolts
+01:50
+strategies for how you can actually
+01:51
+train your neural networks so we talked
+01:53
+in great detail about things like
+01:55
+activation functions data pre-processing
+01:57
+weight initialization and many other
+02:00
+many other strategies and little details
+02:02
+that you need to know in order to train
+02:04
+your neural networks so now hopefully by
+02:06
+this point in the class you guys are all
+02:07
+experts at training deep convolutional
+02:09
+neural networks for whatever type of
+02:11
+image classification problem I might
+02:13
+want to throw at you so since you are
+02:15
+now experts at that problem it's now
+02:17
+start - it's now the time in the
+02:19
+semester when we need to start thinking
+02:20
+about new types of problems that we can
+02:22
+solve with deep with deep neural
+02:23
+networks so that brings us to today's
+02:26
+topic of recurrent neural networks so
+02:29
+basically all the problems all the
+02:30
+applications we've considered of deep
+02:32
+neural networks in this class so far
+02:34
+have been what is called a feed-forward
+02:36
+Network now these feed-forward networks
+02:39
+are something that receives some single
+02:41
+input at the bottom of the network like
+02:43
+a single image goes through one or
+02:45
+multiple hidden layers maybe with
+02:47
+special fancy layers like convolution or
+02:50
+patch normalization but each each layer
+02:52
+sort of feeds into the next layer and at
+02:54
+the very end of the network it's going
+02:56
+to output some single output like so the
+02:59
+classical example of these kind of
+03:00
+feed-forward networks are these image
+03:03
+classification networks that we've been
+03:04
+working with so far here there's a
+03:06
+single input which is the image and
+03:07
+there's a single output which is the
+03:09
+category label that we want our network
+03:11
+to assign to that image now as we've
+03:13
+been the reason we covered image
+03:15
+classification in such detail is because
+03:17
+I think it's a really important problem
+03:19
+that encapsulates a lot of important
+03:20
+features of deep learning but there's a
+03:23
+whole lot of other types of problems
+03:24
+that we might imagine wanting to solve
+03:26
+using deep neural networks so for
+03:29
+example we might want to have problems
+03:31
+that are not one-to-one but instead are
+03:34
+one-to-many so where the input is a
+03:37
+single input like maybe a single image
+03:39
+and the output is no longer a single
+03:41
+label but maybe the output is a sequence
+03:43
+an example of this would be a task like
+03:45
+image captioning where we want to have a
+03:47
+neural network to look at an image and
+03:49
+then write a sequence of words that
+03:51
+describe the content of the image in
+03:53
+natural language now you can imagine
+03:55
+this would be much more general than
+03:56
+this single image class this single
+03:58
+label image classification problem that
+04:00
+we've considered so far another type of
+04:03
+application we might imagine is a
+04:05
+many-to-one
+04:06
+problem where now maybe our input is no
+04:09
+longer a single item like an image but
+04:11
+maybe our input is a sequence of items
+04:13
+for example a sequence of video frames
+04:16
+that make up a video and now at the end
+04:18
+we then maybe want to assign a label to
+04:20
+this to this sequence of inputs maybe we
+04:22
+want to look at the
+04:24
+of a video sequence and then say maybe
+04:26
+what type of event is happening in that
+04:28
+video so this would be an example of a
+04:30
+many-to-one problem because the input is
+04:32
+a sequence and the output is a single
+04:33
+label of course you can generalize this
+04:36
+you can imagine problems that are many
+04:37
+to many that want to input a sequence
+04:40
+and then output a sequence an example of
+04:42
+this type of problem would be something
+04:43
+like machine translation where we want
+04:46
+to have neural networks that can input a
+04:48
+sentence in English so that would be a
+04:50
+sequence of words in English and then
+04:52
+output a translation of that sentence to
+04:54
+French which would then be a sequence of
+04:56
+words in French and again and that's
+04:58
+sort of on every for passed the network
+05:00
+we might have seek input sequences of
+05:01
+different lengths and output sequences
+05:03
+of different lengths this would be an
+05:05
+example of something we call a
+05:06
+many-to-many problem or a sequence the
+05:08
+sequence problem there's another sort of
+05:10
+sequence to sequence problem where maybe
+05:12
+we want to process an input sequence and
+05:15
+then we want to make a decision for each
+05:17
+element of that input sequence this is
+05:19
+another example of a type of
+05:20
+many-to-many classification problem so
+05:23
+here an example might be processing
+05:25
+frames of a video and rather than making
+05:27
+a single classification decision about
+05:30
+the entire content at the video maybe
+05:32
+instead we want to make a decision about
+05:34
+the content of each frame of the video
+05:36
+and maybe say that the first three flav
+05:38
+frames were someone dribbling a
+05:39
+basketball the next 10 frames were
+05:41
+someone shooting a basketball the next
+05:43
+frame was him missing the shot and then
+05:45
+the next couple frames were him being
+05:46
+booed by his team something like that so
+05:48
+maybe and maybe we'd like to this to
+05:50
+build this network in a way that can
+05:51
+process sequences so this you can see
+05:54
+that once we have the ability to work
+05:56
+not just with single single input and
+05:58
+single output but now we have now if we
+06:00
+have the ability to process sequences of
+06:02
+inputs and sequences of outputs that
+06:05
+allows us to build neural networks that
+06:07
+can that can do much more general types
+06:09
+of things and now the general tool that
+06:11
+we have in deep learning or rather one
+06:13
+of the general tools that we have for
+06:15
+working with sequences about the input
+06:17
+and the output level is a recurrent
+06:18
+neural network so the rest of the
+06:21
+lecture will talk about so whenever
+06:22
+whenever you see a problem that involves
+06:24
+sequences at the input or sequences at
+06:26
+the output you might consider using some
+06:28
+kind of recurrent neural network to
+06:30
+solve that problem and an important task
+06:32
+here in an important point here is that
+06:34
+for all these problems we might not know
+06:36
+the
+06:36
+sequence length ahead of time right for
+06:38
+each of these tasks we want to build one
+06:40
+neural network that can process
+06:42
+sequences of arbitrary length so we'd
+06:44
+like people to use the same video
+06:46
+classification network to process a
+06:48
+video frame like a very short video
+06:51
+frame or a very or a very very long
+06:53
+video sequence so then this recurrent
+06:57
+neural network movement will be this
+06:58
+very general tool that allow us to
+06:59
+process different types of sequences in
+07:01
+deep learning problems but recurrent
+07:03
+neural networks are actually useful even
+07:05
+for processing non sequential data so it
+07:08
+turns out that sometimes people like to
+07:09
+build use recurrent neural networks to
+07:12
+perform sequential processing of non
+07:14
+sequential data so what do I mean by
+07:16
+that as an example so this isn't this is
+07:18
+a project from a couple years ago where
+07:21
+they were doing our favorite image
+07:22
+classification tasks so remember image
+07:24
+classification is no there's no
+07:26
+sequences involved it's just a single
+07:27
+image as input and a single category
+07:29
+label as output but now the way that
+07:31
+they want to classify images is actually
+07:34
+not with a single feed-forward neural
+07:35
+network instead they want to build a
+07:37
+neural network that can take multiple
+07:38
+glimpses at the image that it maybe
+07:41
+wants to look at one part of the image
+07:42
+then look at another part of the image
+07:44
+then look at another part of the image
+07:45
+where at each point in time the position
+07:48
+that the network the the decision of the
+07:50
+network of where to look in the image is
+07:51
+conditioned upon all the information
+07:53
+that it's extracted at all previous time
+07:55
+steps and then after looking at many
+07:57
+that many glimpses in the image then the
+07:59
+network finally makes some
+08:00
+classification decision about what is
+08:03
+the object that it's seeing in the image
+08:04
+so here we can see it so this is an
+08:06
+example of using a sequential processing
+08:08
+inside of a neural network even to
+08:10
+process non sequential data so here this
+08:13
+visualization or so we're showing that
+08:15
+it's doing digit classification and each
+08:16
+of these little green squares is one of
+08:18
+the glimpses that the neural network is
+08:20
+choosing to make to look at one little
+08:22
+sub portion of the image in order to
+08:24
+make its classification decision now
+08:27
+another example of using a sequential
+08:29
+processing for non sequential data is
+08:31
+sort of doing the inverse and now
+08:32
+generating images so here rather than
+08:35
+trying to class taking as so in the
+08:38
+previous slide we saw the network was
+08:39
+taking the image as input and then using
+08:42
+a proxy Qin sub glimpses to make
+08:44
+classification decisions now instead we
+08:46
+have some tasks where we want to build
+08:48
+neural networks that can generate images
+08:50
+of digits and now the way that it's
+08:52
+going to do this is by painting little
+08:54
+sequences of the output canvas sort of
+08:56
+one time step at a time
+08:58
+so at each point in time the neural
+08:59
+network will choose where it wants to
+09:01
+write and then what it wants to write
+09:03
+and then over time those those writing
+09:06
+decisions will be integrated over time
+09:07
+to allow the network to build up these
+09:09
+output images using some kind of
+09:12
+sequential processing even though the
+09:14
+underlying task is not sequential so
+09:17
+here these examples are from a couple
+09:18
+years ago here's one that I that I saw
+09:21
+on Twitter just last week so here the
+09:23
+idea is again we're using we're building
+09:26
+a neural network that can produce these
+09:28
+images which is a non sequential task
+09:30
+but using sequential processing so here
+09:33
+the the here what they did is actually
+09:35
+into integrated the neural network into
+09:37
+an oil paint simulator and now at every
+09:40
+time step the neural network chooses
+09:41
+what type of brushstroke it wants to
+09:44
+make on to this virtual oil paint canvas
+09:45
+and then at every time step its
+09:48
+conditioned on what it saw in the
+09:50
+previous time step it chooses where to
+09:52
+make one of these virtual oil paint
+09:54
+brush strokes and then over time it
+09:56
+actually builds up this these sort of
+09:58
+stylized artistic images of faces so
+10:02
+these are all examples of where you
+10:04
+might imagine using a recurrent neural
+10:05
+network so now we've seen that recurrent
+10:08
+neural networks can be used to both to
+10:09
+open open open the door to new types of
+10:12
+tasks involving processing sequential
+10:14
+data and they can also give us a new way
+10:16
+to solve our old types of problems where
+10:19
+we might want to use sequential
+10:20
+processing even to prop even for these
+10:22
+inherently non sequential tasks so
+10:25
+hopefully this is good enough motivation
+10:26
+as to why over current neural network is
+10:28
+an interesting thing to learn about so
+10:30
+given that motivation what is a
+10:32
+recurrent neural network and how does it
+10:33
+work well the basic I had the basic
+10:36
+intuition behind a recurrent neural
+10:38
+network is like I said we're processing
+10:40
+sequences so then at every time step the
+10:42
+recurrent neural network is going to
+10:43
+receive some input acts here shown in
+10:46
+red and going to emit some output on Y
+10:49
+shown in blue and now the recurrent
+10:51
+neural network will also will also have
+10:53
+some internal hidden state which is some
+10:55
+kind of vector and at every time step
+10:57
+that worker in there
+10:58
+network will use the input of the
+11:00
+current time stuff to update its hidden
+11:03
+state using some kind of update formula
+11:05
+and then given the updated hidden state
+11:07
+it will then emit its output for the
+11:09
+current time step why
+11:11
+so then concretely we now we can see so
+11:14
+then concretely what this might look
+11:15
+like is that we in order to define the
+11:17
+architecture of our current neural
+11:19
+network we need to write down some kind
+11:21
+of recurrence relation of recurrence
+11:23
+formula or recurrence relation FW so
+11:26
+here H t8 now we have that now we have
+11:30
+this intuition that the network is
+11:31
+working on this sequence of hidden
+11:33
+states where H sub T is the hidden state
+11:36
+at time T which is just going to be some
+11:38
+vector just like the hidden state
+11:40
+activations of the fully connected
+11:41
+networks that we've worked with in the
+11:43
+past and now we'll write down this
+11:45
+recurrence relation F F that depends on
+11:48
+learn ablates W and this learn about
+11:51
+this dysfunction will take as input the
+11:53
+hidden state at the previous time step
+11:55
+HT HT HT minus one as well as the input
+11:58
+at the current time step X T and it will
+12:01
+output the hidden state but the next
+12:02
+time stuff on HT and then you can
+12:06
+imagine that we can write down different
+12:08
+types of formulas FW that caused these
+12:11
+inputs and hidden states be related to
+12:13
+each other using different algebraic
+12:14
+formulations so the most simple way that
+12:17
+we can write and the in the important
+12:19
+critical point part is that we use this
+12:21
+same function f W with the same weights
+12:24
+W at every time step in the sequence and
+12:26
+by doing this we're sort of sharing
+12:28
+weights and using the exact same weight
+12:30
+matrix to process every see every point
+12:33
+in time and every point in the sequence
+12:34
+and by this construction allows us to
+12:37
+have just a single weight matrix that
+12:39
+can now process sequences of arbitrary
+12:41
+length because again we're using the
+12:43
+exact same weight matrix at every time
+12:45
+step of the sequence so now with this
+12:47
+kind of general definition of a
+12:48
+recurrent neural network we can see our
+12:51
+first concrete implementation of a
+12:53
+recurrent neural network so this
+12:55
+simplest version is sometimes called a
+12:57
+vanilla render or recurrent neural
+12:58
+network or sometimes an element
+13:01
+current neural network after of
+13:02
+Professor Jeffrey element who worked on
+13:04
+these some time ago so here the hidden
+13:08
+state consists of a single vector HT and
+13:10
+every time step and now the are wait we
+13:12
+are gonna have to learn about weight
+13:14
+matrix matrices one is WH H which is
+13:17
+going to be multiplied on the time the
+13:20
+hidden state at the previous time step
+13:21
+and the other is WX H which is going to
+13:24
+be multiplied on the input at the
+13:26
+current time step so what we'll do is
+13:28
+we'll take our input at our current time
+13:29
+step multiply it by one Nate weight
+13:31
+matrix take our previous hidden state
+13:33
+multiply it by the other way matrix add
+13:34
+them together also add a bias term or
+13:37
+normal bias term which I've omitted from
+13:39
+this equation for clarity and then we're
+13:42
+going to use the non-linearity that I
+13:43
+told you not to use and squash them
+13:45
+through at an H and then based on and
+13:48
+that after squashing through at an H
+13:50
+this will give us our new hidden state
+13:51
+HT at our new time step and now we can
+13:54
+produce our output at the at this time
+13:56
+stuff YT by having another weight matrix
+13:59
+that is going to be just a linear
+14:00
+transform on that hidden state HT so is
+14:04
+this definition of the this element
+14:07
+recurrent neural network clear exactly
+14:08
+what's going on great so then one way to
+14:13
+think about this is another way to think
+14:15
+about the processing of a recurrent
+14:16
+neural network is to think about the
+14:17
+computational graph that we build when
+14:19
+we're unrolling this recurrent neural
+14:21
+network over time so we can imagine that
+14:23
+at the very beginning of crossing our
+14:25
+sequence we're going to have some
+14:27
+initial input to the this first element
+14:29
+of the sequence x1 and we need to get
+14:31
+some initial hidden state h0 from
+14:33
+somewhere and to kind of kick off this
+14:36
+recurrence it's very common to either
+14:38
+initialize that first hidden state to be
+14:40
+all zeros is probably one very common
+14:42
+thing sometimes you'll also see people
+14:44
+learn the initial hidden state as
+14:46
+another learn about parameter of the
+14:48
+network but those are both kind of
+14:50
+implementation details you can just
+14:51
+imagine that this initial hidden state
+14:53
+is all zeros and that usually works
+14:54
+pretty well so then given this initial
+14:56
+hidden state and this first element of
+14:58
+the sequence then we feed them to this a
+15:00
+recurrence relation function FW that
+15:02
+will output our first hidden state h1
+15:05
+and then now given our first hidden
+15:08
+state will then feed it again to the
+15:10
+same function FW and slurpin the next
+15:13
+element of the sequence x2
+15:14
+to produce the next hidden state and so
+15:16
+on and so forth and what's important
+15:19
+here is that we're using the exact same
+15:21
+weight matrix at every time step of the
+15:23
+sequence so you can see that in the
+15:25
+computational graph this is manifested
+15:27
+as having a single node W for the wave
+15:29
+matrix that has then used at every time
+15:31
+stuff in the sequence so then you can
+15:33
+imagine that maybe during back
+15:35
+propagation if you remember the rules
+15:37
+for sort of copy nodes in a
+15:38
+computational graph then in the forward
+15:41
+pass if we use the same node in multiple
+15:43
+parts of the computational graph then
+15:45
+during the backward pass what do we have
+15:46
+to do yes we need to sum so this will be
+15:49
+important when you implement recurrent
+15:51
+neural networks on assignment 4 so
+15:53
+hopefully that will be and you can also
+15:57
+see by this design that again because
+15:59
+we're using the exact same weight matrix
+16:01
+at every time step in the sequence then
+16:03
+we can this this one recurrent neural
+16:04
+network can process any sequence of
+16:06
+arbitrary likes and if we receive a
+16:09
+sequence of two elements we'll just sort
+16:10
+of unroll this graph for two time steps
+16:12
+if you receive a sequence of 100
+16:13
+elements will unroll this graph for 100
+16:15
+time steps and no matter what length of
+16:17
+sequence we receive we can use the same
+16:18
+recurrent neural network and the same
+16:20
+weights to process sequences of
+16:21
+arbitrary length and now at every time
+16:24
+and now this is kind of the basic the
+16:27
+basic operation of a recurrent neural
+16:29
+network and then remember we saw all
+16:31
+these different one-to-many many-to-many
+16:33
+of these different types of sequence
+16:34
+tasks that we might want to use well now
+16:37
+we can see how we can use this basic
+16:39
+recurrent neural network to implement
+16:41
+all of these different types of
+16:42
+sequential processing tasks so here in
+16:45
+the case of many-to-many where we want
+16:47
+where we receive a sequence of inputs
+16:49
+and now we want to make a decision for
+16:51
+each point in the sequence this again
+16:53
+might be something like video
+16:54
+classification we want to classify every
+16:56
+frame of a video now we can have another
+16:58
+weight matrix maybe W out or WY that's
+17:01
+going to produce our output Y our output
+17:05
+Y and every time step in the sequence
+17:07
+and now maybe we have some desired label
+17:11
+then then to train this thing we might
+17:14
+apply a loss function at each time step
+17:15
+in the sequence so for example if this
+17:18
+was something like video classification
+17:19
+and we're making a classification
+17:21
+decision I'm at every point in the
+17:22
+sequence then we might apply we might
+17:24
+have a ground truth label at every point
+17:25
+in time and we apply a cross entropy
+17:27
+loss
+17:28
+to the predictions at every time step to
+17:30
+now get a loss per time point per per
+17:32
+element of the sequence then to get our
+17:35
+final loss function we would sum
+17:36
+together all of these per time step
+17:38
+losses and that would give us our final
+17:40
+loss that we could back propagate
+17:42
+through so now this would be something
+17:44
+like the full computational graph for a
+17:46
+many-to-many recurrent neural network
+17:48
+that is making one output per time step
+17:50
+in our input sequence but now it maybe
+17:53
+if we were doing a many-to-one situation
+17:55
+this might be something like video
+17:56
+classification but we just want to
+17:58
+produce a single classification label
+18:00
+for the entire video sequence then we
+18:03
+can just hook up our model to make a
+18:05
+single prediction at the very end of the
+18:06
+sequence that only operates on the final
+18:09
+hidden state of the recurrent neural
+18:10
+network and what you can see is that at
+18:12
+this final state of the recurrent neural
+18:14
+network it's it kind of depends on the
+18:16
+entire input sequence so hopefully by
+18:18
+the time we get to this final hidden
+18:20
+state that kind of encapsulates all the
+18:22
+information that the network needs to
+18:23
+know about the entire sequence in order
+18:25
+to make its classification decision if
+18:28
+we maybe if we're in someone's many
+18:30
+situation something like image
+18:31
+captioning or we want to input maybe a
+18:34
+single element like an image and then
+18:36
+output a sequence of elements like oh a
+18:38
+sequence of words to describe the image
+18:39
+then we can also use this recurrent
+18:41
+neural network but now we pass a single
+18:43
+input at the beginning which is our
+18:45
+single input X and then we use this
+18:47
+recurrence relation to produce a whole
+18:48
+sequence of outputs now there's another
+18:52
+very common application of recurrent
+18:55
+neural networks which is the so called
+18:56
+sequence to sequence problem this is
+18:59
+often used in something like machine
+19:00
+translation where you want to process
+19:02
+one input sequence and then produce
+19:04
+another input sequence where the lengths
+19:06
+of the two sequences might be different
+19:08
+again this might be something like we
+19:09
+input the sequence of words in English
+19:11
+and then output a sequence of words in
+19:13
+French giving a translation of the
+19:14
+sentence and I don't speak French but I
+19:17
+think that all that an English sentence
+19:19
+does not always have the same number of
+19:21
+words it says corresponding translation
+19:22
+in French so then it's important to be
+19:25
+it that we are able to build recurrent
+19:26
+neural networks that can process secret
+19:28
+and input sequence of one length and
+19:30
+produce an output sequence of another
+19:32
+length so the way that we implement this
+19:34
+is the so called sequence to sequence
+19:36
+recurrent neural network architecture
+19:37
+and this is
+19:38
+basically taking a many-to-one recurrent
+19:40
+neural network and feeding it directly
+19:42
+into another one-to-many recurrent
+19:43
+neural network so here the way that this
+19:46
+works is that we have one on recurrent
+19:48
+neural network called the encoder that
+19:50
+will receive our input sequence this
+19:52
+might be our English sentence that we're
+19:53
+receiving as input and it will process
+19:55
+that input sequence one element at a
+19:57
+time and then it will then the entire
+19:59
+content of that entire sequence will be
+20:01
+summarized in the hidden vector that's
+20:04
+predicted at the very end of the
+20:05
+sequence and now we can take that hidden
+20:08
+vector at the end of the encoder
+20:09
+sequence and feed it as a single input
+20:12
+to the second to a second recurrent
+20:14
+neural network called the decoder and
+20:15
+now this second recurrent this second
+20:18
+decoder network is now a one-to-many
+20:20
+Network because it receives the single
+20:23
+vector which was output from the first
+20:24
+Network and then it produces a variable
+20:26
+line of sequence as output and here from
+20:29
+this computational graph you can see
+20:30
+that we're using different weight
+20:32
+matrices in the encoder and the decoder
+20:34
+shown in orange and purple here which is
+20:38
+pretty common in these sequence of
+20:40
+sequence models yeah question the
+20:42
+question the question is why why do we
+20:44
+separate them like this well one problem
+20:46
+is that the number of output tokens
+20:49
+might be different from the number of
+20:51
+input tokens so we might want to process
+20:53
+the English sentence and then output the
+20:55
+French sentence but you don't know how
+20:57
+like the number of words in the output
+20:59
+might be different from the number of
+21:00
+words in the input so there it's
+21:02
+important that we separate them somehow
+21:04
+you might imagine we just use the same
+21:06
+weight matrix for both the encoder and
+21:08
+the decoder and that court that would be
+21:10
+like we process for we process the whole
+21:13
+sequence where we give an input for the
+21:15
+first K time steps then for the last K
+21:17
+time steps we don't give it any input at
+21:19
+all and just expect it to produce an
+21:20
+output and people do do that sometimes
+21:21
+yeah the question is how do we know how
+21:24
+many tokens we need in the second one so
+21:26
+that I think is a detail we'll get to in
+21:28
+a couple slides was there another
+21:29
+question over here
+21:30
+yes okay good good I'm glad you're
+21:34
+thinking about that because we'll get
+21:35
+there so then so that's kind of a
+21:38
+concrete example of how this works as a
+21:40
+more contrary task we can talk about
+21:42
+this so-called language modeling task so
+21:44
+here the idea is we want to build a
+21:46
+recurrent neural network it's going to
+21:48
+process an infinite stream of input data
+21:49
+and then at every point in time
+21:51
+going to try to predict what is the next
+21:53
+character in the sequence and this is
+21:55
+called a language model because it
+21:56
+allows you to write down the problem it
+21:58
+allows the neural network to score the
+22:00
+probability of any of any sequence being
+22:02
+part of that language that it's learning
+22:03
+so here the way that we set this up is
+22:05
+we'll typically write down some fix
+22:08
+we'll have some fixed us set of
+22:10
+vocabulary that the network knows about
+22:12
+in this case our vocabulary consists of
+22:14
+the letters HDL and oh this will be some
+22:18
+fixed vocabulary that we need to choose
+22:19
+this at the beginning of training and
+22:21
+now we can see that our input sequence
+22:22
+we've encoded each of now we want to
+22:24
+process this training sequence hello
+22:26
+h-e-l-l-o so now you can see that we
+22:29
+process this input sequence by
+22:30
+converting each of its characters into a
+22:32
+one hot vector so given our vocabulary
+22:35
+of size for
+22:36
+h-e-l-l-o then we convert the letter h
+22:39
+into the vector 1 0 0 0 because it
+22:41
+consists of the it just having a 1 for
+22:44
+that first slot in the vector on meaning
+22:46
+that the first element of our vocab then
+22:49
+we process our input sequence in these 1
+22:50
+cutters and this gives us a sequence of
+22:52
+vectors that we can feed to recurrent
+22:54
+neural network so then we can use our
+22:57
+recurrent neural our recurrent neural
+22:59
+network to process the sequence of input
+23:01
+vectors and produce this sequence of
+23:03
+hidden states and now at every time step
+23:05
+then we can use our output but our
+23:07
+output matrix too at every time step
+23:10
+predict a distribution over the elements
+23:12
+in our vocabulary at every point in the
+23:14
+sequence and now because the task of the
+23:16
+network is to press at every point in
+23:18
+time is trying to predict the next
+23:19
+element in the sequence so you can see
+23:21
+that after it receives the first element
+23:23
+H in the input sequence it tries to
+23:26
+predict the next element e so then that
+23:28
+would be a cross entropy classification
+23:31
+loss at that point at that time step in
+23:32
+the sequence then after then once it
+23:36
+receives the first two input characters
+23:38
+H and E it needs to predict L which is
+23:40
+the third character in the sequence and
+23:42
+so on and so forth so then you can see
+23:45
+that the target outputs in this sequence
+23:47
+are equal to the target inputs just kind
+23:48
+of offset by by by 1 so then once you've
+23:53
+got a trained language model so that's
+23:55
+kind of what a language model looks like
+23:57
+during training you got your your input
+23:59
+sequence you shift the output input
+24:01
+input sequences and then try to predict
+24:02
+the next character at every time step of
+24:04
+processing
+24:04
+but now once you've got a trained
+24:06
+language model you can actually do
+24:08
+something really cool with it and you
+24:09
+can use your trained language model to
+24:11
+generate new text that is in the style
+24:14
+of the text that it was trained on so as
+24:16
+an example of what that might look like
+24:18
+um given our trained given a language
+24:20
+model that we've now trained on a set of
+24:22
+sequences then what we can do is we can
+24:25
+feed it some initial seed token unlike
+24:27
+the letter H and now what we want to do
+24:29
+is have the recurrent neural network
+24:30
+generate new text conditioned on this
+24:33
+initial seed token so then the way that
+24:36
+this works is we give it our input token
+24:39
+H we give it the same one hot encoding
+24:41
+we go through one layer we unroll one
+24:44
+tick of this recurrent neural network
+24:45
+sequence and then get these this
+24:47
+distribution of predictions for the next
+24:49
+character at the time in time and now
+24:51
+because our model has predicted a
+24:53
+distribution of what characters it
+24:55
+thinks should happen at the next time
+24:57
+step what we can do is sample from that
+24:59
+distribution to just give a new invented
+25:02
+character for what the model thinks is
+25:04
+probable at the next time step and then
+25:06
+we could after we take that sample
+25:08
+character we can take the sampled output
+25:10
+from the first time step of the network
+25:12
+and feed it back as input in the next
+25:14
+time step of the network then we have
+25:17
+this sampled character e that we can
+25:19
+feed back as input at the next time step
+25:21
+and then go through another layer of
+25:23
+processing of this recurrent neural
+25:24
+network so again compute the next hidden
+25:26
+state compute a new distribution of
+25:27
+predicted outputs and then gives us a
+25:29
+new distribution over what the model
+25:31
+thinks the yet next character should be
+25:33
+and then you can imagine repeating this
+25:35
+this process over and over again
+25:37
+so then given your trained language
+25:38
+model you can seed it with some initial
+25:40
+initial token and then just have it
+25:43
+generate new tokens that a thinks are
+25:45
+likely to follow that initial token that
+25:47
+you give it so it's kind of a one little
+25:51
+ugly detail is that so far we've talked
+25:53
+about encoding our input sequence as a
+25:55
+set of one-hot vectors and if you think
+25:57
+about what happens in this first layer
+25:59
+in this first layer of the recurrent
+26:01
+neural network is that remember in this
+26:03
+vanilla neural network we were taking
+26:04
+our input vector and then multiplying it
+26:06
+with our weight matrix well if our input
+26:08
+vector is just a 1 hot back is just a
+26:11
+one hot vector with a 1 in one slot and
+26:13
+zeros and all other slots but actually
+26:15
+that that matrix multiplied is kind of
+26:16
+trivial because if we were to if we were
+26:18
+to take
+26:18
+matrix multiplied by a one hot vector
+26:20
+then what it does is it just extracts
+26:23
+one of the columns of the vector so
+26:24
+actually you don't need to implement
+26:26
+that with a matrix multiplication
+26:27
+routine you can implement that much more
+26:29
+efficiently with an operator that just
+26:31
+simply extracts out rows of a weight
+26:32
+matrix so for that reason it's very
+26:35
+common to actually insert another layer
+26:37
+in between the input to the network and
+26:40
+the recurrent neural network called an
+26:42
+embedding layer that does exactly this
+26:44
+so here the embedding now at the now in
+26:46
+the input sequence at the input our
+26:49
+sequence will be encoded as a set of
+26:50
+one-hot vectors and now the embedding
+26:52
+layer will just perform this one hot
+26:56
+sparse matrix multiply implicitly so
+26:59
+effectively this embedding layer just
+27:00
+learns a separate each row of the column
+27:03
+of the embedding matrix corresponds to
+27:05
+an embedding vector corresponding to
+27:08
+each element in our vocab each element
+27:10
+of our vocabulary so in a very common
+27:12
+design for these recurrent neural
+27:13
+networks is actually to have this
+27:15
+separate embedding layer that happens
+27:17
+between the raw inputs the raw input 0
+27:19
+hot sequence and before the embed these
+27:22
+vectors to this embedding layer before
+27:23
+passing to our current neural network
+27:25
+that computes these sequence of his
+27:27
+hidden states so now to train these
+27:30
+things this we've sort of seen this
+27:34
+example of a computational graph using
+27:36
+recurrent neural networks already and
+27:37
+what we saw is that in order to train
+27:39
+one of these recurrent neural networks
+27:40
+we need to kind of unroll this
+27:42
+computational graph over time and then
+27:44
+then it at me every time at every the
+27:46
+time point in the sequence we give rise
+27:48
+to some loss per time step then these
+27:50
+get summed over the entire entire length
+27:53
+of the sequence to give a single loss so
+27:55
+what was this kind of mean this is this
+27:57
+is sometimes given a fancy name called
+27:58
+back propagation through time because
+28:00
+during the forward pass we're kind of
+28:02
+stepping forward through time through a
+28:03
+sequence and then during a backward pass
+28:05
+we're back propagating backwards in time
+28:07
+through this sequence that we had
+28:09
+unrolled during the forward pass but now
+28:12
+one problem with this back propagation
+28:14
+through time algorithm is that if we
+28:15
+want to work on very very long sequences
+28:17
+and train on very very long sequences
+28:20
+then this is going to take an enormous
+28:21
+amount of memory because say we want to
+28:23
+train on sequences that are like a
+28:25
+million characters long well then you
+28:26
+need to unroll this computational graph
+28:28
+for a million time steps that's probably
+28:29
+not going to fit in your GPU memory
+28:32
+so in practice and when we're training
+28:33
+recurrent neural networks and especially
+28:35
+recurrent neural network language models
+28:37
+on very very long sequences sometimes we
+28:40
+use an alternative approximate algorithm
+28:41
+called a truncated back propagation
+28:43
+through time so here the idea is that we
+28:46
+we want to sort of approximate the
+28:48
+training of this network on this full
+28:50
+possibly infinite sequence but then what
+28:52
+we'll do is we'll take some subset of
+28:54
+the sequence maybe like the initial the
+28:56
+first ten tokens or the first hundred
+28:58
+tokens of the sequence then we'll unroll
+29:00
+the forward pass of the network for that
+29:02
+short prefix of the sequence and then
+29:05
+compute a loss only for that first chunk
+29:07
+of the sequence and then back propagate
+29:09
+through the through the initial chunk of
+29:10
+the sequence and make an update on the
+29:11
+weights and now what we'll do is we'll
+29:14
+actually record the hidden weight the
+29:16
+hit the the the values of the hidden
+29:18
+States from the end of this initial
+29:20
+chunk of the sequence and then we'll
+29:22
+receive the second chunk of the sequence
+29:24
+and we'll pass in these recorded hidden
+29:27
+weights that we remembered when
+29:28
+processing the first chunk and then
+29:30
+we'll unroll a second chunk of the
+29:32
+sequence like the next hundred
+29:33
+characters in our possibly million
+29:35
+character sequence so then we'll unroll
+29:37
+this next hundred characters of the
+29:39
+sequence compute a loss for the second
+29:41
+chunk and then back propagates not
+29:43
+through the entire sequence but instead
+29:45
+back back propagate only through the
+29:46
+second chunk of the sequence and then
+29:48
+this will compute gradients of this loss
+29:50
+with respect to our weight matrix then
+29:52
+we can make an update on the weight
+29:53
+matrix and continue then we would next
+29:55
+then take the next chunk of the sequence
+29:57
+remember what the hidden state was from
+29:59
+passing the second chunk and then used
+30:01
+that recorded hidden States to continue
+30:03
+unrolling the sequence forward in time
+30:05
+then again make a truncated back
+30:07
+propagation through time and another
+30:08
+weight update so what this back
+30:10
+propagation through time algorithm does
+30:12
+is basically the forward pass because
+30:15
+we're always carrying and from a hidden
+30:16
+information forward throughout forever
+30:18
+perfectly through these remember in
+30:19
+hidden States then the forward pass is
+30:22
+still sort of processing an infinite but
+30:24
+potentially infinite sequence but now
+30:27
+we're only back property back
+30:29
+propagating through small chunks of the
+30:30
+sequence at a time which means that this
+30:32
+drastically reduces the amount of stuff
+30:34
+that we need to keep in GPU memory so
+30:36
+this trick of truncated back propagation
+30:37
+through time makes it feasible to Train
+30:40
+recurrent neural networks on even
+30:42
+infinite sequences even though you only
+30:43
+have finite amounts of key to memory
+30:46
+so all this sounds really complicated
+30:48
+but in practice you can implement this
+30:50
+whole idea of sort of training back with
+30:52
+truncated back propagation through time
+30:54
+yeah question yeah the question is for
+30:56
+this truncated back propagation through
+30:58
+time how do you set the h0 for passing
+31:00
+the second like second chunk yeah then
+31:03
+you would use the final hidden state
+31:04
+when processing the first job so then
+31:07
+right well when passing the first chunk
+31:09
+we'll have this final hidden state and
+31:10
+then we'll just pass that final hidden
+31:12
+state from the first chunk will become
+31:14
+the initial hidden state when crossing
+31:15
+the second chunk and that's the trick
+31:17
+that means that it's sort of processing
+31:19
+everything forward in time potentially
+31:21
+infinitely because it's carrying all
+31:23
+this information forward in time through
+31:24
+the hidden States but then we're only
+31:26
+back propagating through finite chunks
+31:28
+of the sequence at a time does that does
+31:29
+that clarify yeah question yes the
+31:32
+question about weight updates so when
+31:34
+doing back truncated back propagation
+31:35
+through time usually you'll go like
+31:37
+forward through a chunk backward through
+31:39
+a chunk update the wave matrix then
+31:40
+you'll copy this hidden state over go
+31:42
+forward backward update and then copy
+31:44
+this one forward for backward update so
+31:46
+then you'll always every time you do
+31:48
+back pop through some portion of the
+31:49
+sequence that will compute derivative of
+31:51
+that chunk Schloss with there's the with
+31:54
+respect to the weight matrix then you
+31:55
+can use that to make a weight update on
+31:57
+the weights of the network yeah yeah
+32:00
+exactly so the idea is that with this
+32:02
+truncated back propagation through time
+32:03
+once you process one chunk of data you
+32:06
+can throw it away like you can like like
+32:08
+evict it from the memory of your of your
+32:10
+computer because then all the
+32:12
+information about that sequence that's
+32:14
+needed for the rest of training is
+32:15
+stored in that final hidden state of the
+32:17
+recurrent neural network at the end of
+32:18
+crossing the choke so then all this
+32:22
+sounds maybe kind of complicated but in
+32:24
+fact you can implement this whole
+32:25
+process of truncated back propagation
+32:27
+through time for training or current
+32:29
+work language models and then sampling
+32:30
+from them to generate new text you can
+32:32
+do it in like 112 lines of Python and
+32:34
+this is no PI torch so no autograph this
+32:36
+is doing all the although gradients
+32:38
+manually I did a version of this in PI
+32:40
+torch and then once you have pie charts
+32:41
+you can do it about like 40 or 50 lines
+32:43
+so it's actually not a ton of code to
+32:45
+actually do this stuff and now what's
+32:47
+fun is that once you've implemented
+32:49
+these things you can have fun and just
+32:51
+sort of train recurrent neural network
+32:52
+language models on different types of
+32:54
+data and then use them to generate new
+32:56
+texts to kind of get an insight to what
+32:58
+types of
+32:59
+stuff these networks are learning when
+33:01
+we train a language model on text so for
+33:04
+example what we can do is download the
+33:05
+entire works of William Shakespeare
+33:07
+concatenate them into a giant text file
+33:09
+and then that's a very very long a
+33:11
+sequence of characters and then we can
+33:14
+train a recurrent neural network that
+33:15
+processes the entire works of William
+33:17
+Shakespeare and tries to predict the
+33:19
+next character given the previous
+33:20
+hundred characters or something like
+33:22
+that and just train a recurrent neural
+33:24
+network whose entire purpose in life is
+33:25
+to predict next character from works of
+33:27
+William Shakespeare and then once we
+33:29
+train this thing then we can sample from
+33:31
+the train model and after the first
+33:34
+couple of iterations it doesn't look
+33:35
+like it's doing too good then what we're
+33:37
+doing rumber is we're sampling what the
+33:39
+network thinks is the next character and
+33:41
+then feeding that sample back fact the
+33:43
+network as the next input and then
+33:44
+repeating this process to generate new
+33:46
+data so at first this thing is basically
+33:48
+generating garbage because it's fairly
+33:51
+random weights if you train this thing a
+33:53
+little bit longer then it starts to
+33:55
+recognize some structure in the text so
+33:57
+it makes things that look like words and
+33:59
+put spaces in there and maybe put some
+34:01
+quotes but if you actually read it it's
+34:03
+still garbage we train a little bit more
+34:06
+and now I think it almost looks like
+34:08
+sentences there's some spelling errors
+34:10
+but it says something like after fall
+34:12
+ooh such that the hall for a Princeville
+34:14
+smoky so it's like starting to say
+34:16
+something but you train it even longer
+34:19
+and now it starts to get like really
+34:21
+really good and starts to generate text
+34:23
+that looks fairly realistic so now it
+34:25
+says why do what they day replied
+34:27
+Natasha and wishing to himself the fact
+34:30
+the Princess Mary was easier so you know
+34:32
+the grammar is not perfect but this does
+34:34
+looked kind of like real English and now
+34:36
+we train this thing for a very long time
+34:37
+and sample longer sequences and it
+34:40
+generates very plausible looking
+34:41
+Shakespeare text so you can see these
+34:43
+look like stage directions pan drape
+34:46
+andreas alas I think he shall come
+34:48
+approached in the day with little strain
+34:50
+would be attained into being never fed
+34:52
+and who is but a chain and subjects of
+34:54
+his death
+34:55
+I should not sleep so this sounds very
+34:58
+dramatic it sounds very much like
+34:59
+Shakespeare but unfortunately it's still
+35:02
+gibberish now you can actually go
+35:04
+further and imagine training these
+35:06
+things on different types of data so
+35:09
+this was the entire concatenated works
+35:10
+of William Shakespeare
+35:12
+years ago I did this one have you anyone
+35:15
+ever taken a abstract algebra course or
+35:17
+an algebraic geometry course well that's
+35:20
+this sort of very abstract a part of
+35:22
+part of mathematics it turns out there's
+35:24
+an open source textbook for algebraic
+35:27
+geometry that's something like many many
+35:29
+thousands of pages written in low-tech
+35:30
+so what I did is I downloaded the entire
+35:33
+latech source code of the several
+35:34
+thousand page algebraic geometry
+35:36
+textbook and then train a recurrent
+35:38
+neural network to generate the next
+35:40
+character of latech source code given
+35:43
+the previous hundred characters on this
+35:45
+entire source code of this algebraic
+35:46
+geometry textbook then you sample fake
+35:50
+math that the neural recurrent neural
+35:52
+network is just inventing out of the
+35:53
+weights that it's trained unfortunately
+35:56
+it tends not to compile so it's not so
+36:00
+good at like producing exactly
+36:02
+grammatically correct low-tech source
+36:03
+code but you imagine you but you can
+36:05
+manually fix some compile errors and
+36:07
+then you can actually get this thing to
+36:09
+compile so now these are examples of
+36:11
+generated text from our current neural
+36:14
+network that was trained on this
+36:15
+algebraic geometry textbook so you can
+36:17
+see that it's like this kind of looks
+36:20
+like abstract math right it's like I'm
+36:22
+having lemmas it's having proofs it even
+36:26
+put the little square at the end of the
+36:27
+proof when it's done proving things it
+36:31
+tries to refer to previous lemmas that
+36:33
+may or may not have been proven
+36:35
+elsewhere in this text and and it's kind
+36:39
+of like very adversarial and kind of
+36:41
+rude in the way that some math math math
+36:43
+books are so like the proof is see
+36:45
+discussion in sheaves of sets so like
+36:48
+clearly you should have a reference back
+36:50
+somewhere else in this text work in
+36:51
+order to understand this proof we can
+36:53
+look at some more in in algebraic
+36:55
+geometry you actually have these cool
+36:57
+commutative diagrams that people draw
+36:59
+they show relationships within different
+37:00
+mathematical spaces that are generated
+37:02
+with some low-tech source code some
+37:04
+low-tech package and the recurrent
+37:06
+neural network attempts to generate
+37:07
+commutative diagrams to explain the
+37:10
+proofs that it's generating that are
+37:11
+also nonsense and actually one of my
+37:15
+favorite examples of this is actually on
+37:17
+this page as well if you look at the up
+37:19
+top left it says proof omitted
+37:22
+which is definitely something that
+37:24
+you'll see in math books sometimes so we
+37:27
+can go further on this so what's another
+37:30
+really basically at this point you've
+37:32
+got this idea that once you've got these
+37:34
+character level recurrent neural network
+37:36
+language models you can train them on
+37:37
+basically any kind of data you can
+37:38
+imagine so we also at one point we
+37:42
+download the entire current source code
+37:45
+of the Linux kernel and trained a
+37:47
+recurrent neural network language model
+37:48
+to predict this to this model the the C
+37:51
+source code of a Linux kernel many of
+37:54
+what you can do is you can sample from
+37:55
+this and just generate invented C source
+37:57
+code and this looks like pretty
+38:00
+reasonable right like if you're not
+38:01
+looking at this thing carefully this leg
+38:03
+definitely looks like it could be real a
+38:05
+kernel source code you know it's saying
+38:07
+like static void do command struck SEC
+38:10
+Phi M void star pointer it puts the
+38:13
+bracket it indents it puts like int
+38:15
+column equals 32 left shift left shift
+38:17
+command of two like it even puts
+38:19
+comments like free our user page pointer
+38:22
+to place to place camera if all - so the
+38:26
+comments don't really make sense but it
+38:27
+knows that you're supposed to put
+38:28
+comments it also knows that you're
+38:31
+supposed to recite this copyright notice
+38:34
+at the top of files so when you sample
+38:37
+from this thing of it outputs this
+38:38
+copyright notice it also kind of knows
+38:40
+the general structure of C source code
+38:42
+files so after the copyright notice you
+38:45
+can see it's having a lot of includes
+38:47
+like includes
+38:48
+Linux k XC h so includes a bunch of
+38:51
+headers has includes a bunch of other
+38:53
+headers it defines some macros it
+38:56
+defines some constants and then after
+38:58
+all of that it starts defining functions
+38:59
+so you can see that this thing and just
+39:02
+by doing this very simple task of trying
+39:05
+to predict the next character then our
+39:07
+recurrent neural network language model
+39:08
+has somehow been able to capture a lot
+39:10
+of structure in this a relatively
+39:12
+complex data of this C source code of
+39:16
+the Linux kernel so then one thing you
+39:18
+might you one question you might want to
+39:20
+ask is how is it doing this what kinds
+39:23
+of representations are these recurrent
+39:25
+neural networks learning from these data
+39:27
+that we're training them on well there
+39:29
+was a paper from carpathia Johnson and
+39:32
+Feifei a couple years ago that attempted
+39:34
+to answer some question like
+39:35
+that so here the idea is that we wanted
+39:38
+to try to gain some interpretability
+39:39
+into what these recurrent neural network
+39:41
+language models were learning on when we
+39:43
+trained them on different different
+39:45
+types of sequence data sets so here what
+39:48
+the methodology here is that we take our
+39:51
+recurrent neural network and we unroll
+39:53
+it for many time steps and we just make
+39:55
+a skit to perform this prediction task
+39:57
+of predicting the next character so then
+39:59
+in the in the process of predicting the
+40:01
+next character these recurrent neural
+40:02
+networks are going to generate this
+40:03
+sequence of hidden states one hidden
+40:06
+state for each character of input and
+40:08
+then trying to generate that character
+40:09
+at output so then what we can ask is we
+40:12
+can ask what do the different dimensions
+40:15
+of those hidden state capture so for
+40:18
+example what we can do is look at maybe
+40:20
+look at dimension like 56 of those
+40:23
+hidden states and now because that's
+40:25
+going to be the output of @nh because of
+40:27
+that's because it has that non-linearity
+40:29
+then we know that each element of that
+40:30
+hidden state vector will be a real
+40:32
+number between negative 1 and 1 so what
+40:34
+we can do is take the activation of
+40:36
+element 56 and that recurrent neural
+40:38
+network hidden state and then use the
+40:40
+value of that hidden state which is
+40:42
+between 0 & 1 to color the text on which
+40:45
+the network was processing and that can
+40:47
+give us some sense for what different
+40:49
+elements of that hidden state when they
+40:51
+light up when processing text so here's
+40:54
+an example of a not very interpretable
+40:56
+result so basically what we've done is
+40:59
+when we trained our neural network to
+41:00
+Don this Linux kernel data set and then
+41:04
+we asked it to predict the next
+41:05
+character and now at every time step
+41:06
+we've chosen like element 56 so there
+41:09
+are currently all Network hidden state
+41:10
+and then we use the value of the hidden
+41:12
+state at each character to color the
+41:14
+text that of the of the text that it's
+41:17
+processing is this is this visualization
+41:19
+clear so then when when the when one of
+41:23
+the characters is colored red that means
+41:24
+that the that the value of that cell is
+41:27
+very high close to positive one and when
+41:29
+it's blue it means it's very low close
+41:31
+to negative one so then then what you
+41:33
+can do is kind of look at these
+41:34
+different is hidden cell States and try
+41:36
+to get some intuition for what they
+41:37
+might be looking for a lot of them look
+41:39
+like this and you have no idea what
+41:41
+they're looking for they just look
+41:42
+totally random but sometimes you get
+41:44
+some very interpretable cells and these
+41:46
+recurrent neural networks so here's an
+41:48
+example
+41:49
+one where we trained on some actually
+41:52
+Tolstoy swore in peace and then we test
+41:54
+and then we test the recurrent neural
+41:56
+network and we found that one of these
+41:57
+cells is actually looking for quotes so
+42:00
+what you can see is that this one
+42:01
+particular cell of the recurrent neural
+42:03
+network is all blue which means it's all
+42:05
+off all off all off and then once it
+42:07
+hits a quote then that one self flips
+42:09
+all the way on and turns all the way red
+42:10
+and that remains red all the way all the
+42:12
+way all the way until the end quote
+42:14
+when it flips all the way back to blue
+42:15
+so what that what that kind of gives us
+42:17
+into this intuition is that somehow this
+42:19
+recurrent neural neural network has
+42:21
+learned this kind of binary switch that
+42:23
+keeps track of whether or not we are
+42:24
+currently inside of a quote we found
+42:27
+another cell that tracks where we are in
+42:29
+the current line so for example after we
+42:32
+hit a carriage return then it resets to
+42:34
+negative one and then it slowly
+42:35
+increases over the over the over the
+42:37
+course of a line because this data set
+42:40
+this data set always had line breaks
+42:41
+that et characters so then after we get
+42:43
+about 80 characters then it knows we
+42:45
+have to have a new line and then we
+42:46
+reset that with that cell back to blue
+42:48
+when training on the lid on the linux
+42:51
+source code we found a cell that track
+42:53
+that tracked the conditions inside if
+42:55
+statements which was very interesting
+42:57
+we also found another one that was
+43:00
+checking whether or not we were inside a
+43:01
+comment inside the Linux source code and
+43:05
+we found ones that were also tracking
+43:07
+what is our indentation level inside the
+43:09
+code so basically this is this I thought
+43:12
+this was really cool this means that
+43:14
+even though we're just training this
+43:15
+neural networks to do this seemingly
+43:17
+stupid task of trying to predict the
+43:18
+next character then somehow in the
+43:21
+process of simply trying to predict the
+43:22
+next character in sequences then the
+43:24
+recurrent neural network learns all of
+43:26
+these stuff all of these features inside
+43:28
+its hidden state that detect all these
+43:30
+meaningful all these different types of
+43:31
+structures in the data that is trying to
+43:33
+process so I thought that was a really
+43:34
+cool result that gives us some insight
+43:36
+into what types of things these
+43:37
+recurrent neural network language models
+43:39
+are learning so now as an example back
+43:42
+to computer vision one thing that we can
+43:45
+use these type of recurrent neural
+43:46
+network language models for is the task
+43:48
+of image captioning so here what we want
+43:50
+to do is we want to input an image this
+43:53
+is an example of a one-to-many problem
+43:55
+so we're going to input an image feed it
+43:57
+to a convolutional network that you guys
+43:59
+are like all experts on now to extract
+44:01
+features about the
+44:02
+image and then past the features of that
+44:04
+convolutional network to a recurrent
+44:06
+neural network language model that will
+44:08
+now generate words one at a time to
+44:10
+describe the content of that image and
+44:13
+then we can train this thing on if you
+44:15
+had a data set of images and associated
+44:18
+captions then you could train this thing
+44:19
+using normal gradient descent so to kind
+44:22
+of concretely look at what this looks
+44:24
+like this is an example of transfer
+44:26
+learning so we're going to step one
+44:27
+download a CNN model that had been pre
+44:31
+trained for classification on image net
+44:32
+then we're going to chop off the last
+44:34
+two layers of that network and now we're
+44:37
+going to have now here we actually want
+44:39
+to operate on sequences of finite length
+44:41
+so unlike the language in the language
+44:43
+modeling case we're kind of mostly
+44:44
+concerned with operating on these like
+44:46
+infinite streams of data and doing
+44:47
+truncated back propagation through time
+44:48
+but now in image captioning we actually
+44:51
+want to focus on sequences that have
+44:53
+some some actual start and actual end so
+44:56
+then what we always do is then we start
+44:58
+the first element of the sequence is
+45:00
+always a special token called start
+45:02
+which just means like this is the start
+45:04
+of a new a new sentence that we want you
+45:06
+to generate so then now but now we need
+45:10
+to somehow connect the data from the the
+45:13
+convolutional neural network into the
+45:14
+recurrent neural network so the way that
+45:16
+we do this is we slightly modify the
+45:17
+recurrence formula that we use for
+45:19
+proper producing hidden states of the
+45:21
+recurrent neural network so recall that
+45:23
+previously we had seen this recurrent
+45:25
+neural network that applies a linear
+45:27
+transform to the input a linear
+45:29
+transform to the previous hidden state
+45:30
+and then squashes through at an H to
+45:32
+give the next hidden state well now to
+45:35
+incorporate the image data we're gonna
+45:36
+have three inputs at each time step of
+45:39
+the neural network we're going to have
+45:40
+the current element of the sequence that
+45:42
+were processing we're going to have the
+45:44
+previous hidden state and we're also
+45:46
+going to have this feature that was
+45:47
+extracted from the top of this
+45:49
+convolutional neural network pre trained
+45:50
+on image net so now given these three
+45:52
+inputs we will apply a separate weight
+45:55
+or linear projection to each of these
+45:57
+three different inputs
+45:58
+add them together and again squash to
+46:00
+@nh so now you can see that we've
+46:02
+modified the recurrence relation of this
+46:04
+recurrent neural network that allows it
+46:06
+to incorporate this additional type of
+46:07
+information which is the feature vector
+46:09
+coming out of the of the image and after
+46:12
+that then things proceed very much like
+46:14
+they did
+46:15
+in the language modeling case so then
+46:17
+what we do is in in sort of a test the
+46:20
+test time case um this is going to
+46:22
+predict a distribution over the tokens
+46:24
+or the words in our vocabulary we sample
+46:26
+from that distribution to get the first
+46:28
+word in this example man we say we pass
+46:30
+that back to be processed by the
+46:32
+recurrent neural network as the next
+46:33
+element of the input sequence pass it
+46:35
+again and then sample the next word and
+46:38
+then this repeats so this would be man
+46:40
+in straw hat and then here's the answer
+46:43
+to your question a special hope token
+46:45
+called stop or end so whatever we're
+46:48
+whatever we're processing sequences of
+46:50
+finite length it's very common to add
+46:52
+these two extra special tokens into the
+46:55
+vocabulary one called the start token
+46:57
+that we put at the beginning of every
+46:59
+sequence and one called the end token
+47:01
+that we insert that we that we do so
+47:03
+then during training we force the
+47:05
+network to predict the end token at the
+47:07
+end of every sequence and then during
+47:09
+testing once the network chooses to
+47:11
+sample the end token then we stop
+47:13
+sampling and that's the end of the
+47:15
+output that we generate does that did
+47:17
+that answer your question about how we
+47:18
+know when to stop good there was a
+47:21
+question here yes the question is what's
+47:23
+the difference between blue and purple
+47:24
+so here these these three inputs Green
+47:27
+is the input of the sequence of the
+47:29
+current time step so that would be like
+47:31
+one of these one of these input tokens
+47:34
+start man in straw hat that would be the
+47:37
+X at the current timestamp the H at the
+47:39
+current time step is the blue thing
+47:40
+that's the previous hidden state from
+47:42
+the previous time step of the sequence
+47:44
+which would be something like H when
+47:47
+we're trying to predict h2 then then H
+47:50
+would be H 1 which is the privet the
+47:52
+hidden state at the previous time step
+47:53
+and now the purple is the is the feature
+47:56
+vector coming from the convolutional
+47:58
+neural network which we're calling V
+48:00
+which is going to be a single vector
+48:03
+that we extract once from the
+48:04
+convolutional Network and then pass it
+48:06
+to each of the time steps the recurrent
+48:07
+neural network so with that so then for
+48:10
+each of these three inputs we have a
+48:11
+separate Associated weight matrix with
+48:14
+width dimensions such that the they can
+48:16
+be added in a way that doesn't crash
+48:18
+does that clarify a little bit ok
+48:23
+so then once you once we've got this
+48:25
+then it's fun to look at some results
+48:27
+for these things you know this computer
+48:29
+got a look at images we've got a look at
+48:30
+results and have a little fun so
+48:32
+sometimes when you train this thing off
+48:34
+on a data set of images and associated
+48:36
+captions sometimes these image
+48:38
+captioning models seem to produce really
+48:40
+really shockingly good descriptions of
+48:42
+images so here the one at the upper left
+48:44
+it says a cat sitting on a suitcase on
+48:47
+the floor which is like pretty good
+48:49
+that's like a lot more detail than we
+48:51
+were able to get out of our previous
+48:52
+with image classification models that
+48:54
+just output a single label or maybe in
+48:57
+the upper right it says a white teddy
+48:58
+bear sitting in the grass that looks
+49:00
+pretty correct at the bottom it says two
+49:03
+people walking on the beach with
+49:04
+surfboards a tennis player in action on
+49:07
+the court so it's like giving us these
+49:10
+really non-trivial descriptions that
+49:12
+seem really exciting so when these first
+49:15
+papers came out that were first doing
+49:16
+these image captioning results they got
+49:18
+people really excited because for the
+49:20
+first time these these networks were
+49:22
+saying very non-trivial things about the
+49:24
+images that they were looking at they
+49:26
+were no longer just single labels like
+49:27
+dog or cat or truck but these image
+49:30
+captioning models actually it turns out
+49:32
+are not that smart and it's actually
+49:34
+really instructive to look at the cases
+49:36
+where they fail as well so here's an
+49:38
+example if we feed this image to to the
+49:42
+to a trained image caption model it says
+49:44
+a woman is holding a cat in her hand
+49:46
+which I think it says that because
+49:49
+somehow the texture of the woman's coat
+49:51
+maybe looks kind of like the texture of
+49:52
+cat fur that it would have seen in the
+49:54
+training set or here if we look at this
+49:57
+it says a person holding a computer
+49:59
+mouse on a desk
+50:00
+well that's because this data set came
+50:02
+out before iPhones were prevalent so
+50:04
+whenever someone was holding something
+50:05
+near a desk it was always a computer
+50:07
+mouse another cell phone here it says a
+50:11
+woman is standing on a beach holding a
+50:12
+surfboard which is like completely wrong
+50:15
+but the data set where this was trained
+50:17
+has a lot of images of people holding
+50:19
+surfboards on beaches so basically
+50:21
+whatever it sees someone standing near
+50:22
+water it just wants to say it's a person
+50:24
+holding a surfboard on the beach even if
+50:26
+that's not actually what's in the image
+50:27
+at all we have a similar problem in this
+50:30
+example so this is uh you can maybe this
+50:32
+is hard to see it's a spiderweb kind of
+50:34
+in a branch and it says a bird is
+50:36
+perched on a tree branch again maybe
+50:38
+it's just sort of copying whatever it
+50:40
+saw a tree branch there was always a
+50:41
+bird there so whenever it sees that
+50:43
+branch just wants to say a bird perched
+50:44
+on a tree branch even if that's actually
+50:46
+not what it says at all maybe one more
+50:48
+example here it says a man in a baseball
+50:50
+uniform throwing a ball so now this one
+50:54
+I think it's really interesting right
+50:55
+because it knows it's a man of baseball
+50:57
+uniform but it kind of gets confused
+50:59
+about exactly what action is happening
+51:01
+in the scene but when we look at this we
+51:03
+have this human understanding of like
+51:05
+physics and we know that there's no way
+51:08
+he could have like throwing a ball from
+51:09
+that position so we know that he's
+51:12
+probably like scoot diving in there to
+51:14
+try to catch the ball but that kind of
+51:16
+fine-grain distinction is just something
+51:18
+that's completely lost on this model so
+51:20
+I think these image captioning models
+51:22
+are pretty exciting but they're actually
+51:24
+like still pretty dumb and they're not
+51:26
+there they're pretty far from solving
+51:27
+this computer vision task and I think
+51:29
+that's really in really get that sense
+51:31
+when you look at these failure modes so
+51:34
+now and by the way these image
+51:35
+captioning um you'll have fun you'll get
+51:37
+to implement your own image captioning
+51:38
+model on the fourth homework assignment
+51:40
+which will be out shortly after the
+51:41
+midterm so now another thing we need to
+51:44
+talk about is gradient flow through
+51:46
+these recurrent neural networks so here
+51:49
+is a little diagram that kind of
+51:50
+illustrates pictorially what's going on
+51:52
+in this vanilla or Elliman recurrent
+51:54
+neural network that we've been
+51:55
+considering so far so here is showing
+51:57
+the processing for one time step of the
+52:00
+recurrent neural network so here we have
+52:01
+the input XT coming in at the bottom we
+52:04
+have the previous hidden state HT coming
+52:06
+in at the left then you can imagine that
+52:07
+these are concatenated and then up then
+52:11
+have this linear transform by the weight
+52:12
+matrix and then squash this tannish
+52:14
+non-linearity so now you should be able
+52:17
+to point recognize some problems about
+52:19
+what's going to happen during the
+52:20
+gradients in the backward pass of this
+52:22
+model so if we imagine what happens
+52:25
+during the backward pass at this model
+52:26
+then during back propagation we're going
+52:29
+to receive the derivative of the loss
+52:30
+with respect to the output hidden state
+52:32
+at HT and we want to compute and we need
+52:35
+to back propagate through this little RN
+52:36
+n cell to compute the gradient of the
+52:38
+loss with respect to the input hidden
+52:39
+state HT minus 1 and now there's sort of
+52:42
+two really bad things that are happening
+52:43
+in this back propagation one is that
+52:47
+we're back propagating through at an H
+52:48
+non-linearity and we told you repeatedly
+52:50
+that 10h nonlinearities were really bad
+52:52
+and you should have used them so that
+52:54
+already seems like a potentially up
+52:56
+but you know these aren't ends were
+52:57
+invented in the 90s they didn't really
+52:59
+know better back then so maybe we can
+53:00
+excuse that but another big problem that
+53:03
+happens when back propagating through
+53:05
+this recurrent neural network is that
+53:07
+when we back propagate through this
+53:08
+matrix multiply stage that actually then
+53:10
+during back propagation it's going to
+53:12
+cause us to multiply by the transpose of
+53:14
+elite matrix right because you know when
+53:16
+you back propagate through a matrix
+53:17
+multiplication then you're going to
+53:19
+multiply by the transpose of that way
+53:20
+matrix so now think about what happens
+53:23
+when we have not just a single recurrent
+53:25
+neural network cell but now we're
+53:27
+unrolling this recurrent neural network
+53:28
+for many many times steps now you can
+53:31
+see that as the gradient flows backward
+53:33
+through this entire sequence then every
+53:35
+time we flow through this recurrent
+53:36
+neural network cell then it's going to
+53:38
+multiply the upstream gradient by this
+53:40
+weight matrix so then during back
+53:42
+propagation we're going to take our
+53:44
+gradient and just multiply it over and
+53:46
+over and over and over again by this
+53:48
+exact same weight matrix W transpose and
+53:51
+now this is basically like really bad so
+53:54
+suppose here I'm only showing four in
+53:56
+the slide but imagine we're unrolling
+53:57
+the sequence for like 100 or 200 or
+54:00
+thousand time steps so then during back
+54:02
+propagation we're multiplying by the
+54:03
+same matrix a thousand times now that
+54:06
+can go really bad in two ways one is
+54:09
+that if the largest sink it's sort of
+54:11
+intuitively if the matrix is too big as
+54:13
+measured by its largest singular value
+54:15
+then multiplying by the same matrix
+54:17
+repeatedly is going to cause it to just
+54:20
+blow up and explode to infinity on the
+54:22
+other hand if that weight matrix is
+54:25
+somehow to small as measured by its
+54:27
+smaller say smallest largest singular
+54:29
+value being less than one then that then
+54:32
+those gradients will just tend to shrink
+54:34
+and disappear and vanish towards zero
+54:35
+during back propagation and the only
+54:38
+possible way that so then basically
+54:39
+we're caught on this knife edge where if
+54:42
+the singular value is just a little bit
+54:43
+greater than one then will our gradients
+54:45
+will explode to infinity if our great if
+54:47
+our singular value just a little bit
+54:49
+less than 1 then our gradients will
+54:50
+vanish to 0 and we'll have this either
+54:52
+this exploding gradient problem or this
+54:54
+vanishing gradient problem as they're
+54:55
+called and the only way we can get this
+54:58
+thing to Train is so if somehow we
+54:59
+arranged for our weight matrix have a
+55:01
+say all its singular values exactly 1
+55:03
+and that's the only way we're gonna be
+55:04
+able to get straight stable training out
+55:05
+of this kind
+55:06
+network I'm over sober very very long
+55:08
+sequences so that seems like a problem
+55:10
+so there is one kind of a hack that
+55:13
+people sometimes use to deal with this
+55:15
+exploding gradient problem called
+55:17
+gradient clipping so here remember here
+55:20
+what we're doing is like we're not using
+55:22
+the true gradient in when we're doing
+55:24
+back propagation so after we compute the
+55:26
+gradient of the loss with respect to the
+55:28
+hidden state we check the nuke Lydian
+55:30
+norm of that vector because you know the
+55:33
+grading of the loss or the spec of the
+55:34
+hidden state is just a vector and then
+55:35
+if if the Euclidean norm of that Grady
+55:37
+of that local gradient is too high then
+55:40
+we just we just multiple it we just clip
+55:42
+it down and cause it to be smaller and
+55:45
+we continue back propagation so now
+55:47
+basically what we're doing with this
+55:48
+idea of gradient clipping is that we're
+55:50
+computing the wrong gradients on purpose
+55:52
+that will hopefully not explode or not
+55:54
+not explode at least so this is like
+55:57
+kind of a horrible dirty hack it means
+55:59
+you're not actually computing the true
+56:00
+gradients of the law of the law so we
+56:02
+can spec to the model weights anymore
+56:03
+but this is a heuristic that people
+56:05
+sometimes use in practice to overcome
+56:07
+this exploding gradient problem now the
+56:11
+other problem is what do we do how do we
+56:13
+deal with these vanishing gradients and
+56:14
+how do we avoid this problem of singular
+56:16
+values being very very small well here
+56:19
+kind of the the basic thing that people
+56:21
+do is they throw away this architecture
+56:23
+and they use a different flavor of
+56:25
+recurrent neural network instead so here
+56:28
+so far we've been talking about this of
+56:30
+vanilla recurrent neural network but
+56:32
+there's another very common variant
+56:34
+people use instead called long short
+56:36
+term memory or LST M LST M very common
+56:39
+acronym you should get to know very well
+56:41
+and what's the mate and here this is a
+56:44
+slightly complicated and confusing
+56:45
+looking functional form and it's not
+56:48
+really clear at the outset when you
+56:49
+first see these equations like what's
+56:51
+going on or why this is solving any
+56:52
+problems whatsoever but basically the
+56:55
+intuition of this LST M is that rather
+56:59
+than keeping a single hidden type a
+57:02
+hidden vector at every time step instead
+57:04
+we're going to keep two different hidden
+57:06
+vectors at every time step one is called
+57:08
+CT the cell state and the other is HT
+57:11
+the hidden state and then we're going to
+57:14
+use the at every time step we're going
+57:16
+to use the previous hidden state
+57:18
+well as the current input to compute for
+57:20
+different gait values I fo and G and
+57:24
+those will be used to compute that out
+57:26
+the updated cell state and then also be
+57:28
+used to compute the updated didn't state
+57:29
+I also think it's interesting to point
+57:31
+out that this paper actually was
+57:33
+published in 1997 that proposed this LS
+57:35
+TM architecture and maybe for the first
+57:37
+10 years it came out it wasn't very well
+57:39
+known and then stopped starting around
+57:40
+about 2013 or 2014 people sort of
+57:43
+rediscovered this LS TM architecture and
+57:46
+it became very very popular again
+57:47
+starting around that time and nowadays
+57:49
+this LS TM architecture is what is a
+57:50
+very widely is one of the most commonly
+57:52
+used recurrent neural network
+57:54
+architectures used to process sequences
+57:55
+in practice but then to unpack a little
+57:58
+bit more about what this thing is
+57:59
+actually doing let's look at it this way
+58:02
+so here what we're doing is that at
+58:04
+every time step
+58:06
+we're receiving some input XT and we are
+58:09
+also receiving the previous hidden state
+58:11
+HT minus 1 and now just like the
+58:14
+recurrent neural network we're going to
+58:15
+concatenate the input vector XT and the
+58:18
+previous and the previous vector HT
+58:20
+minus 1 concatenate them and then
+58:22
+multiplied by multiply them by the by
+58:24
+some weight matrix but now in the
+58:26
+recurrent neural network in the vanilla
+58:28
+or Elmen recurrent neural network case
+58:29
+the output of this matrix multiplication
+58:31
+basically was the next hidden state up
+58:34
+to a non-linearity but now for the this
+58:37
+LS TM instead what we did the the output
+58:39
+of this matrix multiplication we're
+58:41
+going to carve up into four different
+58:43
+vectors each of size H where H is the
+58:45
+number of elements in the hidden unit
+58:47
+and these will be called these four
+58:49
+gates the input gates the for the the
+58:52
+forget gauge the output and this other
+58:54
+one I don't know what to call it I just
+58:56
+called the gate gate because I can't
+58:58
+think of a better name but the intuition
+59:00
+here is that now rather than using the
+59:03
+rather than directly predicting the
+59:05
+output from this matrix multiply instead
+59:07
+we predict these four days and then we
+59:09
+use these four gates to put up date the
+59:11
+cell state and update the hidden state
+59:12
+so you'll notice that these four gates
+59:15
+each go through different nonlinearities
+59:16
+so the input for get an output gate all
+59:19
+will all go through a sigmoid
+59:20
+nonlinearity which means they're all
+59:21
+going to be between zero and one and now
+59:23
+the gate gate goes through at an H
+59:24
+non-linearity which means it's between
+59:26
+minus 1 and 1 so now if you look at this
+59:29
+region in Ooty or in CT you can see that
+59:33
+in order to compute the next cell state
+59:35
+what we do is we take the previous cell
+59:37
+state C t minus 1 and we multiply it
+59:40
+element-wise by the forget gate so now
+59:42
+the forget gate remember is all elements
+59:44
+between 0 and 1 so then the forget gate
+59:46
+has the interpretation that it tells us
+59:48
+for each element of the cell state do we
+59:50
+want to reset it to 0 or continue
+59:52
+propagating that element of the cell
+59:54
+state forward in time that's that's how
+59:56
+we use the forget gate and then we add
+59:58
+then ER and then we also add on the
+60:01
+element wise product of the input gate
+60:03
+and the gate gate so now the gate gate
+60:05
+is kind of remember between negative 1
+60:07
+and 1 so that's kind of what we want to
+60:09
+write into the cell state at every point
+60:11
+every element of the cell state and now
+60:13
+the the input gate is again between 0 &
+60:15
+1 because it's a sigmoid that we element
+60:17
+multiply element wise with the gate gate
+60:19
+so in kind of the entry into the
+60:21
+interpretation is that the gate gate is
+60:23
+it all tells us at every at every point
+60:26
+in a cell we can either add 1 or
+60:27
+subtract 1 and the input gate tells us
+60:30
+how much do we actually want to add or
+60:32
+subtract at every point in the cell so
+60:34
+that's how we use the input forget and
+60:36
+gate gates and now to compute the final
+60:38
+output state we're going to do is take
+60:41
+the cell state squash it through at an H
+60:43
+non-linearity and then multiply
+60:44
+element-wise by the output gate so now
+60:47
+that the interpretation here is that the
+60:48
+cell state is this kind of internal
+60:50
+hidden state that's internal to the
+60:52
+processing of the lsdm and the LS TM can
+60:55
+choose to reveal parts of its cell state
+60:57
+at every time step as modulated by the
+60:59
+output gate so then the output gate
+61:01
+tells us how much of each element of the
+61:04
+cell do we want to reveal and put in
+61:06
+place into the hidden state because we
+61:08
+could put we couldn't write we put could
+61:10
+put the out part if we put some element
+61:12
+of the output 8 to 0 then it would be
+61:14
+sort of hiding that element of the cell
+61:16
+and keeping it as kind of a private
+61:17
+variable internal to the lsdm so there's
+61:21
+kind of a tradition in explaining L
+61:22
+STM's that you've got to have a number
+61:24
+of very confusing diagrams to try to
+61:25
+explain them so here's mine so one way
+61:29
+that you can look and at the processing
+61:31
+of a single LS TM is that we receive
+61:34
+from the left and from we received two
+61:36
+things from the previous time step we
+61:37
+were to receive the previous cell state
+61:39
+CT minus 1 and the previous hidden state
+61:42
+- one and now we concatenate the
+61:44
+previous hidden state and the current
+61:46
+input XT we multiply them by this weight
+61:48
+matrix W and then we divide them up into
+61:51
+these four gates and then we use these
+61:53
+four gates to compute the the cell state
+61:55
+the next cell states ECT that we're
+61:57
+going to pass along to the next time
+61:58
+step as well as produce the next hidden
+62:01
+state HT that will pass on to the next
+62:03
+time step and now what's interesting
+62:05
+about looking at the LOC on this way is
+62:08
+that it gives us some different
+62:09
+perspective on gradient flow through the
+62:11
+LST on especially compared to the
+62:12
+vanilla RN so now if you imagine back
+62:15
+propagating from the next cell state C T
+62:18
+back to the previous cell state CT minus
+62:21
+one now you can see that this is a
+62:23
+fairly friendly gradient pathway because
+62:25
+in when we back propagate this then we
+62:28
+first back propagate through a sum node
+62:31
+so then what I remember when we back
+62:32
+propagate through a sum node then what
+62:34
+happens yeah that we copy the gradients
+62:38
+so back propagating through a sum is
+62:40
+very friendly so that's not gonna kill
+62:42
+the information so you first hit this
+62:43
+sum node and that's that's just going to
+62:45
+distribute the gradients down to the
+62:46
+inner parts of the LST M as well as
+62:48
+backward in time to the previous cell
+62:50
+state and then we back propagate through
+62:52
+this element wise multiplication with
+62:54
+with the forget gate so now this this
+62:57
+has the potential to destroy information
+62:59
+but this is not directly back
+63:00
+propagating through a sigmoid
+63:02
+non-linearity that from the perspective
+63:03
+of computing the derivative with respect
+63:07
+to the previous cell state this is just
+63:08
+multiplies just back propagating through
+63:10
+this element wise constant multiply we
+63:12
+were multiplying by a constant between
+63:14
+zero and one so now this again has the
+63:16
+potential to destroy information if that
+63:18
+forget gate is very close to zero but if
+63:21
+the forget gate is very close to one
+63:22
+then back propagating backwards to the
+63:24
+next cell state or to the previous cell
+63:26
+state is basically not going to destroy
+63:28
+and for any information so now there's
+63:30
+no what you'll notice is that when we
+63:32
+back propagate from the next cell state
+63:34
+to the previous cell state then we are
+63:36
+not back back propagating through any
+63:38
+nonlinearities and we're also not back
+63:40
+propagating through any matrix
+63:41
+multiplies so this top level pathway
+63:44
+through the LS TM is now a very friendly
+63:47
+pathway for gradients to propagate
+63:49
+backwards during the backward pass so
+63:51
+now if you imagine kind of chaining
+63:53
+together these multiple LS TM cells one
+63:55
+after
+63:56
+to process along sequence then this
+63:58
+upper pathway through all the cell
+64:00
+states kind of forms this uninterrupted
+64:03
+gradient superhighway along which the
+64:05
+model can ease very easily pass
+64:07
+information backwards through time even
+64:09
+through many many time steps so this
+64:12
+this form because now we see that this
+64:13
+kind of funny formulation of the lsdm
+64:15
+basically the whole point of it is to
+64:18
+achieve these better dynamics of the
+64:20
+gradient flow during a backward pass
+64:21
+compared to the vanilla RNN yeah yeah so
+64:25
+we do the question is we still do need
+64:27
+to back propagate through the 1/2
+64:28
+through to the weights so that could
+64:30
+potentially give us some problem but
+64:32
+kind of the hope here is that for the
+64:34
+vanilla RNN our only source of gradient
+64:36
+is coming through this very long long
+64:38
+set of time time dependencies so then if
+64:41
+our information gets very diluted across
+64:43
+these many many time steps then we can't
+64:45
+learn but now for the LS TM there's
+64:48
+always going to be some pathway along
+64:50
+which information is kind of preserved
+64:51
+through the backward pass so you're
+64:53
+correct that when we back propagate into
+64:56
+the weights then we are going to back
+64:57
+propagate through a matrix multiply and
+64:59
+through these nonlinearities but there
+65:01
+exists a pathway along which we do not
+65:03
+have to back propagate through any
+65:04
+matrix multiplies or any non linearities
+65:06
+so the hope is that that would be enough
+65:08
+to keep the flow of information going
+65:10
+during the learning process yeah yeah so
+65:14
+the solution still has some HT at the
+65:16
+end and usually for an LS TM the cell
+65:18
+state is usually considered kind of a
+65:20
+private variable to the LS TM and then
+65:22
+usually you use the hidden state HT to
+65:25
+either predict your to do whatever
+65:26
+prediction you want on the output of the
+65:28
+lsdm it's now also this design of the LS
+65:32
+TM as sort of giving us this
+65:34
+uninterrupted gradient superhighway
+65:36
+should remind you of another
+65:37
+architecture that we've already seen in
+65:39
+this class can anyone guess yeah the
+65:43
+rezident so remember that in the
+65:45
+residual networks we had this problem of
+65:47
+training very very deep convolutional
+65:49
+neural networks with perhaps hundreds of
+65:51
+layers and there we saw that by adding
+65:53
+adding these additive skip connections
+65:54
+between layers and a deep convolutional
+65:56
+network then it gave us very good
+65:58
+gradient flow across many many many
+66:00
+layers and is basically the same idea
+66:02
+with the LS TM that we've got these
+66:04
+additive connections that are now giving
+66:06
+us this uninterrupted gradient flow not
+66:08
+across many many layers but
+66:09
+many many time steps in time so I think
+66:11
+the LST m and the resna actually share a
+66:14
+lot of intuition and kind of is as a fun
+66:16
+pointer there's another kind of a thing
+66:19
+called the high highway network that
+66:21
+actually came out right before resonance
+66:22
+that looks even more like an LS TM that
+66:26
+all that kind of cement these these
+66:28
+connections a little bit more so you can
+66:29
+check that out if you're interested in
+66:30
+those those connections any any
+66:33
+questions about this LS TM if we move on
+66:35
+to something else yeah yeah the question
+66:38
+is like how do you how do you possibly
+66:39
+come up with this well it's called
+66:41
+research so I mean it's this this
+66:46
+iterative process of you have some idea
+66:48
+that maybe I have this idea this that I
+66:50
+think if I do this thing then things
+66:51
+will improve and then I try it and it
+66:53
+doesn't work then I have another idea
+66:55
+and I try it and it doesn't work and I
+66:57
+have another idea and I try and it
+66:58
+doesn't work and then eventually you can
+66:59
+have an idea or maybe not you but
+67:01
+somebody is gonna come up with an idea
+67:03
+sorry I don't mean you specifically I
+67:06
+mean kind of you generically or me
+67:09
+generically right any individual person
+67:11
+you know it'd be troubling but then as a
+67:14
+community hopefully over time eventually
+67:16
+someone will come up with an idea that
+67:18
+actually works well that then gets
+67:20
+adopted by the community and if you look
+67:22
+at the development of the lsdm actually
+67:24
+it got more complex over time so kind of
+67:27
+it I actually this would be kind of fun
+67:29
+to go to read this history of papers and
+67:30
+see exactly how it developed but kind of
+67:33
+it they start with one thing and then
+67:34
+they make it a little bit more
+67:35
+complicated it works better and you kind
+67:37
+of iteratively
+67:37
+refine these things over long periods of
+67:39
+time but yeah if I knew how to come up
+67:42
+with things as impactful as the LST I'm
+67:44
+like oh man that'd be awesome
+67:45
+I wish okay any other questions on lsdm
+67:53
+okay so then so far we've talked about
+67:56
+single layer RNN so this is something i
+67:58
+just want to briefly mention right that
+67:59
+we've got this process the sequence of
+68:01
+inputs we process we produce this
+68:03
+sequence of hidden layers and we use
+68:04
+this sequence of hidden hidden hidden
+68:08
+vectors to produce a sequence of outputs
+68:10
+well we've seen sort of from processing
+68:12
+images that more layers is often better
+68:15
+and more layers often allows us to
+68:17
+achieve models
+68:19
+perform better on whatever task we want
+68:21
+to use so clearly we'd like to have some
+68:23
+way to apply this this intuition of
+68:25
+stacking layers I'm also too recurrent
+68:27
+neural networks so we can do that by
+68:30
+just applying another recurrent neural
+68:32
+network on top of the sequence of hidden
+68:34
+states that are produced by a first-year
+68:35
+Network current or network so this is
+68:38
+called a multi-layer or deep recurrent
+68:40
+neural network so here the idea is we've
+68:42
+got one recurrent neural network that
+68:43
+processes our raw input sequence and
+68:45
+then produces the sequence of hidden
+68:47
+states and now that sequence of hidden
+68:48
+states is just treated as the input
+68:50
+sequence to another recurrent neural
+68:52
+network that n produces its own second
+68:54
+sequence of hidden states you know and
+68:57
+you don't have to stop with two you can
+68:58
+stack these things as far as your GPU
+69:01
+memory will take you or as far as much
+69:03
+space you have on the slide in this case
+69:05
+but you can imagine stacking these
+69:07
+recurrent neural networks to multiple to
+69:09
+many many layers I think in practice for
+69:11
+recurrent neural networks it's actually
+69:13
+know you'll often see improvements from
+69:16
+like maybe up to the three or five
+69:18
+layers or so but I think in recurrent
+69:20
+neural networks it's really not so
+69:22
+common to have these extremely extremely
+69:23
+deep models like we do for convolutional
+69:26
+networks yeah it was our question yeah
+69:28
+so the question is do we use the same
+69:29
+weight matrix for the for these
+69:31
+different layers or different weight
+69:32
+matrix for these different layers and
+69:33
+usually you would use different weight
+69:35
+matrices for these different layers so
+69:36
+this is kind of so you should think of
+69:38
+each of these layers in of RN n is kind
+69:40
+of like the layers in our convolutional
+69:42
+Network so then at every layer in a
+69:44
+convolutional Network we typically use
+69:45
+different weight matrices um and very
+69:47
+similarly will often use we'll also use
+69:50
+different weight matrices at every layer
+69:51
+in this deep recurrent neural networks
+69:54
+so then kind of going back to this other
+69:57
+question about how people come up with
+69:59
+these things there's actually other
+70:00
+different architectures I mean this is
+70:03
+something that you can imagine people
+70:04
+play around with a lot but it's very
+70:06
+into it it's very appealing to think
+70:07
+like oh maybe I can just like write down
+70:10
+a better equation for a current neural
+70:12
+network and we'll just make all of our
+70:13
+problems go away so you'll see a lot of
+70:15
+papers that try to play around the exact
+70:17
+architecture in the exact update rules
+70:19
+of different recurrent neural networks
+70:20
+so there's like a ton of papers about
+70:23
+this that you'll see I'm one that I want
+70:24
+to point out and highlight is this one
+70:26
+on the left called the gated recurrent
+70:27
+unit that looks kind of like a
+70:29
+simplified version of an LSD
+70:31
+I don't want to go into the details here
+70:32
+but it has this similar interpretation
+70:34
+of using additive connections to improve
+70:36
+the gradient flow and as compass compute
+70:40
+power has gotten cheaper and cheaper
+70:41
+then people have also started to take
+70:43
+brute-force approaches to this as well
+70:45
+so there was a paper from a couple years
+70:47
+ago I liked where they used evolutionary
+70:49
+search on the space of update formulas
+70:53
+and they did a brute-force search over
+70:55
+tens of thousands of update formulas for
+70:57
+different where each update formula then
+70:59
+gives rise to different recurrent neural
+71:01
+network architecture so rather than
+71:03
+trying to come up with it yourself you
+71:04
+just have some algorithm that
+71:05
+automatically searches through update
+71:07
+formulas and then tries these different
+71:09
+update formulas on different tasks and
+71:11
+what they found is that so here are
+71:14
+examples of three of the update formulas
+71:16
+that this paper found um but kind of the
+71:18
+general takeaway is you know no nothing
+71:20
+really works that much better than an LS
+71:22
+TM so let's just stick with that so I
+71:25
+think maybe the interpretation here is
+71:26
+that there's actually a lot of different
+71:28
+update formulas that actually would
+71:30
+result in similar performance across a
+71:32
+large number of tasks and then maybe the
+71:34
+LST on is just happens to be the one
+71:36
+that people discovered first and it has
+71:38
+kind of a nice historical precedent so
+71:39
+people continue using it we also talked
+71:42
+a couple lectures ago about this area of
+71:44
+neural architecture search where you
+71:47
+train one neural network to produce the
+71:49
+architecture of another neural network
+71:51
+we saw that in the context of
+71:53
+convolutional I mean we didn't see in
+71:54
+detail but we saw very briefly in the
+71:55
+context of convolutional networks and it
+71:57
+turns out people have also applied
+71:59
+similar ideas to recurrent neural
+72:01
+network architectures as well so here
+72:03
+there was a paper from Google where they
+72:05
+now have actually one recurrent neural
+72:07
+network predict the architect of predict
+72:09
+the architecture of the recurrent neural
+72:12
+network cell encoded as a sequence and
+72:14
+then train that thing on hundreds of
+72:15
+GPUs for a month and then eventually at
+72:18
+the end of training then you get this
+72:19
+learned architecture on the right that I
+72:21
+guess worked a little bit better than
+72:22
+lsdm but I think the takeaway is from a
+72:25
+lot of these papers is that the even
+72:28
+this these lsdm and gru architectures
+72:31
+that we already have are actually pretty
+72:33
+good in practice and even if they're not
+72:36
+perfectly optimal they tend to perform
+72:38
+well across a wide variety of problems
+72:40
+so then kind of a summary today is that
+72:43
+we introduced this whole
+72:44
+new flavor of neural networks called
+72:46
+Roker neural networks I hope I convinced
+72:48
+you that they're cool and interesting
+72:49
+and let you solve a lot of new types of
+72:50
+problems and we saw in particular how
+72:53
+this LS TM improves the gradient flow
+72:55
+compared to these vanilla of recurrent
+72:58
+neural networks and we finally saw this
+72:59
+image captioning example that let us
+73:01
+build neural networks that write natural
+73:03
+language descriptions of images that
+73:04
+you'll get to do on your fourth
+73:06
+assignment but before we get to the
+73:09
+fourth assignment coming on next time
+73:10
+will be the midterm so hopefully that
+73:12
+will be fun on Monday and I'll see you
+73:14
+there
+
+영어 (자동 생성됨)
+
+

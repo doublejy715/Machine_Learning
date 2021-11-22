@@ -1,0 +1,5006 @@
+﻿00:00
+all right well look welcome back to
+00:02
+lecture 15.
+00:03
+uh today we're going to talk about
+00:04
+object detection um so as a reminder
+00:06
+that last time we were talking about
+00:08
+this task of
+00:09
+understanding and visualizing what's
+00:10
+going on inside our convolutional neural
+00:12
+networks
+00:13
+and we talked about a lot of different
+00:14
+techniques for doing exactly that like
+00:16
+looking at nearest neighbors in feature
+00:18
+space
+00:18
+by looking at maximum activating patches
+00:20
+or using guided back propagation or
+00:22
+other techniques to compute saliency
+00:23
+maps on our features
+00:25
+and we talked about methods for
+00:26
+generating images like these
+00:28
+synthetic images via gradient descent or
+00:30
+these uh this task of feature inversion
+00:33
+um and of course we also saw that a lot
+00:35
+of these same techniques that could be
+00:36
+used for understanding cnns
+00:37
+could also be used for sort of making
+00:39
+fun artwork with convolutional neural
+00:41
+networks
+00:42
+so we saw the deep dream and the style
+00:44
+artistic style transfer algorithms
+00:45
+as mechanisms as mechanisms for
+00:47
+generating artwork with
+00:48
+neural networks and now today we're
+00:51
+going to talk about something maybe
+00:53
+a little bit more practical which is a
+00:55
+new core computer vision task of
+00:57
+object detection so basically the main
+01:00
+computer vision task that we've talked
+01:02
+about so far in this class
+01:03
+is something like image is something
+01:05
+like image classification
+01:07
+right so an image classification of
+01:08
+course we know that a single
+01:10
+image is coming in on the left we
+01:12
+process it with our convolutional model
+01:14
+and it outputs uh some cl some category
+01:17
+label for the overall image
+01:19
+like maybe classifying it as a cat or
+01:21
+dog or car
+01:22
+just giving we're in image
+01:23
+classification we're just giving a
+01:25
+single category label
+01:27
+attached to the entire image as a whole
+01:30
+and this has been a really useful
+01:31
+this is a really useful task that has a
+01:32
+ton of applications for a lot of
+01:34
+different settings
+01:35
+and it's also been a really useful task
+01:37
+for under for kind of stepping through
+01:38
+the whole deep learning pipeline
+01:40
+and understanding how to build and train
+01:42
+convolutional neural network models
+01:44
+but it but it turns out that this image
+01:45
+classification task
+01:47
+is only one of many different types of
+01:48
+tasks that people in computer vision
+01:50
+work on
+01:51
+so there's a whole hierarchy out there
+01:53
+of different types of tasks that people
+01:55
+work on in computer vision
+01:57
+that try to identify objects and images
+01:59
+in different sorts of ways
+02:01
+and in particular in today's lecture and
+02:03
+in the next lecture on monday
+02:05
+we'll talk about different types of
+02:06
+computer vision tasks that involve
+02:08
+identifying spatial extents of objects
+02:11
+in images
+02:12
+so for of course for the classic image
+02:15
+classification task
+02:16
+we're simply assigning a category label
+02:18
+to the overall image
+02:19
+and we're not saying at all which pixels
+02:21
+of the image correspond to the category
+02:23
+label
+02:23
+which is attaching a single overall
+02:25
+label to the image
+02:27
+now other types of computer vision tasks
+02:28
+actually want to go farther
+02:30
+and not just give a single overall
+02:32
+category label but actually want to
+02:33
+label different parts of the image
+02:35
+with different categories that appear in
+02:37
+the image so
+02:39
+between today's lecture and next lecture
+02:40
+we'll talk about all of these different
+02:42
+tasks
+02:43
+but the one that i want to focus on
+02:44
+today is the task of object detection
+02:48
+which is kind of which is sort of a
+02:49
+super core task in computer vision
+02:52
+that has a ton of useful applications so
+02:54
+what is object detection
+02:56
+uh object detection is a task we're
+02:59
+going to input a single rgb image
+03:01
+and the output is going to be a set of
+03:03
+detected objects
+03:05
+that for each object in the scene we
+03:07
+want our model to identify all of the
+03:09
+all of the interesting objects in the
+03:10
+scene
+03:11
+so for each of so for each of the
+03:13
+objects that we detect we're going to
+03:14
+output several things
+03:16
+one is a category label giving the
+03:18
+category of
+03:19
+the of the detected object and the other
+03:21
+is a bounding box
+03:23
+giving the the spatial extent of that
+03:25
+object in the image
+03:27
+so uh with on the category labels just
+03:30
+like with image classification
+03:32
+ahead of time we're going to pre-specify
+03:34
+some set of categories
+03:36
+that the data that the model will be
+03:38
+aware of um so
+03:39
+in something like remember in something
+03:41
+like cpar classification our model is
+03:43
+aware of
+03:43
+10 different categories for cfr cfr10 in
+03:46
+something like imagenet classification
+03:47
+our model is aware of a thousand
+03:48
+different categories
+03:50
+well for object detection we'll also be
+03:52
+aware of some fixed set of categories
+03:54
+ahead of time
+03:56
+and then for each of our detected
+03:57
+objects we're going to output some
+03:58
+category label for the object just as we
+04:00
+did
+04:01
+with image classification but now the
+04:03
+interesting part is this bounding box
+04:04
+that it's going where the model needs to
+04:06
+output a box telling us the location of
+04:08
+each of the detected objects in the
+04:09
+image
+04:10
+and these bounding boxes we can prim we
+04:12
+usually parametrize
+04:13
+with four numbers um the that's that's
+04:16
+like the x and y giving the center of
+04:18
+the box
+04:18
+in pixels and the width and the height
+04:20
+giving the and w and h giving the width
+04:23
+and the height of the box again measured
+04:24
+in pixels
+04:26
+um so you could imagine you know models
+04:28
+that produce sort of arbitrary boxes
+04:30
+with arbitrary rotations
+04:32
+but for the standard object detection
+04:33
+task we usually don't do that
+04:35
+and instead usually only define boxes
+04:37
+only output boxes that are aligned to
+04:39
+the to the axes of the input image so
+04:41
+that means that whenever we're working
+04:42
+with bounding boxes
+04:44
+we can always define a bounding box
+04:45
+using just four real numbers
+04:47
+so now this this seems like a relatively
+04:49
+small change compared to image
+04:51
+classification right how hard could it
+04:52
+be
+04:53
+we're just now we need to just output
+04:55
+these boxes in addition to the category
+04:56
+labels
+04:57
+well it turns out that that adds a lot
+04:58
+of complication to the problem
+05:00
+so a couple of the a couple of the types
+05:02
+of problems that we need to deal with
+05:04
+once we move to object detection
+05:06
+well one of the biggest ones is this
+05:08
+idea of multiple outputs
+05:10
+that with image classification our model
+05:12
+was always outputting a single output
+05:13
+for every image
+05:14
+which was a single category label but
+05:16
+now with image classification
+05:18
+we need to output potentially a very we
+05:20
+need to output a whole set of detected
+05:21
+objects
+05:22
+and each object each image might have
+05:24
+different numbers of detected objects
+05:26
+might have different numbers of objects
+05:27
+in it that we need to detect
+05:29
+so now somehow we need to build a model
+05:31
+that can output a variably sized number
+05:33
+of detections
+05:34
+which turns out to be quite challenging
+05:36
+of course there's another problem
+05:38
+here which is that for each object in
+05:40
+this set we need to produce two types of
+05:42
+outputs
+05:42
+one is this category label that we're
+05:44
+very familiar with and the other is this
+05:46
+bounding box object so now we need some
+05:47
+other way to deal with
+05:49
+processing bounding boxes inside of our
+05:50
+network and then another kind of
+05:53
+computational problem with object
+05:54
+detection is that it typically
+05:56
+requires us to work on relatively high
+05:58
+resolution images
+05:59
+so for something like image
+06:01
+classification it turns out that
+06:03
+relatively low resolution images of like
+06:05
+two to four by two to four pixels
+06:06
+tends to be enough spatial resolution
+06:08
+for most of the image classification
+06:10
+tasks that we wanna perform
+06:11
+but now for object detection because we
+06:13
+want to identify a whole
+06:15
+a whole lot of different objects inside
+06:16
+the image now we we need enough spatial
+06:19
+resolution on each of the objects that
+06:20
+we want to detect
+06:21
+so that means that the overall
+06:23
+resolution of the image needs to be
+06:25
+needs to be much higher so as a concrete
+06:27
+example for object detection models
+06:30
+it's more common to work on images of
+06:32
+resolution something like a
+06:34
+rather on the order of like 800 by 600
+06:36
+pixels
+06:37
+so that's like a lot larger image
+06:39
+resolution compared to
+06:41
+compared to image classification so that
+06:43
+means we can use fewer images per batch
+06:44
+we need to train longer we need to
+06:46
+use multi distributed gpu training and
+06:48
+that's kind of a computational issue
+06:50
+that makes
+06:51
+object detection much much more
+06:52
+challenging
+06:54
+okay but i but i think that object
+06:56
+detection is a really useful problem
+06:57
+right i think there's a lot of cases
+06:59
+where we want to build systems that can
+07:01
+recognize stuff
+07:02
+in images but actually needs to say
+07:04
+where it is in the image
+07:05
+so one example might be something like a
+07:07
+self-driving car that if you're built if
+07:09
+you're building a vision system for a
+07:10
+self-driving car
+07:12
+it needs to know where all the other
+07:13
+cars are around it in space so therefore
+07:16
+it becomes really critical
+07:17
+that it can not only just assign single
+07:19
+category labels to images
+07:20
+but actually uh detect whole sets of
+07:22
+objects and actually say where they are
+07:24
+in space
+07:25
+so this is so basically after image
+07:27
+classification i think object detection
+07:29
+is maybe the number two
+07:30
+most core problem in computer vision
+07:32
+these days
+07:34
+okay so then with all that in mind let's
+07:36
+consider a simpler problem forget about
+07:38
+let's forget for a second about this
+07:40
+this
+07:40
+set this this problem of producing a set
+07:42
+of outputs and let's think about how we
+07:44
+might approach this problem
+07:46
+if we just wanted to detect a single
+07:48
+object in the image
+07:49
+well it turns out that detecting a
+07:51
+single object in the image
+07:52
+we can actually do with a relatively
+07:54
+straightforward architecture
+07:55
+so here we might imagine taking in our
+07:58
+image on the left
+07:59
+and assuming that there's only one
+08:00
+object in the image passing it through
+08:02
+our favorite convolutional neural
+08:03
+network architecture
+08:04
+uh like an alex now or vgg or some kind
+08:07
+of resnet
+08:07
+that would eventually result in some
+08:09
+vector representation of the image
+08:12
+and now from that vector representation
+08:13
+we could have one branch that does image
+08:16
+classification that is saying
+08:17
+what is in the image and this would look
+08:19
+very much like all of the kinds of image
+08:21
+classification models that we've seen so
+08:23
+far
+08:23
+that it's going to output a score per
+08:24
+category and that's going to be trained
+08:26
+with a softmax loss
+08:28
+on the ground truth category and this is
+08:30
+basically the same as the image
+08:31
+classification model that we've seen
+08:33
+many times
+08:34
+but now the new part is that we could
+08:35
+imagine the second attaching the second
+08:37
+branch
+08:38
+that that also inputs this uh this
+08:40
+vector representation of the image
+08:42
+and now has a fully connected layer to
+08:44
+go from maybe 40 96 dimensions
+08:46
+in that final vector representation to
+08:49
+four real numbers
+08:50
+giving the x giving the coordinates of
+08:52
+the bounding box of that one object
+08:54
+and now this these box coordinates we
+08:56
+can imagine training with some kind of
+08:57
+regression loss
+08:59
+like a l2 like the l2 difference but
+09:01
+like the l2 difference between
+09:02
+um this set of four numbers giving the
+09:04
+box that we actually output
+09:06
+and the set of four numbers giving the
+09:07
+actual coordinates of the box that we
+09:08
+were supposed to detect
+09:10
+um and then then we could imagine
+09:12
+trading this the second where branch
+09:14
+with an l with some kind of l2 loss or
+09:16
+other kind of regression loss on real
+09:17
+numbers
+09:19
+and now the problem is that we've got
+09:20
+two loss functions right because we're
+09:22
+asking our model to predict two
+09:24
+different sorts of things
+09:25
+one is the category label and one is the
+09:27
+the bounding box location
+09:29
+and for each of these two things we have
+09:30
+an associated loss function
+09:32
+but in order to compute gradient descent
+09:34
+we actually need to end up with a single
+09:35
+scalar loss
+09:36
+we don't know how to deal with sets of
+09:37
+losses so the way that we
+09:39
+overcome this is just add up the
+09:41
+different losses that we have in this
+09:43
+network
+09:43
+potentially as a weighted sum to give
+09:46
+our final our final loss
+09:47
+and now this is a weighted sum because
+09:49
+we might need to tune the relative
+09:51
+importance
+09:51
+of this softmax loss and this regression
+09:54
+loss um to make sure that they don't
+09:55
+overpower each other in the overall
+09:57
+weighted sum
+09:58
+loss and now this idea of taking
+10:00
+multiple loss functions
+10:02
+right now now this idea is that we've
+10:03
+got one network and we want to train one
+10:05
+network to do multiple different things
+10:06
+so then we attach one loss function to
+10:08
+each of the different things that we
+10:10
+want our network to predict
+10:11
+and then we sum them up with a weighted
+10:12
+sum and this turns out to be a pretty
+10:14
+general construction that applies
+10:16
+whenever you want to train neural
+10:17
+networks that to output multiple sorts
+10:19
+of things
+10:20
+and this general construction is called
+10:21
+a multi-task loss because um or we want
+10:24
+to train our network to do sort of
+10:26
+multiple different tasks
+10:27
+all at once but we need to boil it down
+10:29
+to a single loss function for training
+10:30
+at the end
+10:32
+um and now uh as kind of kind of a cap
+10:34
+now to kind of see how you might work on
+10:36
+this in practice
+10:37
+um this this backbone network this this
+10:39
+cnn would often be maybe pre-trained for
+10:41
+imagenet classification
+10:43
+and then you would sort of fine-tune
+10:44
+this whole network for
+10:46
+uh for doing this this multitask
+10:48
+localization problem
+10:50
+and this seems like kind of a silly
+10:51
+approach for detecting objects and
+10:53
+images right it's very straightforward
+10:54
+we're just basically attaching an extra
+10:56
+fully connected layer at the end of the
+10:57
+network to predict these box coordinates
+10:59
+but this this relative relatively simple
+11:01
+approach actually works pretty well
+11:03
+if you know that you only need to detect
+11:05
+one object in the image
+11:07
+um and for example and actually this
+11:09
+particular approach to uh
+11:11
+to localizing objects and images was
+11:13
+actually used
+11:14
+in way back in the alex net paper when
+11:16
+they had some tasks where they want to
+11:18
+classify and also give a bounding box
+11:19
+for the one classification decision that
+11:21
+they make
+11:22
+so this is actually a reasonable
+11:23
+approach if you know that you only need
+11:25
+to detect
+11:26
+one object in the image but of course we
+11:28
+know that real images might have
+11:30
+multiple objects that we need to detect
+11:32
+so this this relatively simple situation
+11:35
+is not going to work for us in general
+11:38
+and to kind of imagine what this looks
+11:39
+like well we need we
+11:41
+in general different different images
+11:43
+might have different numbers of objects
+11:45
+that we need to detect
+11:46
+so for this cat image maybe there's only
+11:48
+one object in there the cat that we need
+11:50
+to detect
+11:50
+so then we need to predict only four
+11:52
+numbers coming out of our network which
+11:54
+are the four bounding box coordinates of
+11:55
+the one cat bounding box
+11:57
+um but now for this middle image maybe
+11:59
+there's three objects we want to detect
+12:01
+two dogs and one cat so now we need to
+12:03
+predict 16 numbers uh actually i can't i
+12:05
+can't add right that's only 12 numbers
+12:07
+right 3 times 4 is only 12. so that's a
+12:08
+bug on the slide
+12:10
+um that's what happens when you make
+12:11
+slides very fast you have some bugs on
+12:12
+there
+12:13
+um but uh right so in this case we need
+12:15
+to have our network only output 12
+12:17
+i'll put 12 numbers and for this this
+12:19
+image of all these adorable ducklings
+12:21
+floating around in the water with their
+12:22
+mom
+12:22
+there's like a lot of ducks in here i
+12:24
+can't even count them there's like way
+12:25
+too many
+12:26
+um but basically this means that we need
+12:28
+our network to output a whole lot of
+12:30
+different duck detections like duck duck
+12:31
+duck
+12:32
+guck and maybe a goose but there's
+12:34
+actually no goose here
+12:35
+um so then we need to output maybe lots
+12:38
+of different numbers from our neural
+12:39
+network model
+12:40
+so then we need some some mechanism that
+12:42
+allows our model to output
+12:43
+variable numbers of objects for each for
+12:46
+each different image that we might see
+12:49
+so there's a relatively simple way to do
+12:51
+this which is called a sliding window
+12:53
+approach to object detection
+12:55
+here the idea is that we're going to
+12:57
+train we're going to have a cnn
+12:58
+a convolutional neural network and we're
+13:00
+going to train it to do classification
+13:02
+but now this this cnn that's doing
+13:04
+classification is going to categorize
+13:06
+a window or sub-regions or sub-windows
+13:09
+of our input image
+13:11
+and now for each sub-window that we
+13:12
+apply it to it's going to output a
+13:14
+category
+13:15
+it's going to output if we want to
+13:17
+detect c different categories
+13:18
+we're actually going to output a
+13:20
+decision over c plus one outputs
+13:22
+where we add a new output for a special
+13:25
+background category
+13:26
+so that means that if we then basically
+13:28
+this is a this is an image we
+13:30
+are reducing this problem of detection
+13:32
+down to an image classification problem
+13:34
+so then all we need to do is apply this
+13:36
+classification cnn
+13:37
+to many many different regions in the
+13:39
+input image and for each region
+13:41
+that classification cnn will tell us
+13:44
+either is this a dog or a cat
+13:45
+or is this some background regen where
+13:47
+there is no object that we care about
+13:50
+um so then you could imagine if we
+13:51
+applied this uh this uh
+13:53
+this sliding window cnn object detector
+13:56
+to this blue region in the input image
+13:58
+well there's no
+14:00
+object is precisely localized by this
+14:02
+blue bounding box
+14:03
+so in this so for this image region our
+14:06
+detector should say
+14:07
+background to mean that there is no
+14:08
+bounding box in this image region
+14:10
+then we slide our region over and then
+14:12
+run it on a different region in the
+14:13
+image
+14:14
+and this one it should say that there's
+14:15
+a dog here because this is a this is
+14:17
+about this is a region that is well
+14:18
+localized with um
+14:20
+with that box and then this one would
+14:21
+also be a dog this one should be a cat
+14:24
+and then that basically we take this we
+14:26
+take this object detector
+14:28
+and we slide it over different regions
+14:30
+in the input image and for each of those
+14:31
+regions we run the cnn on that region
+14:34
+and it tells us whether it's an object
+14:35
+or whether it is background okay so this
+14:38
+seems like a relatively simple approach
+14:40
+to doing object detection
+14:42
+but there's a problem let's think about
+14:43
+how many possible bounding boxes there
+14:45
+are
+14:46
+in an image of size h cross w um and
+14:48
+hint it's going to be a lot
+14:50
+right so if there's h cross if if we
+14:52
+have an input image of size capital h
+14:54
+cross capital w then consider a box of
+14:57
+size lowercase h
+14:58
+cross lowercase w now the number of
+15:00
+positions that we can put this in
+15:02
+well there's capital w minus lowercase w
+15:05
+plus one
+15:06
+possible uh position x position so we
+15:08
+could put this box
+15:09
+and similarly for the number of y
+15:10
+positions that we can put this box
+15:12
+so that means that the number of
+15:13
+positions we can put this box in
+15:15
+is this uh this quadratic equation that
+15:17
+depends both
+15:19
+depends on the the the product of
+15:20
+capital w and capital h
+15:22
+but but but in fact this is even worse
+15:24
+because we need to consider
+15:26
+not just boxes of a fixed size we need
+15:28
+to consider all possible boxes of all
+15:30
+possible sizes
+15:31
+and all possible aspect ratios so if we
+15:34
+sum this thing up over all
+15:35
+all lowercase w and all lowercase h over
+15:38
+all possible sizes that are less than
+15:40
+the full image size
+15:41
+then we get this this quartic expression
+15:44
+that sort of
+15:45
+depends on the fourth power of the
+15:47
+number of pixels in the image or rather
+15:48
+the square of the number of pixels in
+15:49
+the image but
+15:50
+it's like h squared times w squared so
+15:52
+that's like really really bad
+15:54
+and how bad is this well if we have
+15:56
+something like an 800 by 600 image
+15:58
+then it comes out that there's some that
+16:00
+there's about like 58 million different
+16:02
+bounding boxes
+16:03
+that we could about imagine evaluating
+16:05
+inside this 800 by 600 image
+16:08
+so if we wanted to do some kind of dense
+16:10
+sliding window approach
+16:11
+and actually apply our cnn sliding
+16:14
+window classifier
+16:15
+on each one of these possible image
+16:17
+regions this is going to be absolutely
+16:18
+completely infeasible
+16:20
+there's like no computational way that
+16:22
+we could run our object
+16:23
+our cnn forward pass 58 million times
+16:26
+just for one image we'd be waiting
+16:28
+forever for any detections that we
+16:29
+wanted to come out
+16:30
+yeah is there a question yeah the
+16:32
+question is that even if you could do
+16:34
+this and you had like infinite compute
+16:35
+you'd probably end up identifying the
+16:38
+same object
+16:38
+over and over again with sort of
+16:40
+slightly offset windows
+16:42
+and yeah that's exactly correct um
+16:43
+that'll actually turn out to be a
+16:44
+problem not just for this sort of um
+16:46
+impossible to implement version of
+16:48
+object detection but that'll actually be
+16:50
+a problem for other uh
+16:51
+real types of architectures as well so
+16:53
+we'll talk about this idea of non-max
+16:54
+suppression in a little bit
+16:56
+that can overcome that problem okay so
+16:59
+then um basically this is not going to
+17:01
+work
+17:01
+so we need to do some other approach to
+17:03
+object detection well that brings us to
+17:05
+this idea of a region proposal
+17:07
+so here the idea is maybe if there's no
+17:10
+way that we can possibly evaluate the
+17:11
+object detector on every possible region
+17:13
+in the image
+17:14
+maybe we can have some external
+17:16
+algorithm that can generate a set of
+17:18
+candidate regions for
+17:19
+candidate regions in the image for us
+17:21
+such that the
+17:22
+the candidate regions gives a relatively
+17:24
+small set of regions per image
+17:26
+but which are have a high probability of
+17:28
+covering all the objects in the image
+17:31
+so one of the so there's there's a there
+17:33
+was a few years ago there was a whole
+17:34
+bunch of
+17:35
+different papers proposing different
+17:36
+mechanisms for generating these
+17:38
+candidate regions
+17:39
+um called region proposals and i don't
+17:42
+really want to go into any of the
+17:43
+details of exactly how they work
+17:44
+because spoiler alert eventually they'll
+17:46
+be replaced by neural networks too
+17:48
+but um for now what you can kind of
+17:50
+think about is that these original uh
+17:52
+these
+17:52
+sort of early approaches to region
+17:54
+proposals would perform some kind of
+17:56
+image processing based on
+17:57
+the input image and maybe look for blob
+18:00
+blob type regions in the image or look
+18:01
+for edges in the input image
+18:03
+or use other kind of low-level image
+18:05
+processing cues to look for image
+18:06
+regions
+18:07
+that have a high probability of
+18:08
+containing objects so one of these very
+18:11
+famous methods for region proposals
+18:13
+was this method called selective search
+18:16
+so selective search was some kind of
+18:17
+algorithm that you could run
+18:18
+on a cpu and it would give you about 2
+18:21
+000 object proposals
+18:22
+per image in a couple of seconds of
+18:24
+processing on a cpu
+18:26
+and these 2 000 object proposals that it
+18:27
+would region proposals that it would
+18:29
+output
+18:30
+would have a very high probability of
+18:31
+covering all of the all of the
+18:33
+interesting objects that we cared about
+18:34
+in the image
+18:35
+okay so that gives us so then once we
+18:37
+have this idea of region proposals
+18:39
+it gives us a very straightforward way
+18:41
+to actually train a practical object
+18:43
+detector
+18:44
+with deep neural networks so that that
+18:47
+brings us to
+18:48
+the the very famous paper um very famous
+18:50
+method called rcnn
+18:52
+which the r stands for region based this
+18:54
+is a region-based convolutional neural
+18:56
+network system
+18:57
+for object detection and this is like
+18:59
+one of the most influential papers i
+19:01
+think in deep learning that came out in
+19:03
+back in cdpr2014
+19:04
+and since then it's sort of been very
+19:06
+very impactful overall
+19:08
+so here the but the way that it works is
+19:10
+actually pretty straightforward in a way
+19:12
+so then what we're going to do is going
+19:14
+to we're going to start with our input
+19:15
+image
+19:16
+and then we're going to run our um
+19:18
+region proposal method
+19:19
+like selective search so then selective
+19:21
+search will give us something like 2000
+19:23
+re candidate region proposals in the
+19:26
+image that we need to evaluate
+19:27
+here we're only showing three because i
+19:28
+can't fit 2000 on the slide
+19:31
+and then for each of these candidate
+19:32
+image regions on these candidate image
+19:34
+these region proposals could all be
+19:36
+different sizes and different aspect
+19:38
+ratios in the image
+19:39
+but then for each of those region
+19:41
+proposals we're going to
+19:42
+warp the that region to a fixed size of
+19:45
+something like two to four by two to
+19:47
+four and then for each of those warped
+19:49
+image regions
+19:50
+we're going to run them independently
+19:52
+through a convolutional neural network
+19:54
+and then that convolutional neural
+19:55
+network will output a classification
+19:57
+score
+19:57
+for each of these regions um so then
+19:59
+again this classification score
+20:01
+will tell us um will be a classification
+20:04
+over c plus one categories
+20:06
+so it will tell us whether or not that
+20:08
+region is a background region with no
+20:09
+object
+20:10
+or whether it actually should or if it's
+20:12
+not a background region
+20:13
+then what is the actual image label that
+20:15
+it the category label that region should
+20:18
+be assigned
+20:19
+and you could imagine sort of training
+20:21
+this thing now using sort of all the
+20:22
+standard machinery that we know for
+20:24
+training
+20:24
+uh classification networks um and this
+20:27
+will actually work pretty well
+20:29
+but now there's there's a slight problem
+20:30
+here which is that um
+20:32
+what happens if the region proposals
+20:35
+that we get from selective search
+20:36
+do not exactly match up to the objects
+20:39
+that we want to detect in the image
+20:41
+right because here the entire mechanism
+20:43
+of the bounding the all of the bounding
+20:44
+boxes are just coming out of this sort
+20:46
+of black box selective search method
+20:48
+and there's no learning happening that
+20:50
+actually outputs the boxes
+20:52
+so to overcome that problem we're
+20:53
+actually going to actually
+20:55
+use kind of a multi-task loss similar to
+20:57
+this very simple
+20:58
+mechanism we saw earlier and now um each
+21:01
+of these in
+21:02
+now this cnn is actually going to output
+21:04
+an additional thing which is
+21:06
+a transformation that will transform the
+21:09
+region proposal box
+21:10
+into the final box that we actually want
+21:12
+to output for that object of interest
+21:15
+um and now this is uh and now because a
+21:18
+bounding box actually is is specified
+21:20
+or and another thing to i mean one thing
+21:22
+to point out here is this this idea of
+21:23
+bounding box regression
+21:25
+we're not inventing a box from scratch
+21:27
+instead we just want to modify
+21:29
+the region proposal that we were given
+21:31
+as input because hope because we think
+21:32
+that the region proposal was probably
+21:34
+pretty good
+21:35
+but we just might need to tweak it a
+21:36
+little bit to cause it to fit better the
+21:38
+object that we
+21:39
+that we were looking at and now because
+21:41
+a bounding box is
+21:43
+can be parametrized with a sequence of
+21:45
+four numbers then we can also
+21:47
+parametrize a delta on top of an
+21:49
+existing boundary box
+21:50
+also using a sequence of four numbers so
+21:53
+there's a lot of different
+21:54
+parameterizations of these bounding box
+21:56
+transformations that you'll see people
+21:57
+use
+21:58
+but i think the most common one is is
+22:00
+this that i put on the slide here
+22:02
+so here the idea is that if we're given
+22:04
+a region proposal that has
+22:05
+its center at pxpy and has a height and
+22:09
+width ph and bw
+22:11
+and then if we out if our if our uh
+22:13
+comnat is outputting a transformation
+22:15
+giving four numbers t x t y t h and t w
+22:19
+then we are going to output then our
+22:21
+final output box
+22:22
+is going to somehow combine the
+22:24
+transformation that our cnn outputs
+22:26
+and the coordinates of the region
+22:27
+proposal that we were given as input
+22:30
+and and the the parameterization here is
+22:32
+going to be relative to the overall box
+22:33
+size in translation
+22:35
+so that means that if if now then the x
+22:38
+coordinate of our output bounding box
+22:40
+will be um t x time will be the original
+22:42
+out the original x coordinate of the of
+22:44
+the region proposal
+22:45
+plus the x transform times the width of
+22:47
+the box
+22:48
+so that means that if we and
+22:50
+parametrizing these things relative to
+22:51
+the input bounding box size
+22:53
+kind of makes it work out because of the
+22:55
+fact that we had to warp the original
+22:57
+image regions before feeding them into
+22:58
+the cnn
+22:59
+so that kind of means that these
+23:00
+transformations that we're outputting
+23:02
+are kind of invariant to the fact that
+23:03
+we had to warp the original input
+23:05
+regions
+23:06
+so what that means here is that if we
+23:07
+were to output like a tx of zero
+23:10
+that means leave the original region
+23:11
+proposal alone in
+23:13
+x position that means it was pretty good
+23:14
+and if we output tx equals one
+23:16
+that means i want to shift over the
+23:18
+region proposal by an amount in x
+23:20
+equal to the width of the of the image
+23:22
+region um and then
+23:23
+we use a similar transform for
+23:25
+transforming things in the vertical
+23:26
+direction
+23:27
+and now for the scale it's going to be
+23:28
+logarithmic so then um we're going to
+23:31
+scale up the width or the height of the
+23:32
+of the of the region proposal according
+23:35
+to by
+23:36
+exponentiating that transform and then
+23:37
+multiplying that and again this makes it
+23:39
+sort of scale and variant to the fact
+23:40
+that we had to warp the input regions
+23:42
+before feeding them to original cnn
+23:45
+okay so that gives us our our full that
+23:47
+gives us our first full
+23:48
+object detection method using
+23:50
+convolutional neural networks
+23:52
+so now the pipeline at test time looks
+23:54
+something like this
+23:55
+that will be given a single rgb image
+23:58
+and then we'll run this
+23:59
+selective search algorithm on the input
+24:01
+image on cpu
+24:02
+to generate something like 2000 region
+24:04
+proposals and now for each of those
+24:06
+regent proposals
+24:07
+we'll resize them to some fixed size
+24:09
+like two to four by two to four
+24:11
+and then run them independently through
+24:12
+our com net to predict both a
+24:14
+classification score of a category
+24:16
+versus background
+24:17
+as well as this be box transform that
+24:19
+will transform the the coordinates of
+24:21
+the original region proposal
+24:23
+and now um and then now because now at
+24:25
+test time we actually need to output
+24:27
+some
+24:27
+some finite set of boxes to use maybe in
+24:29
+our downstream application
+24:31
+so there's a lot of different ways that
+24:32
+we can do that
+24:34
+that kind of depend on exactly the
+24:35
+application that you're using here
+24:37
+so one idea that you might use is that
+24:41
+right you want to somehow use the
+24:42
+predicted scores for all the region
+24:43
+proposals to output some small finite
+24:45
+set of boxes
+24:46
+for the for the image um so one idea
+24:48
+here is that maybe if
+24:49
+maybe you always want to output like 10
+24:51
+objects per image um you don't really
+24:52
+care what the categories are
+24:54
+then you could imagine thresholding
+24:55
+based on the background score and
+24:57
+output the 10 region proposals that had
+24:59
+the lowest background score
+25:00
+and maybe this would be that this would
+25:02
+give you 10 boxes that you could output
+25:04
+for
+25:04
+for your final prediction another option
+25:07
+here would be to set
+25:08
+a threshold per category right because
+25:11
+our classification network is actually
+25:13
+outputting a full distribution giving us
+25:15
+a score for background as well as a
+25:16
+score for each of the categories
+25:18
+so another option here is to set some
+25:20
+threshold
+25:21
+up where for each category such that if
+25:23
+the classification score for the
+25:25
+category is above the threshold
+25:26
+then we output the box as a final as a
+25:28
+final detection
+25:30
+otherwise we don't emit the box and the
+25:32
+exact
+25:33
+and the exact mechanisms of exactly how
+25:35
+you convert these scores into final
+25:36
+detections
+25:37
+kind of depends on exactly what
+25:38
+downstream application you're working at
+25:41
+yes yeah so uh these these combinations
+25:43
+all share weights
+25:44
+so uh these con these combats we use the
+25:47
+exact same combination with the exact
+25:48
+same weights
+25:49
+and we just apply it to each image
+25:51
+region that is coming out of our region
+25:52
+proposal mechanism
+25:54
+yeah um because if they didn't share
+25:56
+weights it wouldn't really work out
+25:58
+because we might have slightly different
+25:59
+num well
+26:00
+we might have different numbers of
+26:02
+region proposals for each image
+26:04
+um and even if we did have a fixed
+26:06
+number of like 2000 proposals per image
+26:08
+it would be sort of infeasible to train
+26:10
+2000 separate comnets for each region
+26:12
+proposal
+26:13
+and it wouldn't really make sense
+26:14
+because um right these things are just
+26:16
+looking
+26:16
+trained we just want to train them to
+26:17
+look at image regions and then tell them
+26:19
+what
+26:19
+whether there's an object essentially
+26:21
+cropped in that region yes
+26:23
+yes so i haven't really told you about
+26:24
+the training of this
+26:26
+um because there's there's a couple of
+26:27
+subtleties in exactly how you train this
+26:29
+thing
+26:30
+um but kind of to imagine how you might
+26:31
+train this thing um you're gonna form
+26:33
+batches
+26:34
+where the batches consist of image read
+26:36
+different image regions from the same
+26:37
+image or maybe different image regions
+26:39
+across different images
+26:40
+so then when you when you when you run
+26:42
+this thing at training time it's
+26:43
+basically going to have a batch of image
+26:45
+regions
+26:45
+and then for each of those image regions
+26:47
+it's going to output a classification
+26:48
+score
+26:49
+as well as these bounding box
+26:50
+transformation parameters
+26:52
+and then you'll you'll use this idea of
+26:54
+multi-task loss to compute a single loss
+26:56
+that sums both the regression loss and
+26:58
+the classification loss
+26:59
+and then you'll back propagate into the
+27:00
+weights of the cnn and make a gradient
+27:01
+step
+27:02
+but there's a little bit of subtlety
+27:04
+here in exactly how you decide which
+27:06
+region proposals should be
+27:07
+considered objects versus background but
+27:09
+i'll kind of gloss over that hear that
+27:11
+here for the sake of simplicity
+27:14
+yeah the question is do you input the
+27:16
+the rotation to the comnet
+27:18
+or the location so yeah we actually do
+27:20
+not input the location of the box to the
+27:22
+comnet
+27:23
+because this should be somehow
+27:24
+translation invariant that maybe
+27:27
+um and scale invariant as well because
+27:30
+maybe a cat in the upper left-hand
+27:31
+part of the image should look the same
+27:32
+as a cat in the lower right hand part of
+27:34
+the image
+27:34
+so we actually do not input the location
+27:36
+information usually here
+27:38
+and actually if you look back at the way
+27:39
+that we parameterized this box
+27:41
+transformation
+27:42
+this box transformation was
+27:43
+parameterized in such a way that it will
+27:45
+work
+27:46
+even though we're not putting in the
+27:47
+location information because the way
+27:49
+that we're parametrizing these
+27:50
+transformations is kind of invariant to
+27:52
+the location and scale of the box in the
+27:53
+image
+27:56
+yeah yeah the question is how do you
+27:57
+choose that the size at which you warp
+27:59
+the boxes
+28:00
+um and usually that's tied like this you
+28:03
+have the same hyper parameter when
+28:04
+you're doing image classification
+28:05
+right so you know whenever we do image
+28:07
+classification you always um build a cnn
+28:09
+that operates on some fixed image
+28:10
+resolution
+28:11
+and then you have to warp your images to
+28:12
+fit that fixed image resolution
+28:14
+and it's exactly the same thing here
+28:16
+except now we're warping image regions
+28:17
+rather than warping full images
+28:19
+um so that would that would be a hyper
+28:20
+parameter um but in general what we tend
+28:23
+to do for detection is use the same
+28:24
+image resolution for that warping
+28:26
+as we would have done in a
+28:27
+classification case instead
+28:29
+right so for classification networks we
+28:31
+usually use image resolution of two to
+28:32
+four by two to four during training
+28:34
+so then for detection we'll also warp
+28:36
+the regions to two to four by two to
+28:37
+four
+28:38
+okay um but now so then then once we
+28:41
+have our now oh yeah another question
+28:43
+yeah so this question of like these k
+28:45
+proposals or these thresholds
+28:46
+um these would be used only during
+28:48
+testing um so during training
+28:50
+you would always train on all of the
+28:51
+potential region proposals
+28:53
+and then these thresholds these top k
+28:55
+those would be thresholds that you set
+28:56
+at test time
+28:58
+um and so you so the way that you would
+29:00
+choose those thresholds is usually by
+29:01
+tuning on some validation set
+29:03
+um for your for your downstream
+29:04
+application but those thresholds or
+29:06
+those top k doesn't
+29:07
+doesn't enter into the training process
+29:09
+at all for this network
+29:13
+okay any more questions on this rcn
+29:15
+algorithm
+29:18
+okay so then um once we've got our now
+29:20
+that we've got an algorithm that can so
+29:22
+basically this is a this is a practical
+29:23
+algorithm that can input an image
+29:25
+and then output a set of bounding boxes
+29:27
+for all the objects detected in that
+29:28
+image
+29:29
+so then um of course we need some way to
+29:31
+evaluate our results
+29:32
+to say whether or not the boxes that we
+29:34
+output are actually similar to the boxes
+29:36
+that we should have output
+29:37
+so we can write some performance number
+29:39
+that we can put in a paper and make it
+29:40
+bold to show that we're better than
+29:41
+other people
+29:42
+so then we need some mechanism so
+29:44
+basically in order to do that
+29:45
+we need some mechanism that can compare
+29:48
+two bounding boxes
+29:50
+so suppose that in this image of this
+29:52
+adorable puppy
+29:53
+that the green box is the true box that
+29:55
+the map that the system should have
+29:57
+output for this image
+29:58
+um and suppose that our and these things
+30:00
+will never be perfect so suppose
+30:02
+that our algorithm outputs this blue box
+30:04
+then we need some way to compare
+30:06
+um whether or not our blue box matches
+30:08
+the green box
+30:10
+and because these are all real numbers
+30:11
+then it will never match exactly
+30:13
+so the way that we normally compare two
+30:15
+sets of bounding boxes
+30:17
+is with a metric called intersection
+30:19
+over union all
+30:20
+usually evaluated as iou um you'll
+30:22
+sometimes also see this call
+30:24
+called the jaccard similarity or jaccard
+30:25
+index in other situations
+30:27
+but for object detection it's we usually
+30:28
+call it iou and the way that we
+30:30
+the way that we um compute this is it's
+30:32
+a similarity measure between two boxes
+30:34
+and it's basically the way we compute it
+30:36
+is exactly what the name is saying
+30:38
+so you compute the intersection of the
+30:40
+two boxes which is again a box
+30:42
+shown here in this reddish orange color
+30:44
+on the slide and then you separately
+30:46
+compute the union
+30:47
+of the area of the union of the two
+30:48
+boxes which is this purple region
+30:51
+uh actually the purple region together
+30:52
+with the orange region shown on the
+30:54
+slide
+30:55
+and then the intersection over union is
+30:56
+just the ratio of the the intersection
+30:58
+region
+30:59
+to the union region um and then for for
+31:02
+this example our intersection
+31:03
+intersection over union is something
+31:05
+like 0.54
+31:07
+so this will always be a number between
+31:09
+zero and one right because we know that
+31:11
+if the two boxes coincide perfectly
+31:14
+then the intersection is equal to the
+31:15
+union so then this ratio is one
+31:17
+and if the two boxes are completely
+31:19
+disjoint and don't overlap at all
+31:21
+then they're in then their intersection
+31:23
+will be zero and their union will be
+31:24
+non-zero so this will be a ratio
+31:26
+so this will give a ratio of zero um so
+31:28
+this intersection of reunion is always a
+31:30
+number between zero and one
+31:31
+where higher numbers mean a better match
+31:33
+between the two bounding boxes
+31:35
+and to kind of give you a sense for what
+31:37
+people usually look at these iou numbers
+31:40
+is that iou greater than 0.5 is usually
+31:43
+considered like
+31:44
+an okay decent kind of match between two
+31:46
+bounding boxes
+31:48
+so for this green box and this blue box
+31:49
+here these have an iu of 0.54
+31:52
+so it's like it's not perfect but it
+31:54
+kind of got the general gist of where
+31:55
+the object was supposed to be
+31:57
+so that's kind of what an iou of 0.5
+31:59
+usually looks like
+32:01
+and now an iou of 0.7 is usually like
+32:04
+pretty good
+32:04
+like maybe we made some slight errors
+32:06
+and we cut off a little bit of the
+32:07
+bounding box
+32:08
+but overall we did a pretty good job at
+32:10
+localizing the object
+32:12
+and now any any kind of iou greater than
+32:15
+0.9
+32:16
+is like nearly perfect so actually um if
+32:18
+you flip between these i actually had to
+32:20
+like reduce the width of the lines to
+32:21
+cause you to be able to see any gap
+32:23
+between these two boxes now once we move
+32:25
+to 0.9
+32:26
+um and in fact for a lot of sort of real
+32:28
+applications um depending on the
+32:29
+resolution of your image
+32:31
+um 0.9 might be like only a couple
+32:33
+pixels off of the true box
+32:35
+so basically you'll almost never get iou
+32:37
+of one um so iou 0.9 is usually like an
+32:40
+almost perfect sort of threshold
+32:42
+so then this iou metric is something
+32:44
+that we use all over the place whenever
+32:46
+we need to compare
+32:47
+two bounding boxes but now now there's
+32:50
+actually another problem that was
+32:51
+pointed out a little bit earlier
+32:53
+which is that actually these these
+32:55
+practical object detection methods
+32:56
+will often output a set of overlapping
+32:59
+boxes
+33:00
+um that output like many overlapping box
+33:02
+boxes that are all kind of around
+33:04
+the same objects so as for this um
+33:07
+these are not real object detections i
+33:09
+just kind of made these up to put on the
+33:10
+slide
+33:11
+but for this example of these two
+33:13
+puppies in the image
+33:14
+then an object detector usually will not
+33:16
+output exactly one box
+33:18
+per up per per uh per object instead
+33:21
+objectors will usually output
+33:23
+like a whole bunch of a whole bunch of
+33:24
+boxes that are all kind of like grouped
+33:26
+very near
+33:27
+each uh each object in the image that we
+33:29
+actually care about
+33:31
+so then we need some kind of mechanism
+33:32
+to get rid of these overlapping boxes
+33:35
+and the way that we use the way that we
+33:37
+do that is by post-processing the boxes
+33:40
+coming out of our object detection
+33:41
+system
+33:42
+using an algorithm called non-max
+33:43
+suppression or nms
+33:45
+um and this is there's a lot of
+33:48
+different ways you can implement non-max
+33:49
+suppression
+33:50
+but the simplest way is this with this
+33:52
+fairly straightforward greedy algorithm
+33:54
+so um for now basically we've got our
+33:56
+obj the native outputs from object
+33:58
+detector
+33:59
+is this whole set of boxes in in the
+34:01
+region and
+34:02
+in the image and for each of those boxes
+34:04
+we have some probability
+34:06
+that it is uh each that is each of our
+34:07
+categories so for each of these four
+34:10
+boxes that are being out
+34:11
+output by the detector um we have like
+34:13
+different probabilities that each of
+34:14
+those boxes are a dog as coming out of
+34:16
+the classification scores
+34:18
+so then the greedy algorithm for non-max
+34:20
+suppression
+34:21
+is that first you select the highest
+34:22
+scoring box in this case
+34:24
+is the blue box that has the highest
+34:26
+probability of dog as output by the
+34:28
+classifier
+34:29
+and then you compute the intersection
+34:30
+over union between that highest scoring
+34:32
+box
+34:33
+and each other box in the it that was
+34:35
+output by the detector
+34:37
+and by and by construction because we
+34:39
+started with the highest scoring box
+34:41
+each of these other boxes will have
+34:42
+lower scores than the one that we that
+34:45
+we're looking at here
+34:46
+and then we compute the intersection
+34:47
+over union between that highest scoring
+34:49
+box
+34:49
+and all the other boxes which we've
+34:51
+computed here
+34:53
+and then we're going to set some
+34:54
+threshold often something like 0.7
+34:56
+relatively high
+34:57
+and say that if we if our detector
+34:59
+output two different boxes
+35:01
+that have it that had an intersection
+35:02
+over union greater than this threshold
+35:04
+then it's likely that they did not
+35:05
+correspond to different objects
+35:07
+it's likely that they were we think that
+35:09
+instead they were probably just kind of
+35:10
+duplicate detections
+35:11
+that fired multiple boxes on the same
+35:13
+object so then any boxes that have iou
+35:16
+greater than that threshold
+35:17
+with our highest scoring box will simply
+35:19
+eliminate
+35:20
+so now in this example the the blue box
+35:23
+and the orange box
+35:24
+have an iou of 0.78 so then we will
+35:27
+eliminate the orange box
+35:29
+and then after eliminating the orange
+35:30
+box we'll then
+35:32
+go back to step one and we'll choose the
+35:34
+next highest scoring box that was output
+35:36
+by the detector which in this case is
+35:38
+the purple box
+35:40
+with a p of dog at 0.7.5 and we'll then
+35:43
+again compute the iou between
+35:45
+that next highest box and all the other
+35:47
+lower scoring boxes
+35:49
+so in this case there remains only one
+35:51
+lower scoring box which is the
+35:53
+yellow box and these have an iou of 0.74
+35:56
+so then we would eliminate the the
+35:58
+yellow box and the final
+36:00
+outputs from our object detector would
+36:02
+be these two um these this blue box and
+36:04
+this purple box
+36:05
+that are now um fairly separated and
+36:07
+don't have high overlap
+36:10
+okay so this seems like a pretty
+36:11
+reasonable algorithm and basically all
+36:13
+object detectors that you'll see out in
+36:15
+the wild will almost always rely on some
+36:17
+kind of
+36:18
+on this non-max suppression algorithm to
+36:20
+eliminate shared detections
+36:22
+but there's kind of a subtle problem
+36:24
+with non-neck suppression
+36:26
+is that it's it's going to get us into
+36:27
+trouble in cases where there actually
+36:29
+are
+36:29
+a lot of images in objects in the image
+36:32
+that have high overlap
+36:33
+um so this is kind of and we don't
+36:35
+actually have a good solution for this
+36:36
+right now as a community in computer
+36:38
+vision
+36:39
+so this is actually a big failure mode
+36:40
+of object detectors right now
+36:42
+is when you've got like really really
+36:44
+crowded images with lots and lots and
+36:45
+lots of objects that are all highly
+36:46
+highly overlapping
+36:48
+and then it becomes very very difficult
+36:49
+to tell the difference between
+36:51
+very close boxes that are actually
+36:52
+different objects versus very close
+36:54
+boxes that are duplicate detections of
+36:56
+the same object
+36:57
+so this is somewhat of a bit of an open
+36:59
+challenge i think in object detection
+37:01
+right now
+37:03
+but people are working on it it's an
+37:05
+exciting field
+37:08
+okay so then another thing we need to
+37:10
+talk about is we've talked about a way
+37:12
+to compare
+37:12
+individual boxes using this iou metric
+37:15
+but we also need some kind of overall
+37:17
+performance metric to tell us
+37:19
+how well our object detector is doing on
+37:21
+the test set overall
+37:22
+right so um this actually was a fairly
+37:25
+trivial thing to do for
+37:26
+image classification task right because
+37:28
+for image classification
+37:30
+um for every object in a test set we
+37:32
+would take the argmax score and then
+37:33
+check whether or not it was equal to the
+37:35
+true label and then we could just
+37:36
+compute an accuracy on the test set
+37:38
+and for image classification this simple
+37:40
+accuracy metric was like really easy to
+37:42
+compute
+37:43
+and let us tell whether or not one image
+37:45
+classification model was doing better
+37:46
+than another
+37:47
+well now now this task of object
+37:49
+detection actually complicates things a
+37:51
+lot
+37:52
+and the the metric that we use and we
+37:54
+need some
+37:55
+again some metric that kind of
+37:56
+quantifies the overall performance of
+37:58
+the model on the test set
+37:59
+and because detection is a much more
+38:01
+complicated problem unfortunately the
+38:02
+metric we use to
+38:04
+compare these things is a little bit
+38:05
+hairy so i'll try to walk you through it
+38:07
+a little bit to get a sense of what it's
+38:08
+computing
+38:10
+but basically now suppose we've trained
+38:11
+an object detector and we want to get a
+38:12
+single number to put in our paper to
+38:14
+tell us how well does this object
+38:15
+detector do on this data set
+38:17
+well now what we're going to do is
+38:18
+compute some metric called mean average
+38:20
+precision
+38:21
+and this is basically the standard
+38:22
+metric that everyone on object detection
+38:24
+uses to compare their object detectors
+38:26
+and now to do it what we're going to do
+38:28
+is first run our trained object detector
+38:31
+on all of the images in the test set and
+38:32
+then we'll use non-max suppression to
+38:34
+eliminate these duplicate detections on
+38:36
+the test set
+38:37
+so this will so then after this we'll be
+38:38
+left with a bunch of detected boxes
+38:41
+for each up for each image in the test
+38:42
+set and for each of those boxes we'll
+38:44
+have a classification score
+38:46
+for each of the categories that we care
+38:47
+about and now for each category we're
+38:50
+going to separately compute
+38:51
+a number called the average precision
+38:53
+which tells us how well are we doing
+38:55
+overall on just this one category
+38:57
+and if you're familiar with these
+38:58
+metrics then the average precision is
+39:00
+the area under the precision recall
+39:01
+curve
+39:03
+but in case you're not familiar with
+39:04
+that we can step through it a little bit
+39:05
+more
+39:06
+so then what we're going to do is then
+39:08
+for each category that we care about
+39:10
+then we're going to sort all of the
+39:12
+detections on the test set by their
+39:14
+classification score
+39:15
+and we'll do this independently per
+39:16
+category so then um here the boxes in
+39:19
+blue
+39:19
+are meant to represent all of the
+39:21
+detections that were output
+39:23
+by our detector on all of the images
+39:25
+across the entire test set
+39:27
+so that means that maybe the highest
+39:28
+scoring probability of dog regen
+39:30
+across the entire test set had p dog
+39:33
+equals 0.99
+39:34
+the second highest scoring dog region
+39:36
+across the entire test set
+39:38
+was p dog equals 0.95 and so on and so
+39:41
+forth
+39:42
+and now and now the green the orange
+39:44
+boxes represent all of the ground truth
+39:46
+dog dog regions on the test set
+39:49
+and now what we're going to do is we're
+39:50
+going to march down our our detected
+39:52
+object
+39:53
+our detected uh regions in or in sorted
+39:56
+order of their score
+39:57
+and for each region we're going to try
+39:58
+to match it with a ground truth region
+40:00
+um using some iou threshold often 0.5 is
+40:03
+a common uh
+40:04
+common choice so then suppose that our
+40:06
+highly confident dog detection with p
+40:08
+dog equals 0.99
+40:10
+it actually does indeed match some
+40:12
+ground truth dog in that image
+40:14
+with an iou greater than 0.5 well then
+40:17
+in that case
+40:18
+then we're going to flag that detection
+40:19
+as a true positive
+40:21
+and say that that was a correct
+40:22
+detection and now
+40:24
+for that and then for that correct
+40:26
+detection
+40:27
+it lets us compute one point on a
+40:29
+precision recall curve
+40:31
+so then now now that we've sort of now
+40:33
+we're considering only the top scoring
+40:35
+detection coming out of our model
+40:37
+so then the precision is the fraction of
+40:39
+our detections that are actually true
+40:41
+and the recall is the fraction of the
+40:43
+out of the ground truth that we
+40:45
+hit so then in this case um we were
+40:48
+considering only the top detection
+40:49
+so our precision is one out of one
+40:52
+hundred percent
+40:53
+and our recall is one-third because
+40:55
+among the set of detections we're
+40:56
+considering
+40:57
+we cover one-third of the of the true
+40:59
+ground truth detections
+41:01
+so that gives us one point on a curve
+41:03
+where we're going to plot precision
+41:04
+versus recall
+41:05
+and that we then then then we'll repeat
+41:07
+this process for the next uh for the
+41:09
+next detection
+41:10
+in our ground truth and suppose that our
+41:12
+second highest scoring dog region
+41:14
+also matches some ground truth now this
+41:16
+gives us another point on the precision
+41:18
+recall curve
+41:19
+now we're considering two detections
+41:21
+both of which were true positives so our
+41:22
+precision is one
+41:24
+and um we've got and of the three ground
+41:26
+truth regions
+41:27
+then we're hitting two of them so our
+41:29
+recall is 0.67
+41:31
+so this lets us plot a second point on
+41:33
+the precision recall curve
+41:35
+now suppose that this third region
+41:37
+actually was a false positive
+41:38
+and did not match any region any ground
+41:41
+truth region in its image
+41:42
+this would give us another point on the
+41:43
+precision recall curve
+41:45
+and then again suppose the next one is
+41:46
+another false positive this gives us
+41:48
+another point on the precision recall
+41:50
+curve
+41:50
+and then suppose this final one was
+41:52
+indeed a true positive
+41:53
+that um is uh again match this this uh
+41:56
+this final true ground truth region
+41:58
+so then for this final one then our
+42:00
+precision is three out of five because
+42:02
+of the five detections
+42:03
+um we consider three of them as true
+42:05
+positives and then our recall is 100
+42:07
+because we got
+42:08
+all of the we hit all of the the ground
+42:10
+truth regions
+42:12
+so then once we plot all of those
+42:13
+precision recall these points on the
+42:15
+precision recall curve
+42:16
+then we can plot the full curve and then
+42:18
+compute the area under that curve
+42:20
+and the area under that curve will have
+42:22
+to be a number between 0 and 1
+42:24
+where 0 means we like did terribly and
+42:27
+1 means we did really well and this area
+42:30
+under the curve is called will be the
+42:31
+average precision for that category
+42:33
+so now for this for this case for this
+42:35
+for this objective texture
+42:36
+our dog average precision will be 0.86
+42:40
+and now it's interesting to think about
+42:42
+what do these ap numbers mean like this
+42:44
+is not a very intuitive metric at all
+42:46
+well what this means is that well first
+42:48
+think about how could you possibly get
+42:50
+ap of 1.0 well in order to get ap
+42:53
+1.0 that means that we would have had
+42:56
+we would have had to not have all of our
+42:58
+true positives would have had to come
+42:59
+before
+43:00
+all of our false positives so the only
+43:02
+way we can get ap 0
+43:03
+ap 1.0 is if um all of the top
+43:07
+output detections from our model were
+43:09
+all true positives
+43:10
+and we did not have any duplicate
+43:12
+detections and we did not have any false
+43:13
+positives
+43:14
+and they all match the ground truth some
+43:16
+ground truth region with at least iou
+43:17
+0.5
+43:19
+um and so this is going to be very very
+43:20
+hard to get and in practice you'll like
+43:22
+you'll never get object detectors that
+43:23
+actually get ap 1.0
+43:26
+and you might be wondering like why do
+43:27
+we use this complicated ap metric for
+43:29
+evaluating object detectors
+43:31
+and that's because for different
+43:32
+applications you might want to
+43:34
+have different choices about you might
+43:36
+want a different trade-offs between how
+43:38
+many objects you hit
+43:39
+and how many objects you miss so for
+43:41
+some applications like maybe in
+43:42
+self-driving cars
+43:43
+it's really important that you not miss
+43:45
+any cars around you um so you want to
+43:47
+have you want to make sure you have um
+43:48
+maybe very high you
+43:49
+know not not miss anything but maybe in
+43:52
+other applications false positives are
+43:53
+not so
+43:54
+bad and you just want to make sure that
+43:55
+all of your detections are indeed true
+43:57
+so different use cases kind of require
+43:59
+different thresholds and different
+44:01
+trade-offs between precision and recall
+44:03
+but by computing this average precision
+44:05
+metric it kind of summarizes all
+44:07
+possible points on this trade-off
+44:08
+between precision and recall
+44:10
+so that's why people tend to use this
+44:11
+metric for evaluating object detection
+44:14
+but of course this was only the dog
+44:16
+average precision so in practice we'll
+44:17
+repeat this whole procedure for every
+44:19
+object category
+44:20
+and then get an average precision for
+44:21
+each category and then compute the mean
+44:23
+average precision as the average across
+44:25
+all the categories
+44:26
+okay so that was a lot of work just to
+44:28
+evaluate our object detector um
+44:30
+but it actually gets a little bit worse
+44:32
+because uh right because of the way we
+44:33
+computed this mean average precision
+44:35
+it didn't actually care about localizing
+44:38
+boxes really really well
+44:39
+right because remember when we were
+44:40
+matching the detected boxes to the
+44:42
+ground truth boxes
+44:43
+we only used an iou of 0.5 so it didn't
+44:46
+actually matter that we get really
+44:47
+really accurate detections
+44:49
+so in practice we'll also then tend to
+44:52
+repeat this whole procedure for
+44:53
+different iou thresholds
+44:55
+and then take an average over all of
+44:56
+these different mean average precisions
+44:58
+computed at different iou thresholds wow
+45:02
+so that was kind of a disaster that's a
+45:03
+lot of work just to evaluate your object
+45:05
+detector
+45:06
+um but i thought it was kind of useful
+45:07
+to walk through this in detail because
+45:09
+this is actually how people evaluate
+45:10
+these things in practice
+45:11
+and whenever you read um image whenever
+45:13
+you read object faction papers
+45:15
+they'll always kind of report this mean
+45:16
+average precision number but it's
+45:18
+actually kind of hard to find a
+45:19
+definition of what it actually is if
+45:21
+you're reading papers so i wanted to
+45:22
+kind of walk through this very
+45:23
+explicitly
+45:24
+with any questions on this computation
+45:26
+or the metric
+45:28
+okay but then forget about the metric
+45:30
+let's go back to let's go back to object
+45:32
+detection methods
+45:33
+so at this point we've got this this
+45:35
+rcnn which is this
+45:36
+region-based convolutional neural
+45:38
+network and it worked pretty good for
+45:40
+detecting objects but there's kind of a
+45:43
+problem here
+45:44
+which is that it's actually pretty slow
+45:46
+right because um
+45:48
+if we're trying basically we need to run
+45:50
+our
+45:51
+our forward pass of our object texture
+45:53
+for each region proposal that's coming
+45:54
+out of our region proposal method
+45:56
+um for something like selective search
+45:58
+there's going to be like 2 000 region
+45:59
+proposals
+46:00
+so that means to actually process an an
+46:03
+image for object detection
+46:04
+we're going to have to do like 2 000
+46:06
+forward passes of our cnn
+46:07
+um so that's actually going to be like
+46:08
+pretty expensive um
+46:10
+right that's not going to run real time
+46:12
+if we have to do 2000 forward passes of
+46:14
+our cnn for every image that we want to
+46:16
+process
+46:17
+so we need to come up with some way to
+46:19
+make this process faster
+46:22
+and the way that we make the way that
+46:23
+people have made this process faster
+46:25
+is basically to swap the cnn and the
+46:28
+warping
+46:29
+and and that will basically allow us to
+46:31
+re-share a lot of computation across
+46:33
+different image regions
+46:35
+so how does that work well if we kind of
+46:37
+take this this rcnn method
+46:39
+actually nowadays people call it slow
+46:41
+rcnn just because it's like so slow
+46:43
+and then the alternative method is of
+46:45
+course faster cnn
+46:47
+so fast rcnn basically is going to be
+46:49
+the same as slow rcn except we're going
+46:51
+to swap the order of convolution
+46:53
+and region warping so now we're going to
+46:55
+take the input image
+46:56
+and process the whole image at a high
+46:58
+resolution with a single convolutional
+47:00
+neural network
+47:01
+and this is going to be no fully
+47:02
+connected layers just all convolutional
+47:04
+layers
+47:05
+so the output from this thing will be a
+47:07
+convolutional feature map
+47:08
+giving us convolutional features for the
+47:10
+entire high resolution image
+47:12
+and as for a bit of terminology this
+47:14
+confident that we run
+47:16
+the the that we run the image on is
+47:17
+often called the backbone network
+47:19
+and this could be like an alexnet or a
+47:21
+bgg or a resnet or whatever your
+47:22
+favorite classification architecture is
+47:24
+um this will be called the backbone and
+47:27
+now we're still going to run our region
+47:28
+proposal method like selective search to
+47:30
+get region proposals on the raw input
+47:32
+image
+47:32
+but now rather than rather than cropping
+47:35
+the pixels of the input image
+47:37
+instead we're going to project those
+47:39
+region proposals onto that convolutional
+47:41
+feature map
+47:42
+and then apply cropping now on the
+47:44
+feature map itself
+47:46
+rather than on the raw pixels of the
+47:47
+image so we'll do this cropping and
+47:49
+resizing on the features that are coming
+47:51
+out from the convolutional backbone
+47:53
+network
+47:54
+and then we're going to run a little
+47:55
+tiny light pretty lightweight per region
+47:57
+network
+47:58
+that will output our classification
+47:59
+scores and our bounding box regression
+48:01
+transforms for each of these detected
+48:02
+regions
+48:04
+and now this is going to be very fast
+48:06
+because um most of the computation
+48:08
+is going to happen in this backbone
+48:09
+network and the per region network that
+48:11
+we run
+48:12
+per region is going to be very very
+48:14
+relatively small and relatively
+48:15
+lightweight and very very fast to run
+48:18
+so if you imagine doing something like
+48:20
+fast rcnn with an alex not
+48:22
+then the backbone that is going to be
+48:24
+all of the convolutional layers of the
+48:25
+alexnet
+48:26
+and this per region network will just be
+48:28
+the two fully connected layers at the
+48:29
+end
+48:30
+so these are really relatively fast to
+48:31
+compute even if we need to run them for
+48:33
+a large set of regions
+48:34
+and then for something like residual
+48:36
+networks then we'll take basically the
+48:37
+last convolutional stage and run that as
+48:39
+the purge region network
+48:41
+and then we'll use all of the rest of
+48:42
+the network as this backbone network
+48:44
+so then we're saving computation here by
+48:47
+doing most of our computation is going
+48:48
+to be shared among all of our region
+48:50
+proposals
+48:50
+in this backbone network okay but then
+48:54
+there's a question of exa
+48:55
+what does it mean exactly to crop these
+48:57
+features um because
+48:58
+in order to back propagate we need to
+49:00
+actually back propagate into the weights
+49:02
+of the backbone network as well
+49:03
+so we need to crop these features in a
+49:05
+way that is differentiable and that ends
+49:07
+up being a little bit tricky
+49:08
+so one way that we can crop features in
+49:11
+a differentiable way
+49:12
+is this operator called roi pool a
+49:15
+region of interest
+49:16
+pooling so then here we have our input
+49:18
+image and some region proposal that has
+49:20
+been computed on that input image
+49:22
+and then we're going to run the backbone
+49:23
+network to get these convolutional image
+49:25
+features across the entire input image
+49:27
+and just to put some numbers on this
+49:28
+thing um this the the the input image
+49:31
+might have three channels rgb
+49:32
+with spatial size 640x480 and then the
+49:35
+convolutional features might have
+49:37
+five 12 dimensional features with
+49:38
+spatial size of 20x15
+49:41
+and now because this network is fully
+49:43
+convolutional then each point in this
+49:46
+convolutional feature map
+49:47
+corresponds to points in the input image
+49:50
+so then what we can do is just project
+49:52
+that region proposal
+49:53
+onto the feature map instead and then we
+49:56
+can snap that feature but
+49:58
+what after we do that that uh that
+50:00
+projection the region proposal might not
+50:02
+perfectly align
+50:02
+to the grid of the convolutional feature
+50:05
+map so the next step was we can snap
+50:07
+that grid to the convolutional feature
+50:08
+map
+50:10
+and then divide it up into sub regions
+50:12
+uh say we want to do two by two pooling
+50:14
+then we would divide that snapped uh
+50:16
+region proposal into rough
+50:18
+into roughly equal two by two regions as
+50:20
+close as we can get
+50:21
+keeping on a line to grid cells and then
+50:24
+perform max
+50:24
+pooling within each of those regions um
+50:27
+so then the
+50:28
+the this blue region would be like a two
+50:30
+by two by five
+50:31
+twelve and then we'll do max pooling
+50:33
+within that two by two region
+50:34
+to output a single five twelve
+50:36
+dimensional vector in the pooled output
+50:38
+and then for the green region it's going
+50:40
+to have a spatial size of three by two
+50:42
+and with five dimensional five 12
+50:43
+dimensional vectors at each point
+50:45
+and then we'll do a spatial uh max
+50:47
+pooling again to give us a single 5 12
+50:49
+dimensional
+50:50
+vector coming out of that green region
+50:52
+um so what this
+50:54
+what this does is that this means that
+50:56
+um even though our input region
+50:58
+proposals
+50:59
+might have different sizes then the
+51:01
+output of this roi
+51:02
+pool operator is always going to be a
+51:04
+tensor of the same fixed
+51:06
+size which means that we can then feed
+51:08
+it to these downstream
+51:09
+cnn layers that are going to do this per
+51:11
+region computation
+51:12
+um so this will all work out and now we
+51:14
+can back propagate through this thing
+51:16
+um by simply like in the way that we
+51:19
+would normally back propagate through
+51:20
+max pooling
+51:21
+so when we get upstream gradients for
+51:23
+the region features then we'll propagate
+51:25
+them down
+51:25
+into the corresponding regions in the
+51:27
+image features
+51:28
+and then when we're training on batches
+51:30
+containing many many regions for the
+51:32
+same image
+51:32
+then we'll end up getting gradients over
+51:34
+mo over most of the entire uh
+51:36
+image feature map this is a little bit
+51:39
+complicated
+51:40
+but now there's a slight problem is that
+51:41
+there's a bit of misalignment in these
+51:43
+features
+51:44
+because of the snapping and because of
+51:46
+the fact that these uh green and blue
+51:48
+regions are could be different sized
+51:50
+so there's a slightly more complicated
+51:52
+version of this that people use
+51:53
+sometimes called roi align that i think
+51:56
+i don't want to go into in deep
+51:57
+in detail due to time constraints but
+52:00
+basically it avoids snapping
+52:01
+and instead uses bilinear interpolation
+52:03
+to make everything uh
+52:04
+really nicely aligned so you can go
+52:07
+through these uh
+52:07
+maybe maybe later on your own but the
+52:10
+idea here is that with roi align
+52:12
+it's very simple similar we're doing a
+52:14
+sort of cropping in a differential way
+52:15
+but we're having better alignment
+52:17
+between the input features and the
+52:18
+output features
+52:21
+okay so then this gives us a fast rcnn
+52:23
+here on the left
+52:24
+and slow rcnn right on here on the right
+52:26
+and then basically the difference
+52:27
+between them is that we've swapped the
+52:29
+order of convolution
+52:30
+and uh and cropping and warping and now
+52:33
+faster cnn is much faster
+52:35
+because it can share computation across
+52:37
+all of these different image
+52:39
+image proposal regions and how much
+52:41
+faster is fast rcn you might ask
+52:44
+well we can look at the training time as
+52:45
+well as the inference time
+52:47
+um so for training for training rcnn
+52:50
+took something like 84 hours on whatever
+52:52
+this is a couple years ago
+52:54
+so it's really old gpus and if we train
+52:56
+faster cnn on the same
+52:57
+uh same gpu setup then it's something
+53:00
+like 10 times faster to train overall
+53:02
+and now at inference time um fast rcnn
+53:05
+is like
+53:06
+a lot lot faster than our cnn because
+53:09
+we're sharing a lot of computation
+53:10
+across these different image regions
+53:13
+but now an interesting thing is that
+53:14
+once we have fast rcnn
+53:16
+then actually most of the time in fast
+53:19
+rcnn
+53:19
+is spent computing those region
+53:21
+proposals because remember that those
+53:23
+region proposals that we're kind of
+53:24
+depending on
+53:25
+were being computed by this sort of
+53:27
+heuristic algorithm called selective
+53:28
+search
+53:29
+that runs on the cpu okay and and now
+53:32
+once we have fast rcnn
+53:34
+then something like almost 90 percent of
+53:36
+the runtime is just being taken up by
+53:37
+computing these region proposals
+53:40
+so then of course um you remember that
+53:42
+these were being done by this like this
+53:43
+heuristic algorithm
+53:44
+so um let because we're sort of deep
+53:46
+learning practitioners we just want to
+53:47
+replace everything with deep neural
+53:48
+networks
+53:49
+so instead we want to find some way to
+53:51
+actually compute the region proposals as
+53:53
+well
+53:53
+using a convolutional neural network in
+53:56
+a hopefully a way that'll
+53:57
+that'll be efficient and this will then
+53:59
+hopefully improve the runtime overall of
+54:01
+these object detection systems
+54:04
+so the the the method that does that is
+54:07
+then called faster rcnn
+54:09
+because it's even faster than faststar
+54:11
+cnn these guys
+54:12
+these authors were like really really
+54:13
+creative with their names
+54:15
+but the idea here now is that we want to
+54:18
+eliminate
+54:18
+this heuristic algorithm called
+54:20
+selective search and instead train
+54:22
+a convolutional neural network to
+54:24
+predict our region proposals for us
+54:26
+and the way that we're going to do that
+54:28
+is it's going to be very similar to this
+54:30
+fast rcnn algorithm that we just saw
+54:32
+except after we run the backbone network
+54:34
+then we're going to insert another
+54:36
+little tiny network called a region
+54:37
+proposal network
+54:38
+or rpn that will be responsible for
+54:41
+predicting region proposals
+54:43
+so the the pipeline here is that we'll
+54:45
+have our input image we'll run the input
+54:47
+image through the backbone network to
+54:48
+get our image level features
+54:50
+we'll take the image level features pass
+54:52
+them to the region proposal network here
+54:53
+on the left
+54:54
+to get our region proposals and then
+54:56
+once we have the region proposals
+54:58
+then we'll do everything the same as
+54:59
+fast star cnn so we'll take our region
+55:01
+proposals to differentiable cropping on
+55:03
+the image features
+55:04
+and then do a per region little parisian
+55:06
+networks to predict our final
+55:07
+classification
+55:08
+and uh bounding box uh transformations
+55:12
+so now the only new part here is this
+55:14
+region proposal network
+55:15
+and then the question is like how can we
+55:17
+use a convolutional neural network
+55:20
+to output region proposals in a
+55:22
+trainable way
+55:24
+so then then we need to dive into a
+55:26
+little bit the architecture of this
+55:27
+region proposal network
+55:29
+so again just because we're relying on
+55:32
+this same backbone network then we take
+55:34
+our original
+55:34
+input image and then feed it through our
+55:36
+backbone network to get these image
+55:38
+features at a relatively high resolution
+55:40
+maybe again looking again like 512 by 20
+55:42
+by 15 in the same example
+55:45
+and now the idea is that again we recall
+55:47
+that
+55:48
+these convolutional image features
+55:50
+coming out of the backbone network are
+55:51
+all kind of aligned
+55:52
+to positions in the input image so then
+55:55
+what we can do is at each point in this
+55:57
+convolutional feature map
+55:58
+we can imagine an anchor box that is um
+56:01
+some bounding box of a fixed size
+56:03
+a fixed aspect ratio but it just slides
+56:05
+around and we place an anchor box
+56:07
+at every position at every uh position
+56:10
+in this convolutional feature map
+56:11
+coming out of the backbone network and
+56:13
+now our task is to train a little
+56:15
+convolutional neural network
+56:17
+that will classify these anchor boxes as
+56:19
+either containing an object
+56:21
+or not containing an object so then this
+56:24
+will be a binary classification problem
+56:26
+that we so we need to output a a a
+56:29
+a a positive score and a negative score
+56:31
+for each of these region proposals
+56:33
+or for each of these anchor boxes and
+56:35
+because there's one
+56:36
+anchor box per point in this image level
+56:39
+features
+56:40
+then we can output these positive and
+56:42
+negative scores
+56:43
+with just another convolutional layer by
+56:46
+by maybe attaching a single one by one
+56:48
+convolution
+56:48
+that just outputs a score for yes
+56:52
+a positive negative score for whether or
+56:54
+not that and corresponding anchor
+56:55
+should contain an object or should not
+56:57
+contain an object
+56:59
+and then we could train this thing using
+57:00
+a softmax loss
+57:02
+with two two categories uh yes being
+57:05
+there should be an object here
+57:07
+and no being there's no object here
+57:10
+but of course um these anchor boxes
+57:12
+might actually be pretty
+57:14
+poor fit to any objects that might
+57:16
+actually appear in the image
+57:18
+so we're going to use a familiar trick
+57:20
+and in addition
+57:21
+to a a score for each of these anchor
+57:23
+boxes
+57:24
+we will also output a box transform for
+57:27
+each of these
+57:28
+positions in the convolutional feature
+57:30
+map that will give us a transformation
+57:32
+that transforms the anchor box the raw
+57:34
+anchor box into
+57:36
+some actual region proposal that we're
+57:38
+going to use
+57:40
+um so then here the anchor box is maybe
+57:41
+shown in green and then the actual
+57:43
+region proposal box is going to be shown
+57:45
+in yellow
+57:46
+and then these region this uh these box
+57:48
+transforms can be trained using a
+57:50
+regression loss
+57:51
+just like we saw for the that was used
+57:53
+in in previous approaches
+57:56
+but um of course this is not complicated
+57:58
+enough um oh and again again we can
+58:00
+predict these coordinates for the b
+58:02
+these are these values for the box
+58:03
+transforms with just another
+58:04
+convolutional layer
+58:06
+um and of course this was not
+58:07
+complicated enough already so in
+58:09
+practice um
+58:10
+using one anchor box of a fixed scale
+58:14
+and size
+58:14
+per position in the convolutional
+58:16
+feature map is usually not
+58:18
+expressive enough to capture all the
+58:19
+types of objects that we want to
+58:20
+recognize so in practice instead
+58:23
+we'll typically use a set of k different
+58:26
+anchor boxes
+58:27
+of different scales and sizes and aspect
+58:29
+ratios at every point in this
+58:30
+convolutional feature map
+58:32
+but again oh yeah question oh yeah so
+58:35
+the question is for anchor is an object
+58:36
+should it be k or 2k
+58:38
+yeah it's a bit of an implementation
+58:39
+detail so the original paper has 2k
+58:42
+so there they output at a score a
+58:44
+positive score and a negative score and
+58:46
+use a soft max loss
+58:47
+and you could you do something what
+58:49
+we've done equivalently is output a
+58:50
+single score
+58:51
+where pl where plus is where high values
+58:54
+of plus means that it's positive
+58:55
+high values of negative means that it's
+58:57
+not an object and use a logistic
+58:58
+regression loss instead
+59:00
+but these are pretty much equivalent and
+59:01
+it doesn't really matter which one you
+59:03
+do
+59:04
+but you're right that actually most
+59:05
+actual implementations will usually
+59:06
+output an explicit positive score
+59:08
+an explicit negative score per anchor
+59:10
+and then use a soft max loss
+59:12
+but you could use logistic regression
+59:13
+and output one score it doesn't really
+59:15
+matter
+59:16
+okay um but then um right so then the
+59:19
+solution is that we'll actually consider
+59:21
+k
+59:21
+anchors at every position in every
+59:23
+position in the feature map and the
+59:24
+sizes
+59:25
+and aspect ratios of these anchors will
+59:27
+all be hyper parameters
+59:28
+so like how many anchors you use and
+59:30
+what is the scale and size of these
+59:32
+anchors these are all hyper parameters
+59:34
+that you need to set for object
+59:35
+detection
+59:35
+so that's a little bit of a mess
+59:39
+okay so then um that gives us kind of
+59:41
+this full faster rcnn method
+59:43
+that actually now has four different
+59:45
+losses that we need to train this thing
+59:46
+for
+59:47
+so then in the region proposal network
+59:49
+we have two losses
+59:50
+we have this classification loss that is
+59:52
+classifying the the anchor boxes as
+59:54
+being object or not object
+59:56
+we have the regression loss in the
+59:58
+region proposal network which is
+60:00
+outputting transformations from the raw
+60:02
+anchor positions
+60:03
+into the region proposal positions okay
+60:05
+and then we have all the stuff from
+60:07
+fast rcnn which means that for each of
+60:09
+the anchor or for each of the region
+60:11
+proposals coming out of the region
+60:12
+proposal network we're going to run this
+60:14
+per
+60:15
+region network on each of the proposals
+60:17
+which then gives us two more losses
+60:19
+so one is the object classification loss
+60:21
+that tells us whether each proposal what
+60:23
+is its object category or whether or as
+60:24
+a background
+60:25
+and this final object regression loss
+60:27
+that is going to regress again
+60:29
+from the region proposal output from the
+60:31
+rpn to the final box that we'll output
+60:33
+from the object detector
+60:35
+so this is kind of a mess and there's a
+60:36
+lot and there's even more details that i
+60:39
+didn't have time to go into
+60:40
+but there's actually turns out object
+60:41
+detection is a pretty complicated topic
+60:43
+to get to work
+60:45
+okay but once you actually do all this
+60:47
+then faster rcnn is like really really
+60:49
+fast
+60:49
+so then because we've eliminated this
+60:51
+this bottleneck of computing region
+60:53
+proposals on the cpu
+60:55
+and instead we're just computing region
+60:56
+proposals using this like really really
+60:58
+tiny
+60:59
+convolutional network on top of the
+61:00
+image features that means that this
+61:02
+thing is like really fast and actually
+61:04
+can run
+61:04
+in real time um so faster rc9 on a gpu
+61:08
+is something like 10 times faster than
+61:09
+fast rcnn
+61:11
+and spp net is a different method that
+61:12
+we don't have time to talk about
+61:14
+but it's kind of in between fast and
+61:15
+rcnn
+61:18
+okay so then faster rcnn is usually
+61:20
+called a
+61:21
+two-stage method for object detection
+61:23
+because there's kind of like
+61:24
+two conceptual stages inside the method
+61:28
+one is this first stage in blue where we
+61:30
+run one network on the entire image
+61:32
+so that's we're running these
+61:33
+convolutions to give us the
+61:35
+convolutional features for the image
+61:36
+and then we're running the region
+61:37
+proposal network which is again a couple
+61:39
+convolutional layers
+61:40
+that gives us these these detection
+61:42
+these region proposals
+61:43
+and now once we've got these region
+61:45
+proposals then our second stage is going
+61:47
+to run
+61:48
+once per region and these second stage
+61:50
+is going to then output these final
+61:52
+classification scores and regression
+61:53
+parameters
+61:54
+for each region that we output but then
+61:58
+there's a question here which is like do
+62:00
+we really need the second stage
+62:02
+and it kind of seems like we could
+62:03
+actually get away with using just the
+62:05
+first stage
+62:06
+and just ask this first stage to do
+62:08
+everything
+62:09
+and that would kind of simplify the
+62:10
+system a little bit and make it even
+62:12
+faster because we wouldn't have to run
+62:14
+these
+62:14
+separate computations per region that we
+62:16
+want to work on
+62:18
+so that that gives us then basically
+62:20
+this works
+62:21
+and we can use a there's methods for
+62:24
+object detection
+62:25
+called single stage object detection
+62:27
+which basically look
+62:28
+just like the rpn in faster rcnn
+62:31
+except that rather than classifying the
+62:34
+anchor boxes as
+62:35
+object or not object instead we'll just
+62:38
+make a full classification decision
+62:40
+for the category of the object right
+62:42
+here so now
+62:43
+suppose that we want to classify suppose
+62:46
+again we have c
+62:47
+object categories that we want to
+62:48
+classify now
+62:50
+when producing outputs for the anchors
+62:53
+now again we've got maybe 20 by 15
+62:55
+spatial size
+62:56
+in our image feature map we've got k
+62:59
+anchor boxes at each position in the
+63:00
+feature map and now for each of those
+63:02
+anchor boxes
+63:04
+we want to directly output
+63:05
+classification scores
+63:07
+for the c categories and for the
+63:08
+background category and again we can
+63:10
+just do this again
+63:11
+directly using a convolutional layer or
+63:14
+a couple convolutional layers
+63:16
+and then you sort of train this thing up
+63:18
+and now rather than using a binary
+63:20
+or two class loss in the rpn instead you
+63:23
+just directly use your full
+63:24
+classification loss
+63:26
+and you still output these box
+63:27
+transforms one per anchor
+63:30
+but actually it tends to work a little
+63:32
+bit better if you use
+63:33
+a a slightly if you actually output a
+63:36
+separate box transform per
+63:37
+category and this is called a category
+63:40
+specific regression
+63:41
+as opposed to category agnostic
+63:43
+regression where you're just outputting
+63:44
+one box transform that is supposed to
+63:46
+work for any categories
+63:48
+and that last and this uh this category
+63:50
+specific regression lets the model kind
+63:52
+of
+63:52
+specialize its behavior a little bit to
+63:54
+uh
+63:55
+different uh two different categories
+63:58
+um okay so this basically this object
+64:01
+detection
+64:02
+is like really really complicated and
+64:04
+there's a lot of different choices that
+64:05
+you need to make
+64:06
+when doing object detection right like
+64:09
+you've got
+64:10
+these different kind of meta algorithms
+64:12
+um like
+64:13
+faster rcnn is this two-stage method
+64:15
+you've got these single-stage methods
+64:17
+like ssd
+64:18
+um and you've got sort of hybrid
+64:20
+approaches like rfcn that we didn't have
+64:22
+time to talk about
+64:23
+so that's kind of one major choice you
+64:24
+need to make when you're doing object
+64:25
+detection
+64:26
+there's another choice you need to make
+64:28
+which is like what is the architecture
+64:30
+of the underlying backbone network
+64:32
+and that affects the performance as well
+64:34
+so all of the
+64:35
+network architectures that we've talked
+64:36
+about for classification we can also use
+64:38
+for object detection
+64:40
+and now there's a bunch of other choices
+64:42
+as well like what is the image
+64:43
+resolution what is the cropping
+64:44
+resolution
+64:45
+how many anchors per how many anchors do
+64:47
+we use what are the size of the anchors
+64:49
+what are the iou thresholds that we use
+64:50
+there's like a whole bunch of hyper
+64:52
+parameters that go into this
+64:53
+and it's really really hard to like get
+64:55
+fair comparisons between different
+64:56
+object detection methods
+64:58
+due to all of these massive numbers of
+64:59
+hyper parameters and settings that you
+65:00
+need to
+65:01
+and choices that you need to make but
+65:03
+there's actually a one really great
+65:04
+paper from
+65:06
+two years ago in 2017 that tried really
+65:08
+hard to just like
+65:10
+they basically like re-implemented all
+65:12
+object detection methods that they that
+65:13
+were available at the time
+65:15
+and they tried to do a really fair
+65:16
+head-to-head comparison of all these
+65:18
+different choices that you can make in
+65:19
+object detection
+65:20
+so i'd really recommend reading this
+65:22
+2017 paper
+65:23
+um if you want to get some more insight
+65:25
+onto some of the trade-offs of these
+65:27
+different choices
+65:28
+um but basically they produce this
+65:30
+amazing plot in the paper
+65:32
+that kind of like each point here is a
+65:34
+trained object detector
+65:36
+and the x-axis gives us the speed at
+65:39
+test time on a gpu
+65:41
+and the y-axis gives us the overall mean
+65:44
+average precision
+65:45
+which is this performance metric that we
+65:46
+said we can compute for object detection
+65:49
+and now the color of each point is
+65:52
+corresponds to the backbone
+65:53
+the architecture of the backbone network
+65:55
+whether it's like an inception network
+65:57
+or a mobile net or a resnet or a vgg
+65:59
+and now the shape of each dot gives the
+66:02
+meta architecture
+66:03
+that is whether it's a two-stage method
+66:04
+like faster rcnn or a single-stage
+66:06
+method like ssd
+66:09
+and kind of the takeaways here are that
+66:10
+the two-stage methods
+66:12
+tends to work better right when you use
+66:14
+two-stage methods
+66:15
+then it allows the network to have sort
+66:17
+of multiple glimpses at the image
+66:19
+information
+66:20
+and that tends to make performance work
+66:22
+better but they're a lot slower
+66:24
+because you need to run different you
+66:26
+need to run computation independently
+66:27
+for each region proposal that you want
+66:29
+to consider
+66:31
+now a second takeaway is that these
+66:32
+single stage methods are tend to be a
+66:35
+lot faster
+66:35
+because they don't have any computation
+66:38
+per region
+66:38
+instead they're just sharing all
+66:40
+computation across the entire image
+66:42
+so they tend to be a lot faster but they
+66:44
+tend to be less accurate
+66:46
+because they get less opportunities to
+66:48
+kind of look at the raw image
+66:49
+information
+66:50
+and the other takeaway is that bigger
+66:52
+networks tend to work better
+66:54
+so as you if you look at if you compare
+66:56
+using a tiny network like a mobile net
+66:58
+to a very large network like a resnet
+67:00
+101 or
+67:01
+an inception resnet v2 then as you use
+67:04
+larger backbone networks
+67:05
+then your performance tends to improve
+67:08
+okay
+67:08
+so those are kind of the takeaways that
+67:10
+you should have about these different
+67:11
+high level choices in object detectors
+67:14
+but it turns out that this paper was
+67:16
+from 2017
+67:17
+and now is 2019 and this is a fast
+67:20
+moving field so like
+67:21
+there have been some changes since then
+67:24
+so um i've tried so let's let's look at
+67:26
+what is kind of
+67:27
+the current state of the art on this
+67:28
+task well first off
+67:30
+we need to uh shrink the chart in order
+67:33
+to fit the current state-of-the-art
+67:34
+methods on the on the chart here so then
+67:38
+basically since 2017 gpus have gotten
+67:41
+faster and people
+67:42
+have figured out more tricks to get
+67:43
+object detectors to train better
+67:45
+so one trick is that um we can just
+67:47
+train our networks longer
+67:49
+and uh that tends to make them work
+67:50
+better because as gpus get faster we can
+67:52
+afford to train them for longer
+67:54
+and another thing is that there's a some
+67:56
+trick called
+67:57
+um feature pyramid network so we don't
+67:59
+have time to get into that gives us kind
+68:01
+of a multi-scale feature representation
+68:03
+in the backbone
+68:04
+and if you combine those two approaches
+68:06
+then you get a pretty big performance
+68:07
+boost
+68:08
+so this green dot here is now faster
+68:10
+rcnn with resnet 101 feature
+68:12
+pyramid network and it gets 42 mean
+68:15
+average precision um
+68:16
+um this cocoa data set um with a runtime
+68:19
+of only 63 milliseconds at test time
+68:21
+um things and if you use an even bigger
+68:24
+network like res next 101
+68:26
+then it works even better um single
+68:29
+stage methods have gotten quite a lot
+68:31
+better as well
+68:32
+since uh 2017 and in 2017 single stage
+68:35
+methods tended to work a lot worse than
+68:37
+two-stage methods
+68:38
+but nowadays um single-stage methods are
+68:41
+almost as good as two-stage methods
+68:44
+um so then the kind of one of the state
+68:46
+one of these state-of-the-art
+68:46
+single-stage methods
+68:48
+is actually very competitive in
+68:49
+performance to two-stage methods now
+68:52
+another thing is that very very big
+68:54
+models tend to work even better
+68:56
+so this is now 152-layer resnext
+69:00
+trained for using this feature pyramid
+69:02
+network approach and trained for a very
+69:03
+long time
+69:04
+and now it gets all the way up to a 49
+69:06
+mean average precision
+69:08
+and if you do some additional tricks at
+69:10
+test time like
+69:11
+ru at test time you run the image at
+69:13
+multiple scales and multiple sizes and
+69:15
+multiple orientations
+69:16
+and you kind of ensemble all of these
+69:18
+predictions at test time you can get
+69:19
+even better import
+69:20
+improvement and if you train a lot of
+69:23
+data and
+69:24
+train a bunch of models on a lot of data
+69:25
+and ensemble all the predictions
+69:27
+then you can get even better performance
+69:29
+um so the current state of the art i
+69:30
+checked on the the leaderboard for this
+69:32
+data set right before this lecture
+69:34
+was all the way up to 55 mean average
+69:35
+precision which is a pretty massive jump
+69:38
+over the state of the art just in 2017
+69:40
+was 35.
+69:41
+so this is like super active area of
+69:43
+research and we just
+69:44
+don't have time to get into all the
+69:46
+tricks that are necessary to achieve
+69:48
+these high results
+69:49
+but there's a lot of literature that you
+69:50
+can read to kind of get some sense of
+69:52
+how
+69:53
+how things are working okay but then
+69:56
+basically there's a whole lot of stuff
+69:59
+going on in these object detection
+70:00
+methods
+70:01
+so my general advice is like don't try
+70:04
+to implement them yourself
+70:05
+because there's like way too much stuff
+70:08
+going on in these things and you're
+70:09
+gonna get it wrong and you're not gonna
+70:11
+match these performance
+70:12
+so like really don't try to implement
+70:14
+these things yourself
+70:15
+unless you're working on assignment 5 in
+70:17
+which case you will
+70:18
+implement an objection from scratch
+70:22
+so hopefully we'll be able to make it in
+70:23
+a way that's reasonably easy for you to
+70:24
+understand
+70:26
+but in practice if you do find yourself
+70:28
+needing to use object detection in
+70:30
+practice for some real application
+70:32
+you really should not implement it
+70:34
+yourself just because there's way too
+70:35
+many tricks involved
+70:36
+um so in practice there's a a couple
+70:39
+like there's a bunch of really high
+70:40
+quality open source code bases
+70:42
+that do optic detection now and if you
+70:44
+find yourself needing to do objection in
+70:46
+practice
+70:46
+you should really consider building on
+70:48
+top of one of these um so
+70:50
+google has this tensorflow object
+70:52
+detection api that implements pretty
+70:54
+much all of these different object
+70:55
+detection methods in tensorflow
+70:57
+and facebook has this uh of course we
+70:59
+like pytorch in this class
+71:01
+so um facebook just released a like just
+71:04
+released like a month ago
+71:05
+um a brand new object detection
+71:06
+framework called detectron 2
+71:08
+which implements all of these all of
+71:11
+these numbers in
+71:12
+in pi torch and in fact if we look back
+71:14
+at these chart
+71:15
+um these like purple dots and these
+71:16
+green dots all of these new dots
+71:18
+were actually pre-trained models that
+71:21
+are available
+71:22
+in detectron 2. so you can actually this
+71:25
+uh this orange star dot is not in
+71:26
+detectron 2
+71:27
+but other than that this purple dot like
+71:29
+you can just download the code and
+71:30
+download the model
+71:31
+and get that really complicated uh
+71:32
+purple dot over there
+71:34
+so that's what i would recommend you to
+71:36
+do in practice if you find yourself
+71:37
+needing to do object detection so today
+71:40
+i know we've covered a lot but um i
+71:43
+thought it was important that we try to
+71:44
+get a sense of
+71:45
+how things work in object detection so
+71:48
+we talked about these different methods
+71:50
+for up for object detection
+71:51
+moving from slow rcnn to fast star cnn
+71:54
+to faster rcnn
+71:55
+and then moving from there even to these
+71:57
+single stage methods that are really
+71:59
+fast
+71:59
+um so that gives us our quick like one
+72:02
+lecture overview of object detection
+72:04
+um hope i didn't lose too many people on
+72:06
+that because i know it was a lot of
+72:07
+material
+72:08
+but um next time we'll talk about even
+72:10
+more of these localization methods
+72:13
+and we'll talk about um probably some
+72:14
+more object detection stuff
+72:16
+and some some methods for segmentation
+72:18
+and key point estimation
+
+영어 (자동 생성됨)
+
+
